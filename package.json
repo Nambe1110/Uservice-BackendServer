@@ -1,0 +1,25 @@
+{
+  "type": "module",
+  "name": "uservice-backendserver",
+  "version": "1.0.0",
+  "description": "Uservice backend server",
+  "main": "app.js",
+  "scripts": {
+    "start": "node ./src/index.js",
+    "server": "node ./src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nambe1110/Uservice-BackendServer.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Nambe1110/Uservice-BackendServer/issues"
+  },
+  "homepage": "https://github.com/Nambe1110/Uservice-BackendServer#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
