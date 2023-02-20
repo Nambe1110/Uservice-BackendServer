@@ -1,5 +1,5 @@
 import logger from "../config/logger/index.js";
-import app from "../app.js";
+import httpServer from "../app.js";
 import sequelize from "../config/database/index.js";
 
 const PORT = process.env.PORT || 3000;
@@ -9,7 +9,7 @@ sequelize
   .then(async () => {
     logger.info(`Database connection has been established successfully`);
 
-    app.listen(PORT, () => {
+    httpServer.listen(PORT, () => {
       logger.info(`Server is running on port ${PORT}`);
     });
 
