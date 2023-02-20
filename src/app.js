@@ -1,19 +1,10 @@
 import express from "express";
-import logger from "./config/logger/index.js";
+import cors from "cors";
 
 const app = express();
 
-app.get("/", (req, res) => {
-  res.status(200).send({
-    status: "success",
-    data: {
-      message: "API is working. Server is running on port 7502",
-    },
-  });
-});
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(cors());
 
-const PORT = process.env.PORT || 7502;
-
-app.listen(PORT, () => {
-  logger.info(`Server is running on port ${PORT}`);
-});
+export default app;
