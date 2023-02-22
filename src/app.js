@@ -3,6 +3,7 @@ import cors from "cors";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import registerExampleHandler from "./components/example/exampleHandler.js";
+import authRouter from "./components/auth/authAPI.js";
 
 const app = express();
 const httpServer = createServer(app);
@@ -19,5 +20,7 @@ const onConnection = async (socket) => {
 };
 
 io.on("connection", onConnection);
+
+httpServer.use("/api/auth", authRouter);
 
 export default httpServer;
