@@ -21,6 +21,6 @@ const onConnection = async (socket) => {
 
 io.on("connection", onConnection);
 
-httpServer.use("/api/auth", authRouter);
+app.use("/api/auth", authRouter);
 
 export default httpServer;

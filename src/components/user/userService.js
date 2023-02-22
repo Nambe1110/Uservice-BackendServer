@@ -12,12 +12,12 @@ export default class UserService {
     return users;
   }
 
-  static async getUserById(id) {
+  static async getUserByEmail(email) {
     const user = await sequelize.query(
-      "SELECT * FROM user WHERE user.id = $id",
+      "SELECT * FROM user WHERE user.email = $email",
       {
         type: QueryTypes.SELECT,
-        bind: { id },
+        bind: { email },
       }
     );
 
