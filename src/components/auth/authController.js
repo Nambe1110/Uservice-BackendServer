@@ -2,14 +2,18 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import UserService from "../user/userService.js";
 
-const generateTokens = (user) => {
-  const accessToken = jwt.sign(user, process.env.TOKEN_SECRET, {
+const generateTokens = ({ id, email }) => {
+  const accessToken = jwt.sign({ id, email }, process.env.TOKEN_SECRET, {
     expiresIn: "5h",
   });
 
-  const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, {
-    expiresIn: "5 days",
-  });
+  const refreshToken = jwt.sign(
+    { id, email },
+    process.env.REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: "5 days",
+    }
+  );
   return {
     accessToken,
     refreshToken,
@@ -55,5 +59,24 @@ export const signup = async (req, res) => {
     return res.status(200).json(generateTokens(newUser));
   } catch (error) {
     return res.status(500).json({ message: error.message });
+  }
+};
+
+export const refreshToken = async (req, res) => {
+  const { token } = req.body;
+  if (!token) {
+    return res.status(401).json({ message: "Refresh token not provided" });
+  }
+  try {
+    const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+    return res.status(200).json({
+      accessToken: generateTokens(decoded).accessToken,
+      refreshToken: token,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      message:
+        "Unfortunately, there are some problems with the data you committed",
+    });
   }
 };
