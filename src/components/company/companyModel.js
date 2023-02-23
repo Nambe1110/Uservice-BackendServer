@@ -4,7 +4,7 @@ import sequelize from "../../config/database/index.js";
 const { DataTypes } = pkg;
 
 const Company = sequelize.define(
-  "company",
+  "Company",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -40,7 +40,7 @@ const Company = sequelize.define(
     },
   },
   {
-    tableName: "user",
+    tableName: "company",
     charset: "utf8",
     collate: "utf8_unicode_ci",
   }
