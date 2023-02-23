@@ -39,29 +39,15 @@ const User = sequelize.define(
     },
     is_verified: {
       type: DataTypes.BOOLEAN,
-      allowNull: false,
-      validate: {
-        notNull: {
-          msg: "User is_verified is required",
-        },
-      },
     },
     is_locked: {
       type: DataTypes.BOOLEAN,
-      allowNull: false,
-      validate: {
-        notNull: {
-          msg: "User is_locked is required",
-        },
-      },
     },
     google_token: {
       type: DataTypes.STRING,
-      allowNull: true,
     },
     facebook_token: {
       type: DataTypes.STRING,
-      allowNull: true,
     },
   },
   {

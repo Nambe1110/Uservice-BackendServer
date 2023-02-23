@@ -1,5 +1,6 @@
 import pkg from "sequelize";
 import sequelize from "../../config/database/index.js";
+import User from "./userModel.js";
 
 const { QueryTypes } = pkg;
 
@@ -22,5 +23,16 @@ export default class UserService {
     );
 
     return user[0] ?? null;
+  }
+
+  static async insertUser({ email, firstName, lastName, password }) {
+    const user = await User.create({
+      email,
+      firstName,
+      lastName,
+      password,
+    });
+
+    return user.dataValues;
   }
 }
