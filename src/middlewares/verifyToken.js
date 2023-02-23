@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
 import UserService from "../components/user/userService.js";
 
-export const verifyToken = async (req, res, next) => {
-  const bearerHeader = req.headers[".authorization"];
+const verifyToken = async (req, res, next) => {
+  const bearerHeader = req.headers.authorization;
   if (bearerHeader == null) {
     return res.status(401).json({ message: "Access token was not provided" });
   }
@@ -17,3 +17,5 @@ export const verifyToken = async (req, res, next) => {
   req.user = user;
   return next();
 };
+
+export default verifyToken;
