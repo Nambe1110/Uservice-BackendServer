@@ -26,4 +26,13 @@ io.on("connection", onConnection);
 
 app.use("/api/auth", authRouter);
 
+app.get("/", (req, res) => {
+  res.status(200).send({
+    status: "success",
+    data: {
+      message: "API is working. Server is running perfectly",
+    },
+  });
+});
+
 export default httpServer;
