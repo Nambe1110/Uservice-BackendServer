@@ -40,8 +40,8 @@ export default class UserService {
   static async insertUser({ email, firstName, lastName, password }) {
     const user = await User.create({
       email,
-      firstName,
-      lastName,
+      first_name: firstName,
+      last_name: lastName,
       password,
     });
 
