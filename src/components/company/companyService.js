@@ -25,4 +25,16 @@ export default class CompanyService {
     });
     return company.dataValues;
   }
+
+  static async getCompanyByName(name) {
+    const company = await sequelize.query(
+      "SELECT * FROM company WHERE company.name = $name",
+      {
+        type: QueryTypes.SELECT,
+        bind: { name },
+      }
+    );
+
+    return company[0] ?? null;
+  }
 }

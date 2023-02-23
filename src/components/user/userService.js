@@ -1,5 +1,6 @@
 import pkg from "sequelize";
 import sequelize from "../../config/database/index.js";
+import RoleEnum from "../../enums/Role.js";
 import User from "./userModel.js";
 
 const { QueryTypes } = pkg;
@@ -46,5 +47,16 @@ export default class UserService {
     });
 
     return user.dataValues;
+  }
+
+  static async joinCompany({ userId, companyId, role = RoleEnum.Staff }) {
+    const updatedUser = await User.update(
+      { company_id: companyId, role },
+      {
+        where: { id: userId },
+      }
+    );
+
+    return updatedUser;
   }
 }
