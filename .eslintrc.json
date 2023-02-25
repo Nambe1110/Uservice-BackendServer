@@ -3,7 +3,7 @@
     "browser": true,
     "es2021": true
   },
-  // "extends": ["airbnb-base", "prettier"],
+  "extends": ["airbnb-base", "prettier"],
   "plugins": ["prettier"],
   "overrides": [],
   "parserOptions": {
@@ -11,10 +11,10 @@
     "sourceType": "module"
   },
   "rules": {
-    // "prettier/prettier": ["error",{ "endOfLine": "auto" }],
-    // "import/extensions": ["error", "ignorePackages"],
-    // "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
-    // "no-underscore-dangle": ["error", { "allow": ["__filename", "__dirname"] }],
-    // "import/prefer-default-export": "off"
+    "prettier/prettier": ["error",{ "endOfLine": "auto" }],
+    "import/extensions": ["error", "ignorePackages"],
+    "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
+    "no-underscore-dangle": ["error", { "allow": ["__filename", "__dirname"] }],
+    "import/prefer-default-export": "off"
   }
 }

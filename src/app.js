@@ -5,6 +5,7 @@ import { Server } from "socket.io";
 import * as dotenv from "dotenv"; // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
 import registerExampleHandler from "./components/example/exampleHandler.js";
 import authRouter from "./components/auth/authAPI.js";
+import { sendEmail } from "./utils/Email.js";
 
 dotenv.config();
 
@@ -35,14 +36,14 @@ app.get("/", (req, res) => {
   });
 });
 
-import { Email } from './utils/Email.js';
 app.post("/email/send", async (req, res) => {
   try {
-    await Email.send({
-      html: "<h3>Welcome to Uservice Application</h3>",
-      receiver: "nambd11102001@gmail.com",
+    sendEmail({
+      text: "<h3>Welcome to Uservice Application</h3>",
+      to: "namqn11102001@gmail.com",
       subject: "Uservice Application - Activate account",
-  })
+      from: "uservice.system@gmail.com",
+    });
     res.status(200).json({ message: "Email sent successfully." });
   } catch (error) {
     console.log(error);
