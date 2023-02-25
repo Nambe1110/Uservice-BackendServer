@@ -1,40 +1,28 @@
-import pkg from "sequelize";
-import sequelize from "../../config/database/index.js";
-import Company from "./companyModel.js";
-
-const { QueryTypes } = pkg;
+import generator from "generate-password";
+import RoleEnum from "../../enums/Role.js";
+import AppError from "../../utils/AppError.js";
+import UserService from "../user/userService.js";
+import CompanyModel from "./companyModel.js";
 
 export default class CompanyService {
-  static async getCompanyByInviteCode(inviteCode) {
-    const company = await sequelize.query(
-      "SELECT * FROM company WHERE company.invite_code = $invite_code",
-      {
-        type: QueryTypes.SELECT,
-        bind: { invite_code: inviteCode },
-      }
-    );
-
-    return company[0] ?? null;
-  }
-
-  static async insertCompany({ name, imageUrl = null, inviteCode }) {
-    const company = await Company.create({
-      name,
+  static async createCompany(user, companyName, imageUrl = null) {
+    if (user.company_id != null) {
+      throw new AppError("User already existed in another company.", 403);
+    }
+    const inviteCode = generator.generate({
+      length: 10,
+      numbers: true,
+    });
+    const company = await CompanyModel.create({
+      name: companyName,
       image_url: imageUrl,
       invite_code: inviteCode,
     });
+    await UserService.joinCompany({
+      user,
+      inviteCode,
+      role: RoleEnum.Owner,
+    });
     return company.dataValues;
-  }
-
-  static async getCompanyByName(name) {
-    const company = await sequelize.query(
-      "SELECT * FROM company WHERE company.name = $name",
-      {
-        type: QueryTypes.SELECT,
-        bind: { name },
-      }
-    );
-
-    return company[0] ?? null;
   }
 }

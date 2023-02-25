@@ -4,28 +4,11 @@ import CompanyService from "./companyService.js";
 
 export const joinCompany = async (req, res) => {
   const { inviteCode } = req.body;
-  if (inviteCode == null) {
-    return res.status(400).json({ message: "Invalid invite code" });
-  }
-  const { user } = req;
-  if (user.company_id != null) {
-    return res
-      .status(403)
-      .json({ message: "User already existed in another company" });
-  }
   try {
-    const company = CompanyService.getCompanyByInviteCode(inviteCode);
-    if (!company) {
-      return res.status(400).json({ message: "Company not found" });
-    }
-    await UserService.joinCompany({
-      userId: user.id,
-      companyId: company.id,
-      role: RoleEnum.Staff,
-    });
-    return res.status(200).json({ message: "Joined company successfully" });
+    const updatedUser = await UserService.joinCompany(inviteCode, req.user);
+    return res.status(200).json(updatedUser);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return res.status(error.code ?? 500).json({ message: error.message });
   }
 };
 
