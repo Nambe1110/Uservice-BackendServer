@@ -7,8 +7,8 @@ import { login, refreshToken, signup } from "./authController.js";
 
 const authRouter = express.Router({ mergeParams: true });
 
-authRouter.post("/login", login);
+authRouter.post("/login", loginValidator, login);
 authRouter.post("/signup", signupValidator, signup);
-authRouter.post("/refresh", loginValidator, refreshToken);
+authRouter.post("/refresh", refreshToken);
 
 export default authRouter;
