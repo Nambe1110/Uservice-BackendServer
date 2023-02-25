@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import AppError from "../../utils/AppError.js";
 import UserModel from "../user/userModel.js";
 
 const generateTokens = ({ id, email }) => {
@@ -24,9 +25,7 @@ export default class AuthService {
     const user = await UserModel.findOne({ where: { email } });
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      const error = new Error("Unable to login with provided credentials.");
-      error.code = "400";
-      throw error;
+      throw new AppError("Unable to login with provided credentials.", 400);
     }
 
     delete user.dataValues.password;
@@ -36,9 +35,7 @@ export default class AuthService {
   static async signup({ email, firstName, lastName, password }) {
     const user = await UserModel.findOne({ where: { email } });
     if (user) {
-      const error = new Error("Email already existed.");
-      error.code = "403";
-      throw error;
+      throw new AppError("Email already existed.", 403);
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
