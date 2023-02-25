@@ -1,7 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import UserModel from "../user/userModel.js";
-import RoleEnum from "../../enums/Role.js";
 
 const generateTokens = ({ id, email }) => {
   const accessToken = jwt.sign({ id, email }, process.env.TOKEN_SECRET, {
@@ -59,16 +58,5 @@ export default class AuthService {
       accessToken: generateTokens(decoded).accessToken,
       refreshToken: token,
     };
-  }
-
-  static async joinCompany({ userId, companyId, role = RoleEnum.Staff }) {
-    const updatedUser = await UserModel.update(
-      { company_id: companyId, role },
-      {
-        where: { id: userId },
-      }
-    );
-
-    return updatedUser;
   }
 }

@@ -3,7 +3,7 @@ import sequelize from "../../config/database/index.js";
 
 const { DataTypes } = pkg;
 
-const Company = sequelize.define(
+const CompanyModel = sequelize.define(
   "Company",
   {
     id: {
@@ -46,6 +46,6 @@ const Company = sequelize.define(
   }
 );
 
-Company.sync({ logging: false });
+CompanyModel.sync({ logging: false });
 
-export default Company;
+export default CompanyModel;
