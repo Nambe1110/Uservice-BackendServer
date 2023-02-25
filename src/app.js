@@ -35,4 +35,19 @@ app.get("/", (req, res) => {
   });
 });
 
+import { Email } from './utils/Email.js';
+app.post("/email/send", async (req, res) => {
+  try {
+    await Email.send({
+      html: "<h3>Welcome to Uservice Application</h3>",
+      receiver: "nambd11102001@gmail.com",
+      subject: "Uservice Application - Activate account",
+  })
+    res.status(200).json({ message: "Email sent successfully." });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ errors: error.message });
+  }
+});
+
 export default httpServer;
