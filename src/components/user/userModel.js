@@ -3,7 +3,7 @@ import sequelize from "../../config/database/index.js";
 
 const { DataTypes } = pkg;
 
-const User = sequelize.define(
+const UserModel = sequelize.define(
   "user",
   {
     id: {
@@ -57,6 +57,6 @@ const User = sequelize.define(
   }
 );
 
-User.sync({ logging: false });
+UserModel.sync({ logging: false });
 
-export default User;
+export default UserModel;
