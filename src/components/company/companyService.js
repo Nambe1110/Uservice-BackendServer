@@ -5,15 +5,21 @@ import UserService from "../user/userService.js";
 import CompanyModel from "./companyModel.js";
 
 export default class CompanyService {
-  static async createCompany(user, companyName, imageUrl = null) {
+  static async createCompany({ user, companyName, imageUrl = null }) {
     if (user.company_id != null) {
       throw new AppError("User already existed in another company.", 403);
+    }
+    const company = await CompanyModel.findOne({
+      where: { name: companyName },
+    });
+    if (company) {
+      throw new AppError("Company's name already existed.", 400);
     }
     const inviteCode = generator.generate({
       length: 10,
       numbers: true,
     });
-    const company = await CompanyModel.create({
+    const newCompany = await CompanyModel.create({
       name: companyName,
       image_url: imageUrl,
       invite_code: inviteCode,
@@ -23,6 +29,6 @@ export default class CompanyService {
       inviteCode,
       role: RoleEnum.Owner,
     });
-    return company.dataValues;
+    return newCompany.dataValues;
   }
 }

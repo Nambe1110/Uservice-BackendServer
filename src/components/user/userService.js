@@ -14,13 +14,14 @@ export default class UserService {
     if (!inviteCode || !company) {
       throw new AppError("Invalid invite code", 400);
     }
-    const updatedUser = await UserModel.update(
-      { company_id: company.id, role },
-      {
-        where: { id: user.id },
-      }
-    );
 
-    return updatedUser;
+    // Update method of sequelize not return updated row so must find and save here.
+    const currentUser = await UserModel.findOne({ where: { id: user.id } });
+    currentUser.company_id = company.dataValues.id;
+    currentUser.role = role;
+    const updatedUser = await currentUser.save();
+
+    delete updatedUser.dataValues.password;
+    return updatedUser.dataValues;
   }
 }
