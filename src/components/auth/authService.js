@@ -16,8 +16,8 @@ const generateTokens = ({ id, email }) => {
     }
   );
   return {
-    accessToken,
-    refreshToken,
+    access_token: accessToken,
+    refresh_token: refreshToken,
   };
 };
 export default class AuthService {
