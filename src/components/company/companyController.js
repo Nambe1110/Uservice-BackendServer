@@ -1,3 +1,4 @@
+import StatusEnum from "../../enums/Status.js";
 import UserService from "../user/userService.js";
 import CompanyService from "./companyService.js";
 
@@ -8,9 +9,13 @@ export const joinCompany = async (req, res) => {
       user: req.user,
       inviteCode,
     });
-    return res.status(200).json(updatedUser);
+    return res
+      .status(200)
+      .json({ status: StatusEnum.Success, data: updatedUser });
   } catch (error) {
-    return res.status(error.code ?? 500).json({ message: error.message });
+    return res
+      .status(error.code ?? 500)
+      .json({ status: StatusEnum.Error, message: error.message });
   }
 };
 
@@ -21,8 +26,12 @@ export const createCompany = async (req, res) => {
       user: req.user,
       companyName: name,
     });
-    return res.status(200).json(insertedCompany);
+    return res
+      .status(200)
+      .json({ status: StatusEnum.Success, data: insertedCompany });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return res
+      .status(500)
+      .json({ status: StatusEnum.Error, message: error.message });
   }
 };
