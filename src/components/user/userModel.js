@@ -1,5 +1,6 @@
 import pkg from "sequelize";
 import sequelize from "../../config/database/index.js";
+import Company from "../company/companyModel.js";
 
 const { DataTypes } = pkg;
 
@@ -47,6 +48,16 @@ const UserModel = sequelize.define(
       type: DataTypes.STRING,
     },
     facebook_token: {
+      type: DataTypes.STRING,
+    },
+    company_id: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: Company,
+        key: "id",
+      },
+    },
+    role: {
       type: DataTypes.STRING,
     },
   },

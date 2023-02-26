@@ -5,6 +5,7 @@ import { Server } from "socket.io";
 import * as dotenv from "dotenv"; // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
 import registerExampleHandler from "./components/example/exampleHandler.js";
 import authRouter from "./components/auth/authAPI.js";
+import companyRouter from "./components/company/companyApi.js";
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ const onConnection = async (socket) => {
 io.on("connection", onConnection);
 
 app.use("/api/auth", authRouter);
+app.use("/api/company", companyRouter);
 
 app.get("/", (req, res) => {
   res.status(200).send({
