@@ -15,9 +15,11 @@ export const login = async (req, res) => {
       data: token,
     });
   } catch (error) {
-    return res
-      .status(error.code ?? 500)
-      .json({ status: StatusEnum.Error, message: error.message });
+    return res.status(error.code ?? 500).json({
+      status: StatusEnum.Error,
+      message: error.message,
+      errors: error.errors,
+    });
   }
 };
 
@@ -34,9 +36,11 @@ export const signup = async (req, res) => {
 
     return res.status(200).json({ status: StatusEnum.Success, data: token });
   } catch (error) {
-    return res
-      .status(error.code ?? 500)
-      .json({ status: StatusEnum.Error, message: error.message });
+    return res.status(error.code ?? 500).json({
+      status: StatusEnum.Error,
+      message: error.message,
+      errors: error.errors,
+    });
   }
 };
 
