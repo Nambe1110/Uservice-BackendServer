@@ -1,10 +1,14 @@
 import jwt from "jsonwebtoken";
 import UserModel from "../components/user/userModel.js";
+import StatusEnum from "../enums/Status.js";
 
 export const verifyToken = async (req, res, next) => {
   const bearerHeader = req.headers.authorization;
   if (bearerHeader == null) {
-    return res.status(401).json({ message: "Access token was not provided" });
+    return res.status(401).json({
+      status: StatusEnum.Error,
+      message: "Access token was not provided",
+    });
   }
   const token = bearerHeader.split(" ")[1];
 
@@ -14,6 +18,8 @@ export const verifyToken = async (req, res, next) => {
     req.user = user;
     return next();
   } catch (error) {
-    return res.status(403).json({ message: "Invalid token" });
+    return res
+      .status(403)
+      .json({ status: StatusEnum.Error, message: "Invalid token" });
   }
 };

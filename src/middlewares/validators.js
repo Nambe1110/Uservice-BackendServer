@@ -1,4 +1,5 @@
 import validator from "validator";
+import StatusEnum from "../enums/Status.js";
 
 export const signupValidator = (req, res, next) => {
   const { email, password } = req.body;
@@ -28,7 +29,9 @@ export const signupValidator = (req, res, next) => {
     }
     return next();
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    return res
+      .status(400)
+      .json({ status: StatusEnum.Error, message: error.message });
   }
 };
 
@@ -49,6 +52,8 @@ export const loginValidator = (req, res, next) => {
     }
     return next();
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    return res
+      .status(400)
+      .json({ status: StatusEnum.Error, message: error.message });
   }
 };
