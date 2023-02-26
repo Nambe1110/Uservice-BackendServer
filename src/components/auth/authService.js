@@ -52,8 +52,8 @@ export default class AuthService {
   static async refreshToken(token) {
     const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
     return {
-      accessToken: generateTokens(decoded).accessToken,
-      refreshToken: token,
+      access_token: generateTokens(decoded).accessToken,
+      refresh_token: token,
     };
   }
 }

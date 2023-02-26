@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import UserModel from "../components/user/userModel.js";
+import StatusEnum from "../enums/Status.js";
 
 export const verifyToken = async (req, res, next) => {
   const bearerHeader = req.headers.authorization;
@@ -14,6 +15,8 @@ export const verifyToken = async (req, res, next) => {
     req.user = user;
     return next();
   } catch (error) {
-    return res.status(403).json({ message: "Invalid token" });
+    return res
+      .status(403)
+      .json({ status: StatusEnum.Error, message: "Invalid token" });
   }
 };
