@@ -24,4 +24,16 @@ export default class UserService {
     delete updatedUser.dataValues.password;
     return updatedUser.dataValues;
   }
+
+  static async verifyUser(user) {
+    const currentUser = await UserModel.findOne({ where: { id: user.id } });
+    if (!currentUser) {
+      throw new AppError("Thông tin người dùng trong token không hợp lệ");
+    }
+    currentUser.is_verified = true;
+    const verifiedUser = await currentUser.save();
+
+    delete verifiedUser.dataValues.password;
+    return verifiedUser.dataValues;
+  }
 }
