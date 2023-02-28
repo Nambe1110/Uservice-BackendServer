@@ -28,7 +28,10 @@ export default class UserService {
   static async verifyUser(user) {
     const currentUser = await UserModel.findOne({ where: { id: user.id } });
     if (!currentUser) {
-      throw new AppError("Thông tin người dùng trong token không hợp lệ");
+      throw new AppError("Thông tin người dùng trong token không hợp lệ", 400);
+    }
+    if (currentUser.is_verified) {
+      throw new AppError("Tài khoản  đã được kích hoạt", 403);
     }
     currentUser.is_verified = true;
     const verifiedUser = await currentUser.save();

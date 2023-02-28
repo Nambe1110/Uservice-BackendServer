@@ -7,7 +7,7 @@ export default class EmailService {
       throw new AppError("Tài khoản đã được kích hoạt", 403);
     }
     // Use email module to send
-    const verifyToken = await jwt.sign(user, process.env.VERIFY_TOKEN_SECRET, {
+    const verifyToken = jwt.sign(user, process.env.VERIFY_TOKEN_SECRET, {
       expiresIn: "1h",
     });
 
