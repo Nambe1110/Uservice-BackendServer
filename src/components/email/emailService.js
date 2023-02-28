@@ -18,7 +18,7 @@ export default class EmailService {
       <br>
       <div>
       <a href="https://www.uservice.com/activate?verify_token=${verifyToken}" target="_blank">
-        <button style="background: #36B7BD; color: white; border: none; border: 1px solid black; padding: 5px 30px; cursor: pointer;">XÁC NHẬN</button>
+        <button style="background: #36B7BD; color: white; border: none; padding: 5px 30px; cursor: pointer;">XÁC NHẬN</button>
       </a>
       </div>
       <br>
