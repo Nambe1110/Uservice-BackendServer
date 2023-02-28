@@ -13,7 +13,7 @@ export default class CompanyService {
       where: { name: companyName },
     });
     if (company) {
-      throw new AppError("Company's name already existed.", 400);
+      throw new AppError("Tên công ty đã tồn tại", 400);
     }
     const inviteCode = generator.generate({
       length: 10,
