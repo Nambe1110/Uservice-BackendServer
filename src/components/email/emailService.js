@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import AppError from "../../utils/AppError.js";
 
 export default class EmailService {
-  static async SendActivateEmail(user) {
+  static async SendVerifyEmail(user) {
     if (user.is_verified) {
       throw new AppError("Tài khoản đã được kích hoạt", 403);
     }
@@ -10,7 +10,7 @@ export default class EmailService {
     const verifyToken = await jwt.sign(user, process.env.VERIFY_TOKEN_SECRET, {
       expiresIn: "1h",
     });
-    // eslint-disable-next-line no-unused-vars
+
     const htmlVerifyContent = `
       <h1>Xác thực tài khoản</h1>
       Chào <b>${user.first_name} ${user.last_name}</b>, email này được gửi từ hệ thống <b>Uservice</b>. Để xác nhận tài khoản của bạn, vui lòng ấn vào nút xác nhận bên dưới.
@@ -32,5 +32,7 @@ export default class EmailService {
     `;
 
     // Use email module to send html content to user's email.
+    // eslint-disable-next-line no-console
+    console.log(htmlVerifyContent);
   }
 }

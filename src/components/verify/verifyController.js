@@ -3,9 +3,9 @@ import UserService from "../user/userService.js";
 import VerifyService from "./verifyService.js";
 
 export const verifyAccount = async (req, res) => {
-  const verifyToken = req.body;
+  const { verifyToken } = req.body;
   try {
-    const user = VerifyService.verifyAccount(verifyToken);
+    const user = await VerifyService.verifyAccount(verifyToken);
     const verifiedUser = await UserService.verifyUser(user);
     return res.status(200).json({
       status: StatusEnum.Success,

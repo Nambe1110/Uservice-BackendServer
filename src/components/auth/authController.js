@@ -1,4 +1,6 @@
 import StatusEnum from "../../enums/Status.js";
+import EmailService from "../email/emailService.js";
+import UserService from "../user/userService.js";
 import AuthService from "./authService.js";
 
 export const login = async (req, res) => {
@@ -15,7 +17,8 @@ export const login = async (req, res) => {
     });
   } catch (error) {
     if (error.message === "Vui lòng mở email để xác thực tài khoản") {
-      // Send verify email.
+      const user = await UserService.getUserByEmail(email);
+      EmailService.SendVerifyEmail(user);
     }
     return res.status(error.code ?? 500).json({
       status: StatusEnum.Error,
