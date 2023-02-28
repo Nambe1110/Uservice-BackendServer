@@ -25,7 +25,7 @@ export default class AuthService {
     const user = await UserModel.findOne({ where: { email } });
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      throw new AppError("Unable to login with provided credentials.", 400);
+      throw new AppError("Email hoặc mật khẩu không đúng", 400);
     }
 
     delete user.dataValues.password;
@@ -35,7 +35,9 @@ export default class AuthService {
   static async signup({ email, firstName, lastName, password }) {
     const user = await UserModel.findOne({ where: { email } });
     if (user) {
-      throw new AppError("Email already existed.", 403);
+      throw new AppError("Thông tin đăng ký không hợp lệ", 403, {
+        email: "Email đã tồn tại",
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
@@ -52,7 +54,7 @@ export default class AuthService {
   static async refreshToken(token) {
     const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
     return {
-      access_token: generateTokens(decoded).accessToken,
+      access_token: generateTokens(decoded).access_token,
       refresh_token: token,
     };
   }
