@@ -36,19 +36,4 @@ app.get("/", (req, res) => {
   });
 });
 
-app.post("/email/send", async (req, res) => {
-  try {
-    sendEmail({
-      text: "<h3>Welcome to Uservice Application</h3>",
-      to: "namqn11102001@gmail.com",
-      subject: "Uservice Application - Activate account",
-      from: "uservice.system@gmail.com",
-    });
-    res.status(200).json({ message: "Email sent successfully." });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ errors: error.message });
-  }
-});
-
 export default httpServer;
