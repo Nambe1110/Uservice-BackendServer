@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import { google } from "googleapis";
 import * as dotenv from "dotenv";
+import logger from "../config/logger/index.js";
 
 const { OAuth2 } = google.auth;
 
@@ -21,6 +22,7 @@ const createTransporter = async () => {
     oauth2Client.getAccessToken((err, token) => {
       if (err) {
         reject(new Error("Failed to create access token"));
+        logger.error(err);
       }
       resolve(token);
     });

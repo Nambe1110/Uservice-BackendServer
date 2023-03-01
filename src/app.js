@@ -6,6 +6,7 @@ import * as dotenv from "dotenv"; // see https://github.com/motdotla/dotenv#how-
 import registerExampleHandler from "./components/example/exampleHandler.js";
 import authRouter from "./components/auth/authAPI.js";
 import companyRouter from "./components/company/companyApi.js";
+import { swaggerDocs } from "./config/Swagger/Swagger.js";
 
 dotenv.config();
 
@@ -27,6 +28,8 @@ io.on("connection", onConnection);
 
 app.use("/api/auth", authRouter);
 app.use("/api/company", companyRouter);
+
+swaggerDocs(app, process.env.PORT);
 
 app.get("/", (req, res) => {
   res.status(200).send({
