@@ -49,7 +49,7 @@ export const refreshToken = async (req, res) => {
   if (!token) {
     return res.status(401).json({
       status: StatusEnum.Error,
-      message: "Refresh token not provided",
+      message: "Token không được cung cấp",
     });
   }
   try {
@@ -61,6 +61,16 @@ export const refreshToken = async (req, res) => {
     return res.status(400).json({
       status: StatusEnum.Error,
       message: "Token invalid or expired",
+    });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  const { token } = req.body;
+  if (!token) {
+    return res.status(401).json({
+      status: StatusEnum.Error,
+      message: "Token không được cung cấp",
     });
   }
 };

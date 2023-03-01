@@ -12,7 +12,7 @@ export default class UserService {
       where: { invite_code: inviteCode },
     });
     if (!inviteCode || !company) {
-      throw new AppError("Invalid invite code", 400);
+      throw new AppError("Mã mời không hợp lệ", 400);
     }
 
     // Update method of sequelize not return updated row so must find and save here.
@@ -28,7 +28,7 @@ export default class UserService {
   static async getUserById(id) {
     const user = await UserModel.findOne({ where: { id } });
     if (!user) {
-      throw new AppError("User not found", 403);
+      throw new AppError("Người dùng không tồn tại", 403);
     }
 
     delete user.dataValues.password;
