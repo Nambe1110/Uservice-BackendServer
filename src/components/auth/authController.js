@@ -13,7 +13,9 @@ export const login = async (req, res) => {
 
     return res.status(200).json({
       status: StatusEnum.Success,
-      data: token,
+      data: {
+        token,
+      },
     });
   } catch (error) {
     if (error.message === "Vui lòng mở email để xác thực tài khoản") {
@@ -66,7 +68,7 @@ export const refreshToken = async (req, res) => {
     const newTokens = await AuthService.refreshToken(token);
     return res
       .status(200)
-      .json({ status: StatusEnum.Success, data: newTokens });
+      .json({ status: StatusEnum.Success, data: { token: newTokens } });
   } catch (error) {
     return res.status(400).json({
       status: StatusEnum.Error,
@@ -75,12 +77,30 @@ export const refreshToken = async (req, res) => {
   }
 };
 
-export const resetPassword = async (req, res) => {
-  const { token } = req.body;
-  if (!token) {
-    return res.status(401).json({
+export const forgetPassword = async (req, res) => {
+  const { user } = req;
+  try {
+    await EmailService.SendForgetPasswordEmail(user);
+  } catch (error) {
+    res.status(error.code ?? 500).json({
       status: StatusEnum.Error,
-      message: "Token không được cung cấp",
+      message: error.message,
+    });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  const { token, newPassword } = req.body;
+  try {
+    const updatedUser = await UserService.resetPassword(token, newPassword);
+    return res.status(200).json({
+      status: StatusEnum.Success,
+      data: { user: updatedUser },
+    });
+  } catch (error) {
+    return res.status(error.code ?? 500).json({
+      status: StatusEnum.Error,
+      message: error.message,
     });
   }
 };

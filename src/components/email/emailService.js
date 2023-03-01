@@ -37,4 +37,39 @@ export default class EmailService {
       subject: "[Uservice] Xác thực tài khoản",
     });
   }
+
+  static async SendForgetPasswordEmail(user) {
+    const resetPasswordToken = jwt.sign(
+      user,
+      process.env.RESET_PASSWORD_TOKEN_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
+
+    const htmlForgetPasswordContent = `
+      Chào <b>${user.first_name} ${user.last_name}</b>, email này được gửi từ hệ thống <b>Uservice</b>. Để đặt lại mật khẩu của bạn, vui lòng ấn vào nút ĐẶT LẠI MẬT KHẨU bên dưới.
+      <br>
+      <br>
+      <div>
+      <a href="https://www.uservice.com/activate?verify_token=${resetPasswordToken}" target="_blank">
+        <button style="background: #36B7BD; color: white; border: none; padding: 5px 30px; cursor: pointer;">ĐẶT LẠI MẬT KHẨU</button>
+      </a>
+      </div>
+      <br>
+      Nếu bạn không thực hiện việc đăng ký hay bất kì hành động nào liên quan đế hệ
+      thống của chúng tôi, vui lòng bỏ qua emai này. Xin cảm ơn!
+      <br >
+      <br >
+      <b style="font-size: 17px; ">Uservice</b>
+      <br>
+      <i>Hệ thống cung cấp dịch vụ chăm sóc khách hàng</i>
+    `;
+
+    sendEmail({
+      html: htmlForgetPasswordContent,
+      to: user.email,
+      subject: "[Uservice] Đặt lại mật khẩu",
+    });
+  }
 }

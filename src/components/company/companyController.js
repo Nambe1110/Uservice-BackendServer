@@ -11,7 +11,7 @@ export const joinCompany = async (req, res) => {
     });
     return res
       .status(200)
-      .json({ status: StatusEnum.Success, data: updatedUser });
+      .json({ status: StatusEnum.Success, data: { user: updatedUser } });
   } catch (error) {
     return res
       .status(error.code ?? 500)
@@ -28,7 +28,7 @@ export const createCompany = async (req, res) => {
     });
     return res
       .status(200)
-      .json({ status: StatusEnum.Success, data: insertedCompany });
+      .json({ status: StatusEnum.Success, data: { company: insertedCompany } });
   } catch (error) {
     return res
       .status(500)
