@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import UserModel from "../components/user/userModel.js";
+import UserService from "../components/user/userService.js";
 import StatusEnum from "../enums/Status.js";
 
 export const verifyToken = async (req, res, next) => {
@@ -14,7 +14,7 @@ export const verifyToken = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.TOKEN_SECRET);
-    const user = await UserModel.findOne({ where: { id: decoded.id } });
+    const user = await UserService.getUserById(decoded.id);
     req.user = user;
     return next();
   } catch (error) {

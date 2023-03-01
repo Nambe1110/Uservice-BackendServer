@@ -24,4 +24,14 @@ export default class UserService {
     delete updatedUser.dataValues.password;
     return updatedUser.dataValues;
   }
+
+  static async getUserById(id) {
+    const user = await UserModel.findOne({ where: { id } });
+    if (!user) {
+      throw new AppError("User not found", 403);
+    }
+
+    delete user.dataValues.password;
+    return user.dataValues;
+  }
 }

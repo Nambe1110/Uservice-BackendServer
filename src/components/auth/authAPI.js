@@ -10,5 +10,6 @@ const authRouter = express.Router({ mergeParams: true });
 authRouter.post("/login", loginValidator, login);
 authRouter.post("/signup", signupValidator, signup);
 authRouter.post("/refresh", refreshToken);
+authRouter.post("/reset-password");
 
 export default authRouter;
