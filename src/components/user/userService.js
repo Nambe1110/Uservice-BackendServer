@@ -6,7 +6,7 @@ import AppError from "../../utils/AppError.js";
 export default class UserService {
   static async joinCompany({ user, inviteCode, role = RoleEnum.Staff }) {
     if (user.company_id != null) {
-      throw new AppError("User already existed in another company", 403);
+      throw new AppError("Người dùng đã tồn tại trong một công ty khác", 403);
     }
     const company = await CompanyModel.findOne({
       where: { invite_code: inviteCode },
@@ -30,7 +30,30 @@ export default class UserService {
     if (!user) {
       throw new AppError("Người dùng không tồn tại", 403);
     }
+    delete user.dataValues.password;
+    return user.dataValues;
+  }
 
+  static async verifyUser(user) {
+    const currentUser = await UserModel.findOne({ where: { id: user.id } });
+    if (!currentUser) {
+      throw new AppError("Thông tin người dùng trong token không hợp lệ", 400);
+    }
+    if (currentUser.is_verified) {
+      throw new AppError("Tài khoản  đã được kích hoạt", 403);
+    }
+    currentUser.is_verified = true;
+    const verifiedUser = await currentUser.save();
+
+    delete verifiedUser.dataValues.password;
+    return verifiedUser.dataValues;
+  }
+
+  static async getUserByEmail(email) {
+    const user = await UserModel.findOne({ where: { email } });
+    if (!user) {
+      throw new AppError("Email không tồn tại");
+    }
     delete user.dataValues.password;
     return user.dataValues;
   }

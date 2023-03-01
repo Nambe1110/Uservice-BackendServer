@@ -7,6 +7,7 @@ import registerExampleHandler from "./components/example/exampleHandler.js";
 import authRouter from "./components/auth/authAPI.js";
 import companyRouter from "./components/company/companyApi.js";
 import meRouter from "./components/me/meApi.js";
+import verifyRouter from "./components/verify/verifyApi.js";
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ io.on("connection", onConnection);
 app.use("/api/auth", authRouter);
 app.use("/api/company", companyRouter);
 app.use("/api/me", meRouter);
+app.use("/api/verify", verifyRouter);
 
 app.get("/", (req, res) => {
   res.status(200).send({

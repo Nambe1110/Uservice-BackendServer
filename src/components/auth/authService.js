@@ -28,6 +28,10 @@ export default class AuthService {
       throw new AppError("Email hoặc mật khẩu không đúng", 400);
     }
 
+    if (!user.is_verified) {
+      throw new AppError("Vui lòng mở email để xác thực tài khoản", 403);
+    }
+
     delete user.dataValues.password;
     return generateTokens(user.dataValues);
   }
@@ -48,7 +52,9 @@ export default class AuthService {
       password: hashedPassword,
     });
     delete newUser.dataValues.password;
-    return generateTokens(newUser.dataValues);
+    return {
+      user: newUser.dataValues,
+    };
   }
 
   static async refreshToken(token) {
