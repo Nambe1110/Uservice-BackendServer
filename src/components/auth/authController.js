@@ -32,14 +32,14 @@ export const signup = async (req, res) => {
   try {
     const { email, firstName, lastName, password } = req.body;
 
-    const user = await AuthService.signup({
+    const { user } = await AuthService.signup({
       email,
       firstName,
       lastName,
       password,
     });
 
-    // Send verify email.
+    await EmailService.SendVerifyEmail(user);
 
     return res.status(200).json({
       status: StatusEnum.Success,

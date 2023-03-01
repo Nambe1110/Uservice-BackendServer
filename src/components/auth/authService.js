@@ -53,7 +53,7 @@ export default class AuthService {
     });
     delete newUser.dataValues.password;
     return {
-      user: newUser,
+      user: newUser.dataValues,
     };
   }
 
