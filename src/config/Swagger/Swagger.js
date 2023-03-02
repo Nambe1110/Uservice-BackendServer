@@ -1,41 +1,42 @@
-// import express from "express";
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import logger from "../logger/index.js";
 
-// const app = express();
-const options = {
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "Uservice REST API Docs",
-      version: "1.0.0",
-    },
-    servers: [
-      {
-        url: "http://localhost:8000/",
+export const swaggerDocs = (app, port) => {
+  const options = {
+    definition: {
+      openapi: "3.0.0",
+      info: {
+        title: "Uservice REST API Docs",
+        version: "1.0.0",
       },
-    ],
-    components: {
-      securitySchemas: {
-        bearerAuth: {
-          type: "http",
-          scheme: "bearer",
-          bearerFormat: "JWT",
+      servers: [
+        {
+          url: `http://uservicebackendtestserver-env.eba-43rm8vge.ap-southeast-1.elasticbeanstalk.com/`,
+        },
+      ],
+      components: {
+        securitySchemas: {
+          bearerAuth: {
+            type: "http",
+            scheme: "bearer",
+            bearerFormat: "JWT",
+          },
         },
       },
+      security: [
+        {
+          bearerAuth: [],
+        },
+      ],
     },
-    security: [
-      {
-        bearerAuth: [],
-      },
+    apis: [
+      "./src/components/*/*RouteSwagger.js",
+      "./src/components/*/*ModelSwagger.js",
     ],
-  },
-  apis: ["./src/components/*API.js"],
-};
-const swaggerSpec = swaggerJsdoc(options);
-
-export const swaggerDocs = (app, port) => {
+  };
+  const swaggerSpec = swaggerJsdoc(options);
+  //
   // Swagger page
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 

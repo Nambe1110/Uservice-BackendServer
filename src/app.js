@@ -5,7 +5,7 @@ import { Server } from "socket.io";
 import * as dotenv from "dotenv"; // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
 import registerExampleHandler from "./components/example/exampleHandler.js";
 import authRouter from "./components/auth/authAPI.js";
-import companyRouter from "./components/company/companyApi.js";
+import companyRouter from "./components/company/companyAPI.js";
 import { swaggerDocs } from "./config/Swagger/Swagger.js";
 
 dotenv.config();
