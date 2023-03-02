@@ -3,11 +3,11 @@ import cors from "cors";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import * as dotenv from "dotenv"; // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
+import { swaggerDocs } from "./config/Swagger/Swagger.js";
 import registerExampleHandler from "./components/example/exampleHandler.js";
 import authRouter from "./components/auth/authAPI.js";
 import companyRouter from "./components/company/companyApi.js";
 import verifyRouter from "./components/verify/verifyApi.js";
-import { swaggerDocs } from "./config/Swagger/Swagger.js";
 
 dotenv.config();
 
@@ -27,10 +27,10 @@ const onConnection = async (socket) => {
 
 io.on("connection", onConnection);
 
+swaggerDocs(app, process.env.PORT);
+
 app.use("/api/auth", authRouter);
 app.use("/api/company", companyRouter);
-
-swaggerDocs(app, process.env.PORT);
 app.use("/api/verify", verifyRouter);
 
 app.get("/", (req, res) => {
