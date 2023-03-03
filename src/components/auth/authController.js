@@ -13,7 +13,9 @@ export const login = async (req, res) => {
 
     return res.status(200).json({
       status: StatusEnum.Success,
-      data: token,
+      data: {
+        token,
+      },
     });
   } catch (error) {
     if (error.message === "Vui lòng mở email để xác thực tài khoản") {
@@ -59,18 +61,65 @@ export const refreshToken = async (req, res) => {
   if (!token) {
     return res.status(401).json({
       status: StatusEnum.Error,
-      message: "Refresh token not provided",
+      message: "Token không được cung cấp",
     });
   }
   try {
     const newTokens = await AuthService.refreshToken(token);
     return res
       .status(200)
-      .json({ status: StatusEnum.Success, data: newTokens });
+      .json({ status: StatusEnum.Success, data: { token: newTokens } });
   } catch (error) {
     return res.status(400).json({
       status: StatusEnum.Error,
       message: "Token invalid or expired",
+    });
+  }
+};
+
+export const forgetPassword = async (req, res) => {
+  const { email } = req.body;
+  const user = await UserService.getUserByEmail(email);
+  if (!user) {
+    return res.status(400).json({
+      status: StatusEnum.Error,
+      message: "Email không tồn tại",
+    });
+  }
+  try {
+    await EmailService.SendForgetPasswordEmail(user);
+    return res.status(200).json({
+      status: StatusEnum.Success,
+      data: {
+        message: "Hướng dẫn khôi phục mật khẩu đã được gửi đến email của bạn",
+      },
+    });
+  } catch (error) {
+    return res.status(error.code ?? 500).json({
+      status: StatusEnum.Error,
+      message: error.message,
+    });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  const { token, password } = req.body;
+  if (!token) {
+    return res.status(401).json({
+      status: StatusEnum.Error,
+      message: "Token không được cung cấp",
+    });
+  }
+  try {
+    const updatedUser = await UserService.resetPassword(token, password);
+    return res.status(200).json({
+      status: StatusEnum.Success,
+      data: { user: updatedUser },
+    });
+  } catch (error) {
+    return res.status(error.code ?? 500).json({
+      status: StatusEnum.Error,
+      message: error.message,
     });
   }
 };

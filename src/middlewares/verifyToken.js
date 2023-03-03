@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import UserModel from "../components/user/userModel.js";
+import UserService from "../components/user/userService.js";
 import StatusEnum from "../enums/Status.js";
 
 export const verifyToken = async (req, res, next) => {
@@ -7,19 +7,26 @@ export const verifyToken = async (req, res, next) => {
   if (bearerHeader == null) {
     return res.status(401).json({
       status: StatusEnum.Error,
-      message: "Access token was not provided",
+      message: "Access token không được cung cấp",
     });
   }
   const token = bearerHeader.split(" ")[1];
 
   try {
     const decoded = jwt.verify(token, process.env.TOKEN_SECRET);
-    const user = await UserModel.findOne({ where: { id: decoded.id } });
+    const user = await UserService.getUserById(decoded.id);
+    if (user.is_verified === false) {
+      return res.status(403).json({
+        status: StatusEnum.Error,
+        message: "Tài khoản chưa xác thực",
+      });
+    }
     req.user = user;
     return next();
   } catch (error) {
-    return res
-      .status(403)
-      .json({ status: StatusEnum.Error, message: "Invalid token" });
+    return res.status(403).json({
+      status: StatusEnum.Error,
+      message: "Token không hợp lệ hoặc đã hết hạn",
+    });
   }
 };

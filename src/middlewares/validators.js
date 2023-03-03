@@ -69,3 +69,34 @@ export const loginValidator = (req, res, next) => {
   }
   return next();
 };
+
+export const passwordValidator = (req, res, next) => {
+  const { password } = req.body;
+  const passwordErrors = [];
+
+  // Validate password.
+  if (validator.isEmpty(password)) {
+    passwordErrors.push("Mật khẩu không thể để trống");
+  }
+  if (
+    !validator.isLength(password, {
+      min: 6,
+      max: 20,
+    })
+  ) {
+    passwordErrors.push("Mật khẩu phải từ 6-20 ký tự");
+  }
+  if (!validator.isAlphanumeric(password)) {
+    passwordErrors.push("Mật khẩu chỉ có thể chứa chữ cái và số");
+  }
+  if (passwordErrors.length > 0) {
+    return res.status(400).json({
+      status: StatusEnum.Error,
+      message: "Thông tin cung cấp không hợp lệ",
+      errors: {
+        password: passwordErrors.length > 0 ? passwordErrors : undefined,
+      },
+    });
+  }
+  return next();
+};
