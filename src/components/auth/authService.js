@@ -50,6 +50,7 @@ export default class AuthService {
       first_name: firstName,
       last_name: lastName,
       password: hashedPassword,
+      is_verified: false,
     });
     delete newUser.dataValues.password;
     return {

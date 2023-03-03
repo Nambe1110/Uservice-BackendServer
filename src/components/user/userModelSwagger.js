@@ -23,6 +23,9 @@
  *           type: string
  *           description: User's last name.
  *           example: Loc
+ *         is_verified:
+ *           type: boolean
+ *           example: false
  *         updatedAt:
  *           type: timestamp
  *           description: Last updated date time string.
