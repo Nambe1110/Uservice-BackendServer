@@ -32,7 +32,12 @@ export const login = async (req, res) => {
 
 export const signup = async (req, res) => {
   try {
-    const { email, firstName, lastName, password } = req.body;
+    const {
+      email,
+      first_name: firstName,
+      last_name: lastName,
+      password,
+    } = req.body;
 
     const { user } = await AuthService.signup({
       email,

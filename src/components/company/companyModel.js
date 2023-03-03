@@ -34,9 +34,11 @@ const CompanyModel = sequelize.define(
     },
     is_locked: {
       type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
     is_archived: {
       type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
   },
   {
