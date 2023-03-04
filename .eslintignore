@@ -4,7 +4,6 @@
 /node_modules
 /build
 /logs
-swagger_output.json
 
 # misc
 .idea

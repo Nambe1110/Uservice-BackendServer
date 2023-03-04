@@ -7,10 +7,9 @@
   "scripts": {
     "start": "npm run server:prod",
     "server:prod": "node ./src/bin/www",
-    "server:dev": " nodemon ./src/bin/www --ignore *.json",
+    "server:dev": " nodemon ./src/bin/www",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint ./",
-    "swagger-autogen": "node ./swagger.js"
+    "lint": "eslint ./"
   },
   "repository": {
     "type": "git",
@@ -35,7 +34,6 @@
     "nodemailer": "^6.9.1",
     "sequelize": "^6.28.0",
     "socket.io": "^4.6.0",
-    "swagger-autogen": "^2.23.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^4.6.2",
     "validator": "^13.9.0",
@@ -43,7 +41,6 @@
     "winston-daily-rotate-file": "^4.7.1"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.19.1",
     "eslint": "^8.34.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^8.6.0",

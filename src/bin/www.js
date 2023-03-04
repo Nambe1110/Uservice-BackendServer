@@ -1,7 +1,6 @@
 import logger from "../config/logger/index.js";
 import httpServer from "../app.js";
 import sequelize from "../config/database/index.js";
-import "../../swagger.js";
 
 const PORT = process.env.PORT || 3000;
 
