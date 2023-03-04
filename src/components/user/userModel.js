@@ -67,6 +67,8 @@ const UserModel = sequelize.define(
     tableName: "user",
     charset: "utf8",
     collate: "utf8_unicode_ci",
+    createdAt: "created_at",
+    updatedAt: "updated_at",
   }
 );
 

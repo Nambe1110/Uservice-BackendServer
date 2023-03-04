@@ -18,6 +18,9 @@ const sequelize = new Sequelize(
     dialectOptions: {
       connectTimeout: 3000,
     },
+    define: {
+      underscored: true,
+    },
   }
 );
 

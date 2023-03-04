@@ -1,3 +1,4 @@
+import logger from "../../config/logger/index.js";
 import StatusEnum from "../../enums/Status.js";
 import EmailService from "../email/emailService.js";
 import UserService from "../user/userService.js";
@@ -13,9 +14,7 @@ export const login = async (req, res) => {
 
     return res.status(200).json({
       status: StatusEnum.Success,
-      data: {
-        token,
-      },
+      data: token,
     });
   } catch (error) {
     if (error.message === "Vui lòng mở email để xác thực tài khoản") {
@@ -50,9 +49,10 @@ export const signup = async (req, res) => {
 
     return res.status(200).json({
       status: StatusEnum.Success,
-      data: { user },
+      data: user,
     });
   } catch (error) {
+    logger.info(error);
     return res.status(error.code ?? 500).json({
       status: StatusEnum.Error,
       message: error.message,
@@ -62,7 +62,7 @@ export const signup = async (req, res) => {
 };
 
 export const refreshToken = async (req, res) => {
-  const { token } = req.body;
+  const { refresh_token: token } = req.body;
   if (!token) {
     return res.status(401).json({
       status: StatusEnum.Error,
@@ -73,7 +73,7 @@ export const refreshToken = async (req, res) => {
     const newTokens = await AuthService.refreshToken(token);
     return res
       .status(200)
-      .json({ status: StatusEnum.Success, data: { token: newTokens } });
+      .json({ status: StatusEnum.Success, data: newTokens });
   } catch (error) {
     return res.status(400).json({
       status: StatusEnum.Error,
@@ -83,21 +83,19 @@ export const refreshToken = async (req, res) => {
 };
 
 export const forgetPassword = async (req, res) => {
-  const { email } = req.body;
-  const user = await UserService.getUserByEmail(email);
-  if (!user) {
-    return res.status(400).json({
-      status: StatusEnum.Error,
-      message: "Email không tồn tại",
-    });
-  }
   try {
+    const { email } = req.body;
+    const user = await UserService.getUserByEmail(email);
+    if (!user) {
+      return res.status(400).json({
+        status: StatusEnum.Error,
+        message: "Email không tồn tại",
+      });
+    }
     await EmailService.SendForgetPasswordEmail(user);
     return res.status(200).json({
       status: StatusEnum.Success,
-      data: {
-        message: "Hướng dẫn khôi phục mật khẩu đã được gửi đến email của bạn",
-      },
+      data: "Hướng dẫn khôi phục mật khẩu đã được gửi đến email của bạn",
     });
   } catch (error) {
     return res.status(error.code ?? 500).json({
@@ -108,18 +106,18 @@ export const forgetPassword = async (req, res) => {
 };
 
 export const resetPassword = async (req, res) => {
-  const { token, password } = req.body;
-  if (!token) {
-    return res.status(401).json({
-      status: StatusEnum.Error,
-      message: "Token không được cung cấp",
-    });
-  }
   try {
+    const { reset_token: token, new_password: password } = req.body;
+    if (!token) {
+      return res.status(401).json({
+        status: StatusEnum.Error,
+        message: "Token không được cung cấp",
+      });
+    }
     const updatedUser = await UserService.resetPassword(token, password);
     return res.status(200).json({
       status: StatusEnum.Success,
-      data: { user: updatedUser },
+      data: updatedUser,
     });
   } catch (error) {
     return res.status(error.code ?? 500).json({
