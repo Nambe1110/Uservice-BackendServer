@@ -14,6 +14,11 @@ import {
 
 const authRouter = express.Router({ mergeParams: true });
 
+authRouter.use("/", (req, res, next) => {
+  // #swagger.tags = ['Auth']
+  next();
+});
+
 authRouter.post("/login", loginValidator, login);
 authRouter.post("/signup", signupValidator, signup);
 authRouter.post("/refresh", refreshToken);
