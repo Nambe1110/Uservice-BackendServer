@@ -71,7 +71,7 @@ export const loginValidator = (req, res, next) => {
 };
 
 export const passwordValidator = (req, res, next) => {
-  const { password } = req.body;
+  const { new_password: password } = req.body;
   const passwordErrors = [];
 
   // Validate password.

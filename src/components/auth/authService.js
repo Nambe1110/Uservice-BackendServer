@@ -52,6 +52,7 @@ export default class AuthService {
       password: hashedPassword,
       is_verified: false,
     });
+    await newUser.reload();
     delete newUser.dataValues.password;
     return {
       user: newUser.dataValues,
