@@ -15,7 +15,7 @@ export const verifyAccount = async (req, res) => {
     const verifiedUser = await UserService.verifyUser(user);
     return res.status(200).json({
       status: StatusEnum.Success,
-      data: { user: verifiedUser },
+      data: verifiedUser,
     });
   } catch (error) {
     return res.status(error.code ?? 500).json({
