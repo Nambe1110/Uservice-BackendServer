@@ -3,6 +3,7 @@ import RoleEnum from "../../enums/Role.js";
 import AppError from "../../utils/AppError.js";
 import UserService from "../user/userService.js";
 import CompanyModel from "./companyModel.js";
+import UserModel from "../user/userModel.js";
 
 export default class CompanyService {
   static async createCompany({ user, companyName, imageUrl = null }) {
@@ -30,5 +31,23 @@ export default class CompanyService {
       role: RoleEnum.Owner,
     });
     return newCompany.dataValues;
+  }
+
+  static async getCompanyMembers({ user, limit, page }) {
+    if (!user.company_id) {
+      throw new AppError("User is not in a company.", 403);
+    }
+    const company = await CompanyModel.findOne({
+      where: { id: user.company_id },
+    });
+    if (!company) {
+      throw new AppError("Công ty không tồn tại", 400);
+    }
+    const companyMembers = await UserModel.findAndCountAll({
+      where: { company_id: user.company_id },
+      limit: limit,
+      offset: limit * page,
+    });
+    return companyMembers;
   }
 }

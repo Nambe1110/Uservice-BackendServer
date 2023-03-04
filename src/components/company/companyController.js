@@ -35,3 +35,20 @@ export const createCompany = async (req, res) => {
       .json({ status: StatusEnum.Error, message: error.message });
   }
 };
+
+export const getCompanyMembers = async (req, res) => {
+  try {
+    const { limit, page } = req.querry;
+    const members = await CompanyService.getCompanyMembers({
+      user: req.user,
+      limit,
+      page,
+    });
+
+    return res.status(200).json({ status: StatusEnum.Success, data: members });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ status: StatusEnum.Error, message: error.message });
+  }
+};
