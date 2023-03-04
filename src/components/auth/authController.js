@@ -1,4 +1,3 @@
-import logger from "../../config/logger/index.js";
 import StatusEnum from "../../enums/Status.js";
 import EmailService from "../email/emailService.js";
 import UserService from "../user/userService.js";
@@ -52,7 +51,6 @@ export const signup = async (req, res) => {
       data: user,
     });
   } catch (error) {
-    logger.info(error);
     return res.status(error.code ?? 500).json({
       status: StatusEnum.Error,
       message: error.message,
