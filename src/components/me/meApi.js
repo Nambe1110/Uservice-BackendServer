@@ -4,11 +4,6 @@ import { getProfile } from "./meController.js";
 
 const meRouter = express.Router({ mergeParams: true });
 
-meRouter.use("/", (req, res, next) => {
-  // #swagger.tags = ['Me']
-  next();
-});
-
 meRouter.get("/", verifyToken, getProfile);
 
 export default meRouter;
