@@ -7,9 +7,10 @@
   "scripts": {
     "start": "npm run server:prod",
     "server:prod": "node ./src/bin/www",
-    "server:dev": " nodemon ./src/bin/www",
+    "server:dev": " nodemon ./src/bin/www --ignore *.json",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint ./"
+    "lint": "eslint ./",
+    "swagger-autogen": "node ./swagger.js"
   },
   "repository": {
     "type": "git",
@@ -34,7 +35,7 @@
     "nodemailer": "^6.9.1",
     "sequelize": "^6.28.0",
     "socket.io": "^4.6.0",
-    "swagger-jsdoc": "^6.2.8",
+    "swagger-autogen": "^2.23.1",
     "swagger-ui-express": "^4.6.2",
     "validator": "^13.9.0",
     "winston": "^3.8.2",
