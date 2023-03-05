@@ -14,7 +14,7 @@ export const getCompanyMembers = async (req, res) => {
     return res.status(200).json({ status: StatusEnum.Success, data: members });
   } catch (error) {
     return res
-      .status(500)
+      .status(error.code ?? 500)
       .json({ status: StatusEnum.Error, message: error.message });
   }
 };
@@ -34,7 +34,7 @@ export const changeUserRole = async (req, res) => {
       .json({ status: StatusEnum.Success, data: updatedUser });
   } catch (error) {
     return res
-      .status(500)
+      .status(error.code ?? 500)
       .json({ status: StatusEnum.Error, message: error.message });
   }
 };

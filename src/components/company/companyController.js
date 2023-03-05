@@ -31,7 +31,7 @@ export const createCompany = async (req, res) => {
       .json({ status: StatusEnum.Success, data: insertedCompany });
   } catch (error) {
     return res
-      .status(500)
+      .status(error.code ?? 500)
       .json({ status: StatusEnum.Error, message: error.message });
   }
 };
