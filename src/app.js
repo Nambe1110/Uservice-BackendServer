@@ -9,12 +9,12 @@ import swaggerUi from "swagger-ui-express";
 
 import { Server } from "socket.io";
 import registerExampleHandler from "./components/example/exampleHandler.js";
-
+import exampleRouter from "./components/example/exampleAPI.js";
 import authRouter from "./components/auth/authAPI.js";
 import companyRouter from "./components/company/companyApi.js";
 import meRouter from "./components/me/meApi.js";
 import verifyRouter from "./components/verify/verifyApi.js";
-import exampleRouter from "./components/example/exampleAPI.js";
+import userRouter from "./components/user/userApi.js";
 
 dotenv.config();
 
@@ -42,6 +42,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/company", companyRouter);
 app.use("/api/me", meRouter);
 app.use("/api/verify", verifyRouter);
+app.use("/api/user", userRouter);
 
 app.get("/", (req, res) => {
   res.status(200).send({

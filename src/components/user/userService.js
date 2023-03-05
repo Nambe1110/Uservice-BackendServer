@@ -77,4 +77,71 @@ export default class UserService {
       throw new AppError("Token không hợp lệ hoặc đã hết hạn", 403);
     }
   }
+
+  static async getCompanyMembers({ user, limit, page }) {
+    if (!user.company_id) {
+      throw new AppError("Người dùng không thuộc một công ty nào.", 403);
+    }
+    const company = await CompanyModel.findOne({
+      where: { id: user.company_id },
+    });
+    if (!company) {
+      throw new AppError("Công ty không tồn tại", 400);
+    }
+
+    const allCompanyMembers = await UserModel.findAndCountAll({
+      where: { company_id: user.company_id },
+    });
+    const totalItems = allCompanyMembers.count;
+    const totalPages = Math.ceil(totalItems / limit);
+
+    const companyMembers = await UserModel.findAll({
+      where: { company_id: user.company_id },
+      attributes: {
+        exclude: [
+          "password",
+          "google_token",
+          "facebook_token",
+          "createdAt",
+          "updatedAt",
+        ],
+      },
+      limit,
+      offset: limit * (page - 1),
+    });
+
+    return {
+      total_items: totalItems,
+      total_pages: totalPages,
+      items: companyMembers,
+    };
+  }
+
+  static async changeUserRole({ currentUser, userID, newRole }) {
+    if (newRole !== RoleEnum.Manager && newRole !== RoleEnum.Staff) {
+      throw new AppError("Quyền muốn cập nhật không hợp lệ", 406);
+    }
+    if (currentUser.id === userID) {
+      throw new AppError("Không thể tự thay đổi quyền của bạn", 406);
+    }
+
+    const user = await UserModel.findByPk(userID);
+    if (!user) {
+      throw new AppError("User Id không tồn tại");
+    }
+    if (user.company_id !== currentUser.company_id) {
+      throw new AppError(
+        "Người dùng không thuộc cùng một công ty với đối tượng cần thay đổi quyền.",
+        403
+      );
+    }
+    if (user.role === newRole) {
+      throw new AppError("Người dùng đã có quyền này", 406);
+    }
+
+    user.role = newRole;
+    const updatedUser = await user.save();
+
+    return updatedUser;
+  }
 }
