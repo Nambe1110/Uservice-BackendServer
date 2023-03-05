@@ -88,6 +88,13 @@ export default class UserService {
     if (!company) {
       throw new AppError("Công ty không tồn tại", 400);
     }
+
+    const allCompanyMembers = await UserModel.findAndCountAll({
+      where: { company_id: user.company_id },
+    });
+    const totalItems = allCompanyMembers.count;
+    const totalPages = Math.ceil(totalItems / limit);
+
     const companyMembers = await UserModel.findAll({
       where: { company_id: user.company_id },
       attributes: {
@@ -99,18 +106,22 @@ export default class UserService {
           "updatedAt",
         ],
       },
-      limit: limit,
+      limit,
       offset: limit * (page - 1),
     });
 
-    return companyMembers;
+    return {
+      total_items: totalItems,
+      total_pages: totalPages,
+      items: companyMembers,
+    };
   }
 
   static async changeUserRole({ currentUser, userID, newRole }) {
-    if (newRole != RoleEnum.Manager && newRole != RoleEnum.Staff) {
+    if (newRole !== RoleEnum.Manager && newRole !== RoleEnum.Staff) {
       throw new AppError("Quyền muốn cập nhật không hợp lệ", 406);
     }
-    if (currentUser.id == userID) {
+    if (currentUser.id === userID) {
       throw new AppError("Không thể tự thay đổi quyền của bạn", 406);
     }
 
@@ -124,7 +135,7 @@ export default class UserService {
         403
       );
     }
-    if (user.role == newRole) {
+    if (user.role === newRole) {
       throw new AppError("Người dùng đã có quyền này", 406);
     }
 

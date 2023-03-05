@@ -5,7 +5,12 @@ import { getCompanyMembers, changeUserRole } from "./userController.js";
 
 const userRouter = express.Router({ mergeParams: true });
 
+userRouter.use("/", (req, res, next) => {
+  // #swagger.tags = ['User']
+  next();
+});
+
 userRouter.get("/company-members", verifyToken, getCompanyMembers);
-userRouter.patch("/role", [verifyToken], changeUserRole);
+userRouter.patch("/role", [verifyToken, isOwner], changeUserRole);
 
 export default userRouter;
