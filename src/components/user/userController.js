@@ -38,3 +38,22 @@ export const changeUserRole = async (req, res) => {
       .json({ status: StatusEnum.Error, message: error.message });
   }
 };
+
+export const getUserCompanyById = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const currentUser = req.user;
+    const user = await UserService.getUserCompanyById({
+      currentUser,
+      userId,
+    });
+    return res.status(200).json({
+      status: StatusEnum.Success,
+      data: user,
+    });
+  } catch (error) {
+    return res
+      .status(error.code ?? 500)
+      .json({ status: StatusEnum.Error, message: error.message });
+  }
+};
