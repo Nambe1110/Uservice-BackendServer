@@ -113,6 +113,7 @@ export default class UserService {
     return {
       total_items: totalItems,
       total_pages: totalPages,
+      current_page: page,
       items: companyMembers,
     };
   }
