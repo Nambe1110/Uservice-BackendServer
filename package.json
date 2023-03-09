@@ -7,7 +7,7 @@
   "scripts": {
     "start": "npm run server:prod",
     "server:prod": "node ./src/bin/www",
-    "server:dev": " nodemon ./src/bin/www --ignore *.json",
+    "server:dev": "nodemon ./src/bin/www --ignore '*.json' --ignore 'package.json'",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint ./",
     "swagger-autogen": "node ./swagger.js"
