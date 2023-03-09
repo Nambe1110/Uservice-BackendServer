@@ -3,8 +3,9 @@ import customerService from "./customerService.js";
 
 export const getCompanyCustomers = async (req, res) => {
   try {
-    const limit = parseInt(req.query.limit, 10) ?? 20;
-    const page = parseInt(req.query.page, 10) ?? 1;
+    const limit = parseInt(req.query.limit ?? 20, 10);
+    const page = parseInt(req.query.page ?? 1, 10);
+
     const members = await customerService.getCompanyCustomers({
       user: req.user,
       limit,

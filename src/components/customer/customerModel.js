@@ -15,6 +15,12 @@ const CustomerModel = sequelize.define(
     },
     company_id: {
       type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: "Customer email is required",
+        },
+      },
       references: {
         model: Company,
         key: "id",
@@ -22,6 +28,12 @@ const CustomerModel = sequelize.define(
     },
     channel_id: {
       type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: "Customer email is required",
+        },
+      },
       references: {
         model: Channel,
         key: "id",
@@ -35,12 +47,16 @@ const CustomerModel = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    full_name: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
         notNull: {
-          msg: "customer email is required",
+          msg: "Customer email is required",
         },
       },
     },
@@ -54,11 +70,11 @@ const CustomerModel = sequelize.define(
     },
     address: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     note: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     image_url: {
       type: DataTypes.STRING,

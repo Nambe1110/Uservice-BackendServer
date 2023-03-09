@@ -24,7 +24,7 @@ const ChannelModel = sequelize.define(
       allowNull: true,
     },
     source: {
-      type: sequelize.ENUM("Email", "Telegram", "Facebook", "Zalo"),
+      type: DataTypes.STRING,
       allowNull: true,
     },
     is_archived: {

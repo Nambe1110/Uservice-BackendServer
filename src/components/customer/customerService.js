@@ -3,15 +3,6 @@ import CompanyModel from "../company/companyModel.js";
 import AppError from "../../utils/AppError.js";
 
 export default class CustomerService {
-  static async getCustomerByEmail(email) {
-    const customer = await CustomerModel.findOne({ where: { email } });
-    if (!customer) {
-      throw new AppError("Email không tồn tại");
-    }
-    delete customer.dataValues.password;
-    return customer.dataValues;
-  }
-
   static async getCompanyCustomers({ user, limit, page }) {
     if (!user.company_id) {
       throw new AppError("Người dùng không thuộc một công ty nào.", 403);
@@ -32,13 +23,7 @@ export default class CustomerService {
     const companyCustomers = await CustomerModel.findAll({
       where: { company_id: user.company_id },
       attributes: {
-        exclude: [
-          "password",
-          "google_token",
-          "facebook_token",
-          "createdAt",
-          "updatedAt",
-        ],
+        exclude: ["createdAt", "updatedAt"],
       },
       limit,
       offset: limit * (page - 1),
@@ -47,6 +32,7 @@ export default class CustomerService {
     return {
       total_items: totalItems,
       total_pages: totalPages,
+      current_page: page,
       items: companyCustomers,
     };
   }
