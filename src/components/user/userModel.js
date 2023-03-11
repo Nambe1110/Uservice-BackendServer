@@ -62,6 +62,12 @@ const UserModel = sequelize.define(
     role: {
       type: DataTypes.STRING,
     },
+    avatar_url: {
+      type: DataTypes.STRING,
+      default:
+        "https://shop.phuongdonghuyenbi.vn/wp-content/uploads/avatars/1510/default-avatar-bpthumb.png",
+      allowNull: false,
+    },
   },
   {
     tableName: "user",

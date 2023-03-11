@@ -4,6 +4,7 @@ import RoleEnum from "../../enums/Role.js";
 import UserModel from "./userModel.js";
 import CompanyModel from "../company/companyModel.js";
 import AppError from "../../utils/AppError.js";
+import S3 from "../../utils/S3.js";
 
 export default class UserService {
   static async joinCompany({ user, inviteCode, role = RoleEnum.Staff }) {
@@ -159,5 +160,13 @@ export default class UserService {
     }
     delete user.password;
     return user;
+  }
+
+  static async changeUserAvatar({ avatar }) {
+    // const user = await UserModel.findByPk(currentUser.id);
+
+    S3.pushToS3(avatar);
+
+    return null;
   }
 }
