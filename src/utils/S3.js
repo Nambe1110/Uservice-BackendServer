@@ -8,6 +8,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import * as dotenv from "dotenv";
 import crypto from "crypto";
 import path from "path";
+import fs from "fs";
 import logger from "../config/logger/index.js";
 
 dotenv.config();
@@ -27,6 +28,28 @@ const s3 = new S3Client({
 });
 
 export default class S3 {
+  static async pushDiskStorageFileToS3(
+    filepath = "./src/images/old-windows.jpeg"
+  ) {
+    const image = fs.readFileSync(filepath, { encoding: "base64" });
+    console.log(image.mimetype, image.buffer);
+
+    const imageName = randomUniqueImgName("old-windows.jpeg");
+    const params = {
+      Bucket: process.env.BUCKET_NAME,
+      Key: imageName,
+      Body: image.buffer,
+      ContentType: image.mimetype,
+    };
+
+    // const command = new PutObjectCommand(params);
+    // await s3.send(command);
+    console.log(params);
+    logger.info("Upload image to S3");
+
+    return imageName;
+  }
+
   static async pushToS3(image) {
     const imageName = randomUniqueImgName(image.originalname);
     const params = {

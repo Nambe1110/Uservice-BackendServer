@@ -16,6 +16,7 @@ import meRouter from "./components/me/meApi.js";
 import verifyRouter from "./components/verify/verifyApi.js";
 import userRouter from "./components/user/userApi.js";
 import customerRouter from "./components/customer/customerApi.js";
+import S3 from "./utils/S3.js";
 
 dotenv.config();
 
@@ -45,6 +46,8 @@ app.use("/api/me", meRouter);
 app.use("/api/verify", verifyRouter);
 app.use("/api/user", userRouter);
 app.use("/api/customer", customerRouter);
+
+await S3.pushDiskStorageFileToS3();
 
 app.get("/", (req, res) => {
   res.status(200).send({
