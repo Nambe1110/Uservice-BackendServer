@@ -1,10 +1,9 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import multer from "multer";
-// import path from "path";
+import path from "path";
 // import fs from "fs";
 
 // const dir = "./uploads";
-// const upload = multer({
+// const upload1 = multer({
 //   storage: multer.diskStorage({
 //     destination: (req, file, callback) => {
 //       if (!fs.existsSync(dir)) {
@@ -28,6 +27,15 @@ import multer from "multer";
 //   },
 // });
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+  storage: multer.memoryStorage({}),
+  fileFilter: (req, file, callback) => {
+    const ext = path.extname(file.originalname);
+    if (ext !== ".png" && ext !== ".jpg" && ext !== ".jpeg") {
+      return callback(/* res.end('Only images are allowed') */ null, false);
+    }
+    return callback(null, true);
+  },
+});
 
 export default upload;

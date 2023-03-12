@@ -1,10 +1,9 @@
 import express from "express";
-import { upload, verifyRole, verifyToken } from "../../middlewares/index.js";
+import { verifyRole, verifyToken } from "../../middlewares/index.js";
 import {
   getCompanyMembers,
   changeUserRole,
   getUserCompanyById,
-  changeUserAvatar,
 } from "./userController.js";
 
 const userRouter = express.Router({ mergeParams: true });
@@ -25,6 +24,5 @@ userRouter.patch(
   [verifyToken.verifyToken, verifyRole.isOwner],
   changeUserRole
 );
-userRouter.post("/avatar", [upload.single("avatar")], changeUserAvatar);
 
 export default userRouter;
