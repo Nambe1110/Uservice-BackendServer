@@ -9,6 +9,7 @@ import * as dotenv from "dotenv";
 import crypto from "crypto";
 import path from "path";
 import fs from "fs";
+import mime from "mime-types";
 import logger from "../config/logger/index.js";
 
 dotenv.config();
@@ -28,40 +29,48 @@ const s3 = new S3Client({
 });
 
 export default class S3 {
-  static async pushDiskStorageFileToS3(
-    filepath = "./src/images/old-windows.jpeg"
-  ) {
-    const image = fs.readFileSync(filepath, { encoding: "base64" });
-    console.log(image.mimetype, image.buffer);
+  static async pushDiskStorageFileToS3(fileName) {
+    const filePath = `./images/${fileName}`;
+    const image = fs.readFileSync(filePath);
+    const imageBuffer = Buffer.from(image, "binary");
+    const mimeType = mime.lookup(filePath);
 
-    const imageName = randomUniqueImgName("old-windows.jpeg");
+    const imageName = randomUniqueImgName(fileName);
     const params = {
       Bucket: process.env.BUCKET_NAME,
       Key: imageName,
-      Body: image.buffer,
-      ContentType: image.mimetype,
+      Body: imageBuffer,
+      ContentType: mimeType,
     };
 
-    // const command = new PutObjectCommand(params);
-    // await s3.send(command);
-    console.log(params);
-    logger.info("Upload image to S3");
+    try {
+      const command = new PutObjectCommand(params);
+      await s3.send(command);
+      logger.info("Upload image to S3");
+    } catch (error) {
+      logger.error(error.message);
+    }
 
     return imageName;
   }
 
-  static async pushToS3(image) {
-    const imageName = randomUniqueImgName(image.originalname);
+  static async pushMemoryStorageFileToS3(file) {
+    const imageName = randomUniqueImgName(file.originalname);
+
     const params = {
       Bucket: process.env.BUCKET_NAME,
       Key: imageName,
-      Body: image.buffer,
-      ContentType: image.mimetype,
+      Body: file.buffer,
+      ContentType: file.mimetype,
     };
 
-    const command = new PutObjectCommand(params);
-    await s3.send(command);
-    logger.info("Upload image to S3");
+    try {
+      const command = new PutObjectCommand(params);
+      await s3.send(command);
+      logger.info("Upload image to S3");
+    } catch (error) {
+      logger.error(error.message);
+    }
 
     return imageName;
   }
@@ -78,12 +87,16 @@ export default class S3 {
   }
 
   static async removeFromS3(fileName) {
-    const deleteObjectParams = {
-      Bucket: process.env.BUCKET_NAME,
-      Key: fileName,
-    };
-    const command = new DeleteObjectCommand(deleteObjectParams);
-    await s3.send(command);
-    logger.info("Remove file/image from S3");
+    try {
+      const deleteObjectParams = {
+        Bucket: process.env.BUCKET_NAME,
+        Key: fileName,
+      };
+      const command = new DeleteObjectCommand(deleteObjectParams);
+      await s3.send(command);
+      logger.info("Remove file/image from S3");
+    } catch (error) {
+      logger.error(error.message);
+    }
   }
 }

@@ -7,7 +7,7 @@ export default class UserService {
     const oldAvatar = user.image_name;
 
     // Updload image to S3 and save the image name to DB
-    const avatarName = await S3.pushToS3(avatar);
+    const avatarName = await S3.pushMemoryStorageFileToS3(avatar);
     user.image_name = avatarName;
     const updatedUser = await user.save();
     const imageURL = await S3.getImageUrl(avatarName);
