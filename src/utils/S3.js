@@ -5,14 +5,11 @@ import {
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import * as dotenv from "dotenv";
 import crypto from "crypto";
 import path from "path";
 import fs from "fs";
 import mime from "mime-types";
 import logger from "../config/logger/index.js";
-
-dotenv.config();
 
 const randomUniqueImgName = (originalName, bytes = 32) => {
   const ext = path.extname(originalName);

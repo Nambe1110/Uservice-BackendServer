@@ -78,9 +78,6 @@ const CustomerModel = sequelize.define(
     },
     image_url: {
       type: DataTypes.STRING,
-      default:
-        "https://shop.phuongdonghuyenbi.vn/wp-content/uploads/avatars/1510/default-avatar-bpthumb.png",
-      allowNull: false,
     },
   },
   {

@@ -69,7 +69,6 @@ const UserModel = sequelize.define(
     },
     image_url: {
       type: DataTypes.STRING,
-      allowNull: true,
     },
   },
   {
