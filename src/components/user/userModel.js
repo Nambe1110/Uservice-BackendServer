@@ -62,6 +62,14 @@ const UserModel = sequelize.define(
     role: {
       type: DataTypes.STRING,
     },
+    image_name: {
+      type: DataTypes.STRING,
+      default: "uservice-default-user-avatar.png",
+      allowNull: false,
+    },
+    image_url: {
+      type: DataTypes.STRING,
+    },
   },
   {
     tableName: "user",
