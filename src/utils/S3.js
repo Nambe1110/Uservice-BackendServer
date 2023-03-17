@@ -72,7 +72,7 @@ export default class S3 {
     return imageName;
   }
 
-  static async getImageUrl(imageName, timeToLive = 3600) {
+  static async getImageUrl(imageName, timeToLive = 7200) {
     const getObjectParams = {
       Bucket: process.env.BUCKET_NAME,
       Key: imageName,
