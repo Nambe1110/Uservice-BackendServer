@@ -43,6 +43,7 @@
     "socket.io": "^4.6.0",
     "swagger-autogen": "^2.23.1",
     "swagger-ui-express": "^4.6.2",
+    "translate-google": "^1.5.0",
     "validator": "^13.9.0",
     "winston": "^3.8.2",
     "winston-daily-rotate-file": "^4.7.1"
