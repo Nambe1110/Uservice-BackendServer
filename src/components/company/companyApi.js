@@ -1,5 +1,6 @@
 import express from "express";
-import { verifyToken } from "../../middlewares/verifyToken.js";
+import { verifyToken } from "../../middlewares/index.js";
+
 import { createCompany, joinCompany } from "./companyController.js";
 
 const companyRouter = express.Router({ mergeParams: true });
@@ -9,7 +10,7 @@ companyRouter.use("/", (req, res, next) => {
   next();
 });
 
-companyRouter.post("/create", verifyToken, createCompany);
-companyRouter.post("/join", verifyToken, joinCompany);
+companyRouter.post("/create", verifyToken.verifyToken, createCompany);
+companyRouter.post("/join", verifyToken.verifyToken, joinCompany);
 
 export default companyRouter;
