@@ -1,5 +1,5 @@
 import UserModel from "../user/userModel.js";
-import S3 from "../../utils/S3.js";
+import S3 from "../../modules/S3.js";
 
 export default class MeService {
   static async changeAvatar({ currentUser, avatar }) {

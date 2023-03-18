@@ -1,5 +1,5 @@
 import StatusEnum from "../../enums/Status.js";
-import S3 from "../../utils/S3.js";
+import S3 from "../../modules/S3.js";
 
 export const redirectToS3Url = async (req, res) => {
   try {

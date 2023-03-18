@@ -17,6 +17,7 @@ import verifyRouter from "./components/verify/verifyApi.js";
 import userRouter from "./components/user/userApi.js";
 import customerRouter from "./components/customer/customerApi.js";
 import imageRouter from "./components/image/imageApi.js";
+import suggestionRouter from "./components/suggestion/suggestionApi.js";
 
 dotenv.config();
 
@@ -47,6 +48,7 @@ app.use("/api/verify", verifyRouter);
 app.use("/api/user", userRouter);
 app.use("/api/customer", customerRouter);
 app.use("/api/image", imageRouter);
+app.use("/api/suggestion", suggestionRouter);
 
 app.get("/", (req, res) => {
   res.status(200).send({
