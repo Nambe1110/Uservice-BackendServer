@@ -5,7 +5,7 @@ import Translate from "../../modules/Translate.js";
 export default class SuggestionService {
   static async generateSuggestion({ question, numberOfResponse }) {
     const translatedQuestion = await Translate.translate({
-      text: question,
+      input: question,
       from: Lang.Vietnamese,
       to: Lang.English,
     });
@@ -13,11 +13,14 @@ export default class SuggestionService {
       question: translatedQuestion,
       numberOfResponse,
     });
-    const newAnswer = await Translate.translate({
-      text: answers,
-      from: Lang.English,
-      to: Lang.Vietnamese,
-    });
-    return newAnswer;
+    return Promise.all(
+      answers.map((answer) =>
+        Translate.translate({
+          input: answer,
+          from: Lang.English,
+          to: Lang.Vietnamese,
+        })
+      )
+    );
   }
 }
