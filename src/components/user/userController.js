@@ -3,8 +3,9 @@ import UserService from "./userService.js";
 
 export const getCompanyMembers = async (req, res) => {
   try {
-    const limit = parseInt(req.query.limit, 10) ?? 20;
-    const page = parseInt(req.query.page, 10) ?? 1;
+    const limit = parseInt(req.query.limit ?? 20, 10);
+    const page = parseInt(req.query.page ?? 1, 10);
+
     const members = await UserService.getCompanyMembers({
       user: req.user,
       limit,
@@ -32,6 +33,25 @@ export const changeUserRole = async (req, res) => {
     return res
       .status(200)
       .json({ status: StatusEnum.Success, data: updatedUser });
+  } catch (error) {
+    return res
+      .status(error.code ?? 500)
+      .json({ status: StatusEnum.Error, message: error.message });
+  }
+};
+
+export const getUserCompanyById = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const currentUser = req.user;
+    const user = await UserService.getUserCompanyById({
+      currentUser,
+      userId,
+    });
+    return res.status(200).json({
+      status: StatusEnum.Success,
+      data: user,
+    });
   } catch (error) {
     return res
       .status(error.code ?? 500)

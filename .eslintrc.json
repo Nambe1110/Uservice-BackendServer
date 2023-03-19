@@ -19,6 +19,7 @@
     "no-restricted-syntax": "off",
     "radix": "off",
     "consistent-return": "off",
-    "no-param-reassign": "off"
+    "no-param-reassign": "off",
+    "import/no-unresolved": [2, { "caseSensitive": false }]
   }
 }

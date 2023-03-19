@@ -22,6 +22,8 @@ const CompanyModel = sequelize.define(
     },
     image_url: {
       type: DataTypes.STRING,
+      default:
+        "http://uservicebackendtestserver-env.eba-43rm8vge.ap-southeast-1.elasticbeanstalk.com/api/image/uservice-default-company-avatar.png",
     },
     invite_code: {
       type: DataTypes.STRING,

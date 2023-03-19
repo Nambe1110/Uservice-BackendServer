@@ -1,9 +1,5 @@
 import express from "express";
-import {
-  loginValidator,
-  passwordValidator,
-  signupValidator,
-} from "../../middlewares/validators.js";
+import { validators } from "../../middlewares/index.js";
 import {
   login,
   refreshToken,
@@ -19,10 +15,10 @@ authRouter.use("/", (req, res, next) => {
   next();
 });
 
-authRouter.post("/login", loginValidator, login);
-authRouter.post("/signup", signupValidator, signup);
+authRouter.post("/login", validators.loginValidator, login);
+authRouter.post("/signup", validators.signupValidator, signup);
 authRouter.post("/refresh", refreshToken);
 authRouter.post("/forget-password", forgetPassword);
-authRouter.post("/reset-password", passwordValidator, resetPassword);
+authRouter.post("/reset-password", validators.passwordValidator, resetPassword);
 
 export default authRouter;

@@ -1,7 +1,10 @@
 import express from "express";
-import { verifyToken } from "../../middlewares/verifyToken.js";
-import { isOwner } from "../../middlewares/isOwner.js";
-import { getCompanyMembers, changeUserRole } from "./userController.js";
+import { verifyRole, verifyToken } from "../../middlewares/index.js";
+import {
+  getCompanyMembers,
+  changeUserRole,
+  getUserCompanyById,
+} from "./userController.js";
 
 const userRouter = express.Router({ mergeParams: true });
 
@@ -10,7 +13,16 @@ userRouter.use("/", (req, res, next) => {
   next();
 });
 
-userRouter.get("/company-members", verifyToken, getCompanyMembers);
-userRouter.patch("/role", [verifyToken, isOwner], changeUserRole);
+userRouter.get("/company-members", verifyToken.verifyToken, getCompanyMembers);
+userRouter.get(
+  "/company-members/:userId",
+  verifyToken.verifyToken,
+  getUserCompanyById
+);
+userRouter.patch(
+  "/role",
+  [verifyToken.verifyToken, verifyRole.isOwner],
+  changeUserRole
+);
 
 export default userRouter;

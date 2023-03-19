@@ -15,6 +15,8 @@ import userRouter from "./components/user/userApi.js";
 import channelRouter from "./components/channel/channelApi.js";
 import threadRouter from "./components/thread/threadApi.js";
 import customerRouter from "./components/customer/customerApi.js";
+import imageRouter from "./components/image/imageApi.js";
+import suggestionRouter from "./components/suggestion/suggestionApi.js";
 
 dotenv.config();
 
@@ -37,6 +39,8 @@ app.use("/api/user", userRouter);
 app.use("/api/channel", channelRouter);
 app.use("/api/thread", threadRouter);
 app.use("/api/customer", customerRouter);
+app.use("/api/image", imageRouter);
+app.use("/api/suggestion", suggestionRouter);
 
 app.get("/", (req, res) => {
   res.status(200).send({

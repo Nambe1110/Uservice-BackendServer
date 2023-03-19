@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import AppError from "../../utils/AppError.js";
-import { sendEmail } from "../../utils/Email.js";
+import { sendEmail } from "../../modules/Email.js";
 
 export default class EmailService {
   static async SendVerifyEmail(user) {

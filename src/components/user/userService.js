@@ -121,6 +121,7 @@ export default class UserService {
     return {
       total_items: totalItems,
       total_pages: totalPages,
+      current_page: page,
       items: companyMembers,
     };
   }
@@ -151,5 +152,20 @@ export default class UserService {
     const updatedUser = await user.save();
 
     return updatedUser;
+  }
+
+  static async getUserCompanyById({ currentUser, userId }) {
+    const user = await UserModel.findByPk(userId);
+    if (!user) {
+      throw new AppError("User Id không tồn tại");
+    }
+    if (user.company_id !== currentUser.company_id) {
+      throw new AppError(
+        "Bạn không có quyền lấy thông tin của người dùng này.",
+        403
+      );
+    }
+    delete user.password;
+    return user;
   }
 }
