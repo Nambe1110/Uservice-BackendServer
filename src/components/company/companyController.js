@@ -35,3 +35,19 @@ export const createCompany = async (req, res) => {
       .json({ status: StatusEnum.Error, message: error.message });
   }
 };
+
+export const getCompanyDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { user } = req;
+    const company = await CompanyService.getCompanyById({ id, user });
+    return res.status(200).json({
+      status: StatusEnum.Success,
+      data: company,
+    });
+  } catch (error) {
+    return res
+      .status(error.code ?? 500)
+      .json({ status: StatusEnum.Error, message: error.message });
+  }
+};
