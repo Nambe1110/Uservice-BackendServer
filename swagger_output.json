@@ -556,6 +556,31 @@
           }
         }
       }
+    },
+    "/api/suggestion/generate": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "question",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
     }
   },
   "definitions": {
