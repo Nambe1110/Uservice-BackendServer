@@ -32,8 +32,8 @@ export default class ThreadService {
         replacements: {
           companyId,
           threadId,
-          lastMessageId: parseInt(lastMessageId),
-          limit: parseInt(limit, 20),
+          lastMessageId,
+          limit,
         },
         type: sequelize.QueryTypes.SELECT,
         nest: true,

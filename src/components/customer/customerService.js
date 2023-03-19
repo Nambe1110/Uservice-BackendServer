@@ -32,8 +32,8 @@ export default class CustomerService {
       {
         replacements: {
           companyId,
-          limit: parseInt(limit),
-          offset: parseInt(page - 1) * parseInt(limit),
+          limit,
+          offset: (page - 1) * limit,
         },
         type: sequelize.QueryTypes.SELECT,
         nest: true,
@@ -47,6 +47,7 @@ export default class CustomerService {
     return {
       total_items: totalItems,
       total_pages: Math.ceil(totalItems / limit),
+      current_page: page,
       items: customers,
     };
   }

@@ -8,8 +8,8 @@ export const getCustomers = async (req, res) => {
   try {
     const customers = await CustomerService.getCustomers({
       companyId: user.company_id,
-      page,
-      limit,
+      page: parseInt(page),
+      limit: parseInt(limit),
     });
 
     return res.status(200).json({

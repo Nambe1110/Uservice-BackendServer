@@ -9,9 +9,9 @@ export const getMessages = async (req, res) => {
   try {
     const messages = await MessageService.getMessages({
       companyId: user.company_id,
-      threadId,
-      lastMessageId,
-      limit,
+      threadId: parseInt(threadId),
+      lastMessageId: parseInt(lastMessageId),
+      limit: parseInt(limit),
     });
 
     return res.status(200).json({

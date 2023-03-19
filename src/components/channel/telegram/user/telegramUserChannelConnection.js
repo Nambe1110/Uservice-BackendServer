@@ -102,7 +102,6 @@ export default class TelegramUserConnection {
       };
     }
 
-    logger.info(authState);
     throw new AppError(authState.response._, 400);
   }
 

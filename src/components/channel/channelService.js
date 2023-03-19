@@ -23,14 +23,19 @@ export default class ChannelService {
     return newChannel.dataValues;
   }
 
-  static async getChannels({ companyId }) {
-    const channels = await ChannelModel.findAll({
-      where: {
-        company_id: companyId,
-      },
+  static async getChannels({ companyId, page, limit }) {
+    const { count, rows } = await ChannelModel.findAndCountAll({
+      where: { company_id: companyId },
+      limit,
+      offset: limit * (page - 1),
     });
 
-    return channels;
+    return {
+      total_items: count,
+      total_pages: Math.ceil(count / limit),
+      current_page: page,
+      items: rows,
+    };
   }
 
   static async getChannelById(id) {

@@ -8,8 +8,8 @@ export const getThreads = async (req, res) => {
   try {
     const threads = await ThreadService.getThreads({
       companyId: user.company_id,
-      lastThreadId,
-      limit,
+      lastThreadId: parseInt(lastThreadId),
+      limit: parseInt(limit),
     });
 
     return res.status(200).json({
