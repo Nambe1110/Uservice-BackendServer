@@ -3,6 +3,7 @@ import RoleEnum from "../../enums/Role.js";
 import AppError from "../../utils/AppError.js";
 import UserService from "../user/userService.js";
 import CompanyModel from "./companyModel.js";
+import { listCompany } from "../../utils/singleton.js";
 
 export default class CompanyService {
   static async createCompany({ user, companyName, imageUrl = null }) {
@@ -29,6 +30,13 @@ export default class CompanyService {
       inviteCode,
       role: RoleEnum.Owner,
     });
+
+    listCompany.set(newCompany.id, {
+      telegramUserChannel: new Map(),
+      telegramBotChannel: new Map(),
+      EmailChannel: new Map(),
+    });
+
     return newCompany.dataValues;
   }
 }

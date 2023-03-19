@@ -5,7 +5,7 @@ import Company from "../company/companyModel.js";
 const { DataTypes } = pkg;
 
 const UserModel = sequelize.define(
-  "user",
+  "User",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -19,6 +19,9 @@ const UserModel = sequelize.define(
     last_name: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    image_url: {
+      type: DataTypes.STRING,
     },
     email: {
       type: DataTypes.STRING,
