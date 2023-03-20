@@ -57,9 +57,11 @@ export const verifyTokenSocket = async (socket, next) => {
     socket.user = user;
     next();
   } catch (error) {
-    return new Error({
-      status: StatusType.ERROR,
-      message: "Token không hợp lệ hoặc đã hết hạn",
-    });
+    return next(
+      new Error({
+        status: StatusType.ERROR,
+        message: "Token không hợp lệ hoặc đã hết hạn",
+      })
+    );
   }
 };
