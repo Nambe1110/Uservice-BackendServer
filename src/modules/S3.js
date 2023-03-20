@@ -27,6 +27,7 @@ const s3 = new S3Client({
 
 export default class S3 {
   static async pushDiskStorageFileToS3(fileName) {
+    // Disk storage file path on server BE
     const filePath = `./images/${fileName}`;
     const image = fs.readFileSync(filePath);
     const imageBuffer = Buffer.from(image, "binary");
@@ -51,8 +52,16 @@ export default class S3 {
     return imageName;
   }
 
+  // file: value read from file
+  // destinationFolder: folder on S3 bucket to upload file to
+  // all images stored in the same root folder in S3 currently -> will sepereate later
   static async pushMemoryStorageFileToS3(file) {
     const imageName = randomUniqueImgName(file.originalname);
+
+    // const key =
+    //   destinationFolder !== ""
+    //     ? `${destinationFolder}/${imageName}`
+    //     : `${imageName}`;
 
     const params = {
       Bucket: process.env.BUCKET_NAME,
