@@ -23,12 +23,19 @@ export default class ThreadService {
 
   static async getThreads({ companyId, lastThreadId, limit }) {
     const threads = await sequelize.query(
-      `SELECT thread.*, t1.type AS type,
+      `SELECT thread.*, 
+        t3.id AS 'customer.id',
+        t3.image_url AS 'customer.image_url',
+        t3.alias AS 'customer.alias',
+        t3.first_name AS 'customer.first_name',
+        t3.last_name AS 'customer.last_name',
+        t3.profile AS 'customer.profile',
+        t1.type AS type,
         t2.id AS 'last_message.id',
         t2.sender_type AS 'last_message.sender_type', 
         t2.timestamp AS 'last_message.timestamp', 
         t2.content AS 'last_message.content',
-        t3.id AS 'last_message.sender.id',
+        t2.sender_id AS 'last_message.sender.id',
         IF (t2.sender_type = 'customer', t3.first_name, t4.first_name) AS 'last_message.sender.first_name',
         IF (t2.sender_type = 'customer', t3.last_name, t4.last_name) AS 'last_message.sender.last_name',
         IF (t2.sender_type = 'customer', t3.image_url, t4.image_url) AS 'last_message.sender.avatar_url'

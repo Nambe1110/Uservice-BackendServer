@@ -18,6 +18,8 @@ export default async (io) => {
     senderApiId,
     senderFirstName,
     senderLastName,
+    senderPhoneNumber,
+    senderProfile,
     messageApiId,
     messageContent,
     messageTimestamp,
@@ -30,6 +32,20 @@ export default async (io) => {
         type: threadType,
       });
 
+      const [customer] = await CustomerService.getOrCreateCustomer({
+        customer_api_id: senderApiId,
+        company_id: companyId,
+        thread_id: thread.id,
+      });
+
+      customer.first_name = senderFirstName;
+      customer.last_name = senderLastName;
+      customer.phone_number = senderPhoneNumber;
+      customer.profile = senderProfile;
+      customer.alias = `${senderFirstName} ${senderLastName}`;
+
+      await customer.save();
+
       let sender;
       let senderId;
 
@@ -39,13 +55,7 @@ export default async (io) => {
           role: UserRole.OWNER,
         });
       } else {
-        [sender] = await CustomerService.getOrCreateCustomer({
-          customer_api_id: senderApiId,
-          company_id: companyId,
-          thread_id: thread.id,
-          first_name: senderFirstName,
-          last_name: senderLastName,
-        });
+        sender = customer;
       }
 
       const [message, created] = await MessageService.getOrCreateMessage(
@@ -73,6 +83,14 @@ export default async (io) => {
           content: messageContent,
           timestamp: messageTimestamp,
           sender_type: senderType,
+          customer: {
+            id: customer.id,
+            first_name: customer.first_name,
+            last_name: customer.last_name,
+            image_url: customer.image_url,
+            alias: customer.alias,
+            profile: customer.profile,
+          },
           sender: {
             id: senderId,
             first_name: sender.first_name,

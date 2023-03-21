@@ -134,11 +134,6 @@ export default class TelegramUserConnection {
       limit: NumberOfChatsLimit.TELEGRAM_USER,
     });
 
-    // this.connection.use(async (ctx, next) => {
-    //   logger.info(ctx.update);
-    //   await next();
-    // });
-
     this.connection.on("updateChatLastMessage", async ({ update }) => {
       if (update.lastMessage?.sendingState) return;
       const {
@@ -155,7 +150,13 @@ export default class TelegramUserConnection {
       });
 
       /* eslint no-unused-vars: "off" */
-      const { firstName, lastName, type: userType } = userInfo.response;
+      const {
+        username,
+        phoneNumber,
+        firstName,
+        lastName,
+        type: userType,
+      } = userInfo.response;
       // if (userType._ !== "userTypeRegular") return;
 
       const chatInfo = await this.connection.api.getChat({
@@ -181,6 +182,8 @@ export default class TelegramUserConnection {
         senderApiId: userId,
         senderFirstName: firstName,
         senderLastName: lastName,
+        senderPhoneNumber: phoneNumber,
+        senderProfile: `t.me/${username}`,
         messageApiId: messageId,
         messageContent: content._ === "messageText" ? content.text.text : "",
         messageTimestamp: date,

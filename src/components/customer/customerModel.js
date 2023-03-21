@@ -49,7 +49,7 @@ const CustomerModel = sequelize.define(
       type: DataTypes.STRING,
     },
     birthday: {
-      type: DataTypes.DATE,
+      type: DataTypes.INTEGER,
     },
     address: {
       type: DataTypes.STRING,
@@ -60,6 +60,9 @@ const CustomerModel = sequelize.define(
     is_archived: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+    },
+    profile: {
+      type: DataTypes.STRING,
     },
   },
   {
