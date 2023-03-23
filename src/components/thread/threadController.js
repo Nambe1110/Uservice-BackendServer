@@ -22,3 +22,20 @@ export const getThreads = async (req, res) => {
       .json({ status: StatusType.ERROR, message: error.message });
   }
 };
+
+export const getThread = async (req, res) => {
+  const { threadId } = req.params;
+
+  try {
+    const thread = await ThreadService.getThreadById(threadId);
+
+    return res.status(200).json({
+      status: "success",
+      data: thread,
+    });
+  } catch (error) {
+    return res
+      .status(error.code ?? 500)
+      .json({ status: StatusType.ERROR, message: error.message });
+  }
+};
