@@ -27,6 +27,13 @@ const SenderType = {
   SERVICE: "Service",
 };
 
+const AttachmentType = {
+  IMAGE: "Image",
+  VIDEO: "Video",
+  AUDIO: "Audio",
+  FILE: "File",
+};
+
 const NumberOfChatsLimit = {
   TELEGRAM_USER: 200000,
 };
@@ -38,4 +45,5 @@ export {
   StatusType,
   SenderType,
   NumberOfChatsLimit,
+  AttachmentType,
 };

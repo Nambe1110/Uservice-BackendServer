@@ -6,6 +6,8 @@ import {
   ThreadType,
   SenderType,
   NumberOfChatsLimit,
+  ChannelType,
+  AttachmentType,
 } from "../../../../constants.js";
 import logger from "../../../../config/logger/index.js";
 import { threadNotifier } from "../../../thread/threadNotifier.js";
@@ -135,6 +137,7 @@ export default class TelegramUserConnection {
     });
 
     this.connection.on("updateChatLastMessage", async ({ update }) => {
+      logger.info(update);
       if (update.lastMessage?.sendingState) return;
       const {
         chatId,
@@ -151,6 +154,7 @@ export default class TelegramUserConnection {
 
       /* eslint no-unused-vars: "off" */
       const {
+        profilePhoto,
         username,
         phoneNumber,
         firstName,
@@ -169,7 +173,19 @@ export default class TelegramUserConnection {
         return;
       }
 
+      // if (profilePhoto) {
+      //   const { small } = profilePhoto;
+      //   const fileResponse = await this.connection.api.getRemoteFile({
+      //     remoteFileId:
+      //       "https://uservice-internal-s3-bucket.s3.ap-southeast-1.amazonaws.com/uservice-default-company-avatar.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIA3RDVWQIFCG2S4WP4%2F20230321%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Date=20230321T154404Z&X-Amz-Expires=7200&X-Amz-Signature=3797d0b803335b69ff36f1fad1309c8ffda445591f158c836c23b24c1d7d1701&X-Amz-SignedHeaders=host&x-id=GetObject",
+      //     // fileType: "fileTypeProfilePhoto",
+      //   });
+
+      //   logger.info(fileResponse);
+      // }
+
       await threadNotifier.onNewMessage({
+        ChannelType: ChannelType.TELEGRAM_USER,
         companyId: this.companyId,
         channelId,
         threadType:
@@ -192,9 +208,9 @@ export default class TelegramUserConnection {
 
     this.connection.on("updateMessageSendSucceeded", async ({ update }) => {
       const { oldMessageId, message } = update;
-      const { chatId, id: messageId, content, date } = message;
+      const { chatId, id: messageId, date } = message;
       this.succeededMessages.add(messageId);
-      const { senderId, callback, socket } =
+      const { senderId, content, attachment, callback, socket } =
         this.pendingMessages.get(oldMessageId);
       const chatInfo = await this.connection.api.getChat({
         chatId,
@@ -202,6 +218,7 @@ export default class TelegramUserConnection {
       const { title, type: chatType } = chatInfo.response;
 
       await threadNotifier.onMessageSendSucceeded({
+        ChannelType: ChannelType.TELEGRAM_USER,
         companyId: this.companyId,
         channelId,
         threadType:
@@ -213,8 +230,9 @@ export default class TelegramUserConnection {
         senderType: SenderType.STAFF,
         senderId,
         messageApiId: messageId,
-        messageContent: content._ === "messageText" ? content.text.text : "",
+        messageContent: content,
         messageTimestamp: date,
+        messageAttachment: attachment,
         callback,
         socket,
       });
@@ -223,20 +241,101 @@ export default class TelegramUserConnection {
     });
   }
 
-  async sendMessage({ senderId, chatId, content, callback, socket }) {
-    const message = await this.connection.api.sendMessage({
-      chatId,
-      inputMessageContent: {
-        _: "inputMessageText",
-        text: {
-          _: "formattedText",
-          text: content,
+  async sendMessage({
+    senderId,
+    chatId,
+    content,
+    attachment,
+    callback,
+    socket,
+  }) {
+    let message;
+
+    if (attachment) {
+      const { type, url } = attachment[0];
+      let inputMessageContent = {};
+
+      switch (type) {
+        case AttachmentType.IMAGE:
+          inputMessageContent = {
+            _: "inputMessagePhoto",
+            photo: {
+              _: "inputFileRemote",
+              id: url,
+            },
+            caption: {
+              _: "formattedText",
+              text: content,
+            },
+          };
+          break;
+        case AttachmentType.VIDEO:
+          inputMessageContent = {
+            _: "inputMessageVideo",
+            video: {
+              _: "inputFileRemote",
+              id: url,
+            },
+            caption: {
+              _: "formattedText",
+              text: content,
+            },
+          };
+          break;
+        case AttachmentType.FILE:
+          inputMessageContent = {
+            _: "inputMessageDocument",
+            document: {
+              _: "inputFileRemote",
+              id: url,
+            },
+            caption: {
+              _: "formattedText",
+              text: content,
+            },
+          };
+          break;
+        case AttachmentType.AUDIO:
+          inputMessageContent = {
+            _: "inputMessageAudio",
+            audio: {
+              _: "inputFileRemote",
+              id: url,
+            },
+            caption: {
+              _: "formattedText",
+              text: content,
+            },
+          };
+          break;
+        default:
+          throw new Error("Invalid attachment type");
+      }
+
+      message = await this.connection.api.sendMessage({
+        chatId,
+        inputMessageContent,
+      });
+    } else {
+      message = await this.connection.api.sendMessage({
+        chatId,
+        inputMessageContent: {
+          _: "inputMessageText",
+          text: {
+            _: "formattedText",
+            text: content,
+          },
         },
-      },
-    });
+      });
+    }
+
+    if (message.response._ === "error")
+      throw new Error(message.response.message);
 
     this.pendingMessages.set(message.response.id, {
       senderId,
+      content,
+      attachment,
       callback,
       socket,
     });

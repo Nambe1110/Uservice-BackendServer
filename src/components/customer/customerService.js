@@ -11,11 +11,22 @@ export default class CustomerService {
     return [newCustomer, created];
   }
 
+  static async getCustomer({ threadId }) {
+    const customer = await CustomerModel.findOne({
+      where: {
+        thread_id: threadId,
+      },
+    });
+
+    return customer;
+  }
+
   static async getCustomers({ companyId, page, limit }) {
     const customers = await sequelize.query(
       `SELECT customer.*,
         t2.id AS 'last_message.id',
-        t2.content AS 'last_message.content'
+        t2.content AS 'last_message.content',
+        t2.timestamp AS 'last_message.timestamp'
       FROM customer
       JOIN 
       (

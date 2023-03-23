@@ -2,6 +2,7 @@ import ThreadService from "./threadService.js";
 import UserService from "../user/userService.js";
 import CustomerService from "../customer/customerService.js";
 import MessageService from "../message/messageService.js";
+import AttachmentService from "../attachment/attachmentService.js";
 import { SenderType, UserRole, StatusType } from "../../constants.js";
 import logger from "../../config/logger/index.js";
 
@@ -9,6 +10,7 @@ export const threadNotifier = {};
 
 export default async (io) => {
   threadNotifier.onNewMessage = async ({
+    channelType,
     companyId,
     channelId,
     threadType,
@@ -47,7 +49,6 @@ export default async (io) => {
       await customer.save();
 
       let sender;
-      let senderId;
 
       if (senderType === SenderType.STAFF) {
         sender = await UserService.getUser({
@@ -78,24 +79,28 @@ export default async (io) => {
 
       io.to(companyId).emit(created ? "new-message" : "update-message", {
         data: {
-          thread_id: thread.id,
-          message_id: message.id,
-          content: messageContent,
-          timestamp: messageTimestamp,
-          sender_type: senderType,
-          customer: {
-            id: customer.id,
-            first_name: customer.first_name,
-            last_name: customer.last_name,
-            image_url: customer.image_url,
-            alias: customer.alias,
-            profile: customer.profile,
-          },
-          sender: {
-            id: senderId,
-            first_name: sender.first_name,
-            last_name: sender.last_name,
-            image_url: sender.image_url,
+          thread: {
+            ...thread.dataValues,
+            customer: {
+              id: customer.id,
+              image_url: customer.image_url,
+              alias: customer.alias,
+              first_name: customer.first_name,
+              last_name: customer.last_name,
+            },
+            channel_type: channelType,
+            last_message: {
+              id: message.id,
+              sender_type: message.sender_type,
+              timestamp: message.timestamp,
+              content: message.content,
+              sender: {
+                id: sender.id,
+                first_name: sender.first_name,
+                last_name: sender.last_name,
+                image_url: sender.image_url,
+              },
+            },
           },
         },
       });
@@ -105,6 +110,7 @@ export default async (io) => {
   };
 
   threadNotifier.onMessageSendSucceeded = async ({
+    channelType,
     companyId,
     channelId,
     threadType,
@@ -115,6 +121,7 @@ export default async (io) => {
     messageApiId,
     messageContent,
     messageTimestamp,
+    messageAttachment,
     socket,
     callback,
   }) => {
@@ -139,20 +146,41 @@ export default async (io) => {
         }
       );
 
+      await Promise.all(
+        messageAttachment.map((attachment) =>
+          AttachmentService.createAttachment(attachment)
+        )
+      );
+
       const user = await UserService.getUserById(senderId);
+      const customer = await CustomerService.getCustomer({
+        threadId: thread.id,
+      });
 
       socket.broadcast.to(companyId).emit("new-message", {
         data: {
-          thread_id: thread.id,
-          message_id: message.id,
-          content: messageContent,
-          timestamp: messageTimestamp,
-          sender_type: senderType,
-          sender: {
-            id: senderId,
-            first_name: user.first_name,
-            last_name: user.last_name,
-            image_url: user.image_url,
+          thread: {
+            ...thread.dataValues,
+            customer: {
+              id: customer.id,
+              image_url: customer.image_url,
+              alias: customer.alias,
+              first_name: customer.first_name,
+              last_name: customer.last_name,
+            },
+            channel_type: channelType,
+            last_message: {
+              id: message.id,
+              sender_type: message.sender_type,
+              timestamp: message.timestamp,
+              content: message.content,
+              sender: {
+                id: user.id,
+                first_name: user.first_name,
+                last_name: user.last_name,
+                image_url: user.image_url,
+              },
+            },
           },
         },
       });
@@ -163,10 +191,15 @@ export default async (io) => {
           message_id: message.id,
           content: messageContent,
           timestamp: messageTimestamp,
+          attachment: messageAttachment,
         },
       });
     } catch (error) {
       logger.error(error.message);
+      callback({
+        status: StatusType.ERROR,
+        message: error.message,
+      });
     }
   };
 };

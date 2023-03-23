@@ -12,7 +12,7 @@ telegramUserRouter.use("/", (req, res, next) => {
   // #swagger.tags = ['Telegram User']
   next();
 });
-telegramUserRouter.use("/", verifyToken);
+telegramUserRouter.use("/", verifyToken());
 
 telegramUserRouter.post("/send-code", sendPhoneNumberVerificationCode);
 telegramUserRouter.post("/check-code", checkCodeAuthentication);

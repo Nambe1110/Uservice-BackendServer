@@ -144,6 +144,7 @@ export default class TelegramUserChannelService {
     threadApiId,
     senderId,
     content,
+    attachment,
     callback,
     socket,
   }) {
@@ -165,6 +166,7 @@ export default class TelegramUserChannelService {
       senderId,
       chatId: threadApiId,
       content,
+      attachment,
       callback,
       socket,
     });

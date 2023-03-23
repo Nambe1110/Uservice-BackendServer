@@ -9,7 +9,7 @@ customerRouter.use("/", (req, res, next) => {
   next();
 });
 
-customerRouter.use("/", verifyToken);
+customerRouter.use("/", verifyToken(true));
 
 customerRouter.get("/", getCustomers);
 

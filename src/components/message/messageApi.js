@@ -9,7 +9,7 @@ messageRouter.use("/", (req, res, next) => {
   next();
 });
 
-messageRouter.use("/", verifyToken);
+messageRouter.use("/", verifyToken(true));
 messageRouter.get("/", getMessages);
 
 export default messageRouter;

@@ -10,7 +10,7 @@ threadRouter.use("/", (req, res, next) => {
   next();
 });
 
-threadRouter.use("/", verifyToken);
+threadRouter.use("/", verifyToken(true));
 threadRouter.get("/", getThreads);
 
 threadRouter.use("/:threadId/message", messageRouter);

@@ -10,7 +10,7 @@ channelRouter.use("/", (req, res, next) => {
   // #swagger.tags = ['Channel']
   next();
 });
-channelRouter.use("/", verifyToken);
+channelRouter.use("/", verifyToken(true));
 
 channelRouter.get("/", getChannels);
 

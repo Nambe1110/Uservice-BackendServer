@@ -30,7 +30,7 @@ export default class ThreadService {
         t3.first_name AS 'customer.first_name',
         t3.last_name AS 'customer.last_name',
         t3.profile AS 'customer.profile',
-        t1.type AS type,
+        t1.type AS 'channel_type',
         t2.id AS 'last_message.id',
         t2.sender_type AS 'last_message.sender_type', 
         t2.timestamp AS 'last_message.timestamp', 
