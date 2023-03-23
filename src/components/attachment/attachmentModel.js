@@ -1,49 +1,36 @@
 import pkg from "sequelize";
 import sequelize from "../../config/database/index.js";
-import Company from "../company/companyModel.js";
+import Message from "../message/messageModel.js";
 
 const { DataTypes } = pkg;
 
-const ChannelModel = sequelize.define(
-  "Channel",
+const AttachmentModel = sequelize.define(
+  "Attachment",
   {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    company_id: {
+    message_id: {
       type: DataTypes.INTEGER,
       references: {
-        model: Company,
+        model: Message,
         key: "id",
       },
+    },
+    url: {
+      type: DataTypes.STRING,
+    },
+    name: {
+      type: DataTypes.STRING,
     },
     type: {
       type: DataTypes.STRING,
     },
-    channel_detail_id: {
-      type: DataTypes.INTEGER,
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notNull: {
-          msg: "Channel name is required",
-        },
-      },
-    },
-    image_url: {
-      type: DataTypes.STRING,
-    },
-    is_archived: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
   },
   {
-    tableName: "channel",
+    tableName: "attachment",
     charset: "utf8",
     collate: "utf8_unicode_ci",
     createdAt: "created_at",
@@ -51,6 +38,6 @@ const ChannelModel = sequelize.define(
   }
 );
 
-ChannelModel.sync({ logging: false });
+AttachmentModel.sync({ logging: false });
 
-export default ChannelModel;
+export default AttachmentModel;

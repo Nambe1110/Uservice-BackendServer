@@ -13,15 +13,19 @@ userRouter.use("/", (req, res, next) => {
   next();
 });
 
-userRouter.get("/company-members", verifyToken.verifyToken, getCompanyMembers);
+userRouter.get(
+  "/company-members",
+  verifyToken.verifyToken(),
+  getCompanyMembers
+);
 userRouter.get(
   "/company-members/:userId",
-  verifyToken.verifyToken,
+  verifyToken.verifyToken(),
   getUserCompanyById
 );
 userRouter.patch(
   "/role",
-  [verifyToken.verifyToken, verifyRole.isOwner],
+  [verifyToken.verifyToken(), verifyRole.isOwner],
   changeUserRole
 );
 
