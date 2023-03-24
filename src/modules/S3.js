@@ -11,10 +11,7 @@ import fs from "fs";
 import mime from "mime-types";
 import logger from "../config/logger/index.js";
 
-const s3BucketUrl =
-  "https://uservice-internal-s3-bucket.s3.ap-southeast-1.amazonaws.com/";
-
-const randomUniqueFileName = (originalName, bytes = 32) => {
+const randomUniqueImgName = (originalName, bytes = 32) => {
   const ext = path.extname(originalName);
   const randomCharacters = crypto.randomBytes(bytes).toString("hex");
   return `${randomCharacters}${Date.now()}${ext}`;
@@ -29,21 +26,18 @@ const s3 = new S3Client({
 });
 
 export default class S3 {
-  static async pushDiskStorageFileToS3(fileName, destinationFolder) {
+  static async pushDiskStorageFileToS3(fileName) {
     // Disk storage file path on server BE
     const filePath = `./images/${fileName}`;
-    const file = fs.readFileSync(filePath);
-    const fileBuffer = Buffer.from(file, "binary");
+    const image = fs.readFileSync(filePath);
+    const imageBuffer = Buffer.from(image, "binary");
     const mimeType = mime.lookup(filePath);
 
-    const randomName = randomUniqueFileName(fileName);
-    const key = !destinationFolder
-      ? `${destinationFolder}/${randomName}`
-      : `${randomName}`;
+    const imageName = randomUniqueImgName(fileName);
     const params = {
       Bucket: process.env.BUCKET_NAME,
-      Key: key,
-      Body: fileBuffer,
+      Key: imageName,
+      Body: imageBuffer,
       ContentType: mimeType,
     };
 
@@ -55,22 +49,23 @@ export default class S3 {
       logger.error(error.message);
     }
 
-    const url = `${s3BucketUrl}${key}`;
-    return url;
+    return imageName;
   }
 
   // file: value read from file
   // destinationFolder: folder on S3 bucket to upload file to
-  // ex: avatar
-  static async pushMemoryStorageFileToS3(file, destinationFolder) {
-    const randomName = randomUniqueFileName(file.originalname);
-    const key =
-      destinationFolder != null
-        ? `${destinationFolder}/${randomName}`
-        : `${randomName}`;
+  // all images stored in the same root folder in S3 currently -> will sepereate later
+  static async pushMemoryStorageFileToS3(file) {
+    const imageName = randomUniqueImgName(file.originalname);
+
+    // const key =
+    //   destinationFolder !== ""
+    //     ? `${destinationFolder}/${imageName}`
+    //     : `${imageName}`;
+
     const params = {
       Bucket: process.env.BUCKET_NAME,
-      Key: key,
+      Key: imageName,
       Body: file.buffer,
       ContentType: file.mimetype,
     };
@@ -78,18 +73,18 @@ export default class S3 {
     try {
       const command = new PutObjectCommand(params);
       await s3.send(command);
-      logger.info("Upload file/image to S3");
+      logger.info("Upload image to S3");
     } catch (error) {
       logger.error(error.message);
     }
-    const url = `${s3BucketUrl}${key}`;
-    return url;
+
+    return imageName;
   }
 
-  static async getFileUrl(filePath, timeToLive = 7200) {
+  static async getImageUrl(imageName, timeToLive = 7200) {
     const getObjectParams = {
       Bucket: process.env.BUCKET_NAME,
-      Key: filePath,
+      Key: imageName,
     };
     const command = new GetObjectCommand(getObjectParams);
     const url = await getSignedUrl(s3, command, { expiresIn: timeToLive });
@@ -97,11 +92,11 @@ export default class S3 {
     return url;
   }
 
-  static async removeFromS3(filePath) {
+  static async removeFromS3(fileName) {
     try {
       const deleteObjectParams = {
         Bucket: process.env.BUCKET_NAME,
-        Key: filePath,
+        Key: fileName,
       };
       const command = new DeleteObjectCommand(deleteObjectParams);
       await s3.send(command);

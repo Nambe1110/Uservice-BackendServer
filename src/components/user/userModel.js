@@ -20,6 +20,9 @@ const UserModel = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    image_url: {
+      type: DataTypes.STRING,
+    },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -65,7 +68,7 @@ const UserModel = sequelize.define(
     image_url: {
       type: DataTypes.STRING,
       default:
-        "https://uservice-internal-s3-bucket.s3.ap-southeast-1.amazonaws.com/avatar/uservice-default-user-avatar.png",
+        "https://uservice.cloud/api/image/uservice-default-user-avatar.png",
     },
   },
   {

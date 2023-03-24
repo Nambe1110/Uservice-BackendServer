@@ -12,7 +12,8 @@ meRouter.use("/", (req, res, next) => {
 meRouter.get("/", verifyToken.verifyToken(), getProfile);
 meRouter.patch(
   "/avatar",
-  [verifyToken.verifyToken(), upload.single("avatar")],
+  verifyToken.verifyToken,
+  upload.single("avatar"),
   changeAvatar
 );
 
