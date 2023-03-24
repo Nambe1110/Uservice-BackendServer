@@ -60,14 +60,6 @@ export default class UserService {
     return user.dataValues;
   }
 
-  static async getUser({ companyId, role }) {
-    const user = await UserModel.findOne({
-      where: { company_id: companyId, role },
-    });
-
-    return user;
-  }
-
   static async resetPassword(token, newPassword) {
     try {
       const decoded = jwt.verify(

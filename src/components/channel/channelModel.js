@@ -5,7 +5,7 @@ import Company from "../company/companyModel.js";
 const { DataTypes } = pkg;
 
 const ChannelModel = sequelize.define(
-  "Channel",
+  "channel",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -19,23 +19,13 @@ const ChannelModel = sequelize.define(
         key: "id",
       },
     },
-    type: {
-      type: DataTypes.STRING,
-    },
-    channel_detail_id: {
-      type: DataTypes.INTEGER,
-    },
     name: {
       type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notNull: {
-          msg: "Channel name is required",
-        },
-      },
+      allowNull: true,
     },
-    image_url: {
+    source: {
       type: DataTypes.STRING,
+      allowNull: true,
     },
     is_archived: {
       type: DataTypes.BOOLEAN,
