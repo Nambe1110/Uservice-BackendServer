@@ -1,20 +1,22 @@
-import CustomerService from "./customerService.js";
+import MessageService from "./messageService.js";
 import { StatusType } from "../../constants.js";
 
-export const getCustomers = async (req, res) => {
+export const getMessages = async (req, res) => {
   const { user } = req;
-  const { page = 1, limit = 20 } = req.query;
+  const { threadId } = req.params;
+  const { lastMessageId, limit = 20 } = req.query;
 
   try {
-    const customers = await CustomerService.getCustomers({
+    const messages = await MessageService.getMessages({
       companyId: user.company_id,
-      page,
+      threadId,
+      lastMessageId,
       limit,
     });
 
     return res.status(200).json({
       status: StatusType.SUCCESS,
-      data: customers,
+      data: messages,
     });
   } catch (error) {
     return res

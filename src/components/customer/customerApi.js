@@ -1,6 +1,6 @@
 import express from "express";
-import { verifyToken } from "../../middlewares/index.js";
-import { getCompanyCustomers } from "./customerController.js";
+import { getCustomers } from "./customerController.js";
+import { verifyToken } from "../../middlewares/verifyToken.js";
 
 const customerRouter = express.Router({ mergeParams: true });
 
@@ -9,10 +9,8 @@ customerRouter.use("/", (req, res, next) => {
   next();
 });
 
-customerRouter.get(
-  "/company-customers",
-  verifyToken.verifyToken,
-  getCompanyCustomers
-);
+customerRouter.use("/", verifyToken);
+
+customerRouter.get("/", getCustomers);
 
 export default customerRouter;
