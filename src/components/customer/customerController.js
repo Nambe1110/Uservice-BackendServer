@@ -1,24 +1,21 @@
-import CustomerService from "./customerService.js";
-import { StatusType } from "../../constants.js";
+import StatusEnum from "../../enums/Status.js";
+import customerService from "./customerService.js";
 
-export const getCustomers = async (req, res) => {
-  const { user } = req;
-  const { page = 1, limit = 20 } = req.query;
-
+export const getCompanyCustomers = async (req, res) => {
   try {
-    const customers = await CustomerService.getCustomers({
-      companyId: user.company_id,
-      page,
+    const limit = parseInt(req.query.limit ?? 20, 10);
+    const page = parseInt(req.query.page ?? 1, 10);
+
+    const members = await customerService.getCompanyCustomers({
+      user: req.user,
       limit,
+      page,
     });
 
-    return res.status(200).json({
-      status: StatusType.SUCCESS,
-      data: customers,
-    });
+    return res.status(200).json({ status: StatusEnum.Success, data: members });
   } catch (error) {
     return res
       .status(error.code ?? 500)
-      .json({ status: StatusType.ERROR, message: error.message });
+      .json({ status: StatusEnum.Error, message: error.message });
   }
 };

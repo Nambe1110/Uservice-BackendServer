@@ -16,10 +16,6 @@
     "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
     "no-underscore-dangle": ["error", { "allow": ["__filename", "__dirname"] }],
     "import/prefer-default-export": "off",
-    "no-restricted-syntax": "off",
-    "radix": "off",
-    "consistent-return": "off",
-    "no-param-reassign": "off",
     "import/no-unresolved": [2, { "caseSensitive": false }]
   }
 }
