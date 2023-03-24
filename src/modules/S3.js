@@ -5,7 +5,7 @@ import {
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import crypto from "crypto";
+import randomBytes from "randombytes";
 import path from "path";
 import fs from "fs";
 import mime from "mime-types";
@@ -16,7 +16,7 @@ const s3BucketUrl =
 
 const randomUniqueFileName = (originalName, bytes = 32) => {
   const ext = path.extname(originalName);
-  const randomCharacters = crypto.randomBytes(bytes).toString("hex");
+  const randomCharacters = randomBytes(bytes).toString("hex");
   return `${randomCharacters}${Date.now()}${ext}`;
 };
 
