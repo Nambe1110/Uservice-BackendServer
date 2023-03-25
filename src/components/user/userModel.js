@@ -65,11 +65,6 @@ const UserModel = sequelize.define(
     role: {
       type: DataTypes.STRING,
     },
-    image_url: {
-      type: DataTypes.STRING,
-      default:
-        "http://uservicebackendtestserver-env.eba-43rm8vge.ap-southeast-1.elasticbeanstalk.com/api/image/uservice-default-user-avatar.png",
-    },
   },
   {
     tableName: "user",
