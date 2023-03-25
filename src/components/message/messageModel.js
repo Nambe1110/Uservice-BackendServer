@@ -1,49 +1,42 @@
 import pkg from "sequelize";
 import sequelize from "../../config/database/index.js";
-import Company from "../company/companyModel.js";
+import Thread from "../thread/threadModel.js";
 
 const { DataTypes } = pkg;
 
-const ChannelModel = sequelize.define(
-  "Channel",
+const MessageModel = sequelize.define(
+  "Message",
   {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    company_id: {
+    thread_id: {
       type: DataTypes.INTEGER,
       references: {
-        model: Company,
+        model: Thread,
         key: "id",
       },
     },
-    type: {
+    message_api_id: {
       type: DataTypes.STRING,
     },
-    channel_detail_id: {
+    sender_type: {
+      type: DataTypes.STRING,
+    },
+    sender_id: {
       type: DataTypes.INTEGER,
     },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notNull: {
-          msg: "Channel name is required",
-        },
-      },
-    },
-    image_url: {
+    content: {
       type: DataTypes.STRING,
     },
-    is_archived: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
+    timestamp: {
+      type: DataTypes.INTEGER,
     },
   },
   {
-    tableName: "channel",
+    tableName: "message",
     charset: "utf8",
     collate: "utf8_unicode_ci",
     createdAt: "created_at",
@@ -51,6 +44,6 @@ const ChannelModel = sequelize.define(
   }
 );
 
-ChannelModel.sync({ logging: false });
+MessageModel.sync({ logging: false });
 
-export default ChannelModel;
+export default MessageModel;
