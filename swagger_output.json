@@ -746,27 +746,6 @@
         }
       }
     },
-    "/api/image/{name}": {
-      "get": {
-        "tags": [
-          "image"
-        ],
-        "description": "",
-        "parameters": [
-          {
-            "name": "name",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
     "/api/suggestion/generate": {
       "get": {
         "description": "",
