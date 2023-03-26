@@ -185,7 +185,7 @@ export default class TelegramUserConnection {
       // }
 
       await threadNotifier.onNewMessage({
-        ChannelType: ChannelType.TELEGRAM_USER,
+        channelType: ChannelType.TELEGRAM_USER,
         companyId: this.companyId,
         channelId,
         threadType:
@@ -218,7 +218,7 @@ export default class TelegramUserConnection {
       const { title, type: chatType } = chatInfo.response;
 
       await threadNotifier.onMessageSendSucceeded({
-        ChannelType: ChannelType.TELEGRAM_USER,
+        channelType: ChannelType.TELEGRAM_USER,
         companyId: this.companyId,
         channelId,
         threadType:
