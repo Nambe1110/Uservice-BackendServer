@@ -137,7 +137,6 @@ export default class TelegramUserConnection {
     });
 
     this.connection.on("updateChatLastMessage", async ({ update }) => {
-      logger.info(update);
       if (update.lastMessage?.sendingState) return;
       const {
         chatId,
@@ -173,6 +172,8 @@ export default class TelegramUserConnection {
         return;
       }
 
+      if (chatType._ !== "chatTypePrivate") return;
+
       // if (profilePhoto) {
       //   const { small } = profilePhoto;
       //   const fileResponse = await this.connection.api.getRemoteFile({
@@ -188,10 +189,7 @@ export default class TelegramUserConnection {
         channelType: ChannelType.TELEGRAM_USER,
         companyId: this.companyId,
         channelId,
-        threadType:
-          chatType._ === "chatTypePrivate"
-            ? ThreadType.PRIVATE
-            : ThreadType.GROUP,
+        threadType: ThreadType.PRIVATE,
         threadApiId: chatId,
         threadTitle: title,
         senderType: isOutgoing ? SenderType.STAFF : SenderType.CUSTOMER,
@@ -329,8 +327,10 @@ export default class TelegramUserConnection {
       });
     }
 
-    if (message.response._ === "error")
+    if (message.response._ === "error") {
+      logger.info(message);
       throw new Error(message.response.message);
+    }
 
     this.pendingMessages.set(message.response.id, {
       senderId,
