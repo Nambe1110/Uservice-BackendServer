@@ -251,7 +251,7 @@ export default class TelegramUserConnection {
   }) {
     let message;
 
-    if (attachment) {
+    if (attachment.length > 0) {
       const { type, url } = attachment[0];
       let inputMessageContent = {};
 
