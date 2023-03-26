@@ -23,7 +23,7 @@ export default class ThreadService {
       JOIN channel AS t2 ON t2.id = t1.channel_id
       LEFT JOIN customer AS t3 ON t3.id = message.sender_id AND message.sender_type = 'customer'
       LEFT JOIN user AS t4 ON t4.id = message.sender_id AND message.sender_type = 'staff'
-      WHERE t2.company_id = :companyId ${
+      WHERE t2.company_id = :companyId AND message.thread_id = :threadId ${
         lastMessageId ? `AND message.id < :lastMessageId` : ""
       }
       ORDER BY message.id DESC
