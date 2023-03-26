@@ -82,8 +82,8 @@ export default class ThreadService {
           GROUP BY thread_id
         )
       ) AS t2 ON t2.thread_id = thread.id
-      LEFT JOIN customer AS t3 ON t3.id = t2.sender_id AND t2.sender_type = 'customer'
-      LEFT JOIN user AS t4 ON t4.id = t2.sender_id AND t2.sender_type = 'staff'
+      LEFT JOIN customer AS t3 ON t3.id = t2.sender_id
+      LEFT JOIN user AS t4 ON t4.id = t2.sender_id
       WHERE t1.company_id = :companyId ${
         lastThreadId ? `AND t2.id < :lastThreadId` : ""
       }
