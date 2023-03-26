@@ -17,7 +17,7 @@ export default class EmailService {
       <br>
       <br>
       <div>
-      <a href="https://uservice.nelify.app/verify/activate?verify_token=${verifyToken}" target="_blank">
+      <a href="https://uservice.netlify.app/verify/activate?verify_token=${verifyToken}" target="_blank">
         <button style="background: #36B7BD; color: white; border: none; padding: 5px 30px; cursor: pointer;">XÁC NHẬN</button>
       </a>
       </div>
@@ -52,7 +52,7 @@ export default class EmailService {
       <br>
       <br>
       <div>
-      <a href="https://uservice.nelify.app/verify/activate?token=${resetPasswordToken}" target="_blank">
+      <a href="https://uservice.netlify.app/verify/activate?token=${resetPasswordToken}" target="_blank">
         <button style="background: #36B7BD; color: white; border: none; padding: 5px 30px; cursor: pointer;">ĐẶT LẠI MẬT KHẨU</button>
       </a>
       </div>
