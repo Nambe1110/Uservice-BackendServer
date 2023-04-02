@@ -3,6 +3,7 @@ import { getTdjson } from "prebuilt-tdlib";
 import path from "path";
 import AppError from "../../../../utils/AppError.js";
 import {
+  UserRole,
   ThreadType,
   SenderType,
   NumberOfChatsLimit,
@@ -11,6 +12,12 @@ import {
 } from "../../../../constants.js";
 import logger from "../../../../config/logger/index.js";
 import { threadNotifier } from "../../../thread/threadNotifier.js";
+import ThreadService from "../../../thread/threadService.js";
+import UserService from "../../../user/userService.js";
+import CustomerService from "../../../customer/customerService.js";
+import MessageService from "../../../message/messageService.js";
+import AttachmentService from "../../../attachment/attachmentService.js";
+import S3 from "../../../../modules/S3.js";
 
 export default class TelegramUserConnection {
   constructor({ phoneNumber, companyId }) {
@@ -141,7 +148,7 @@ export default class TelegramUserConnection {
       const {
         chatId,
         id: messageId,
-        content,
+        content: messageContent,
         date,
         isOutgoing,
       } = update.lastMessage;
@@ -160,53 +167,175 @@ export default class TelegramUserConnection {
         lastName,
         type: userType,
       } = userInfo.response;
-      // if (userType._ !== "userTypeRegular") return;
+
+      if (userType._ !== "userTypeRegular") return;
 
       const chatInfo = await this.connection.api.getChat({
         chatId,
       });
-      const { title, type: chatType } = chatInfo.response;
+      const { title, type: chatType, photo: chatPhoto } = chatInfo.response;
+
+      if (chatType._ !== "chatTypePrivate") return;
 
       if (this.succeededMessages.has(messageId)) {
         this.succeededMessages.delete(messageId);
         return;
       }
 
-      if (chatType._ !== "chatTypePrivate") return;
+      const [thread] = await ThreadService.getOrCreateThread(
+        {
+          channel_id: channelId,
+          thread_api_id: chatId,
+        },
+        {
+          title,
+          type: ThreadType.PRIVATE,
+        }
+      );
 
-      // if (profilePhoto) {
-      //   const { small } = profilePhoto;
-      //   const fileResponse = await this.connection.api.getRemoteFile({
-      //     remoteFileId:
-      //       "https://uservice-internal-s3-bucket.s3.ap-southeast-1.amazonaws.com/uservice-default-company-avatar.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIA3RDVWQIFCG2S4WP4%2F20230321%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Date=20230321T154404Z&X-Amz-Expires=7200&X-Amz-Signature=3797d0b803335b69ff36f1fad1309c8ffda445591f158c836c23b24c1d7d1701&X-Amz-SignedHeaders=host&x-id=GetObject",
-      //     // fileType: "fileTypeProfilePhoto",
-      //   });
+      if (!thread.image_url && chatPhoto) {
+        const fileId = chatPhoto.big.id;
+        const url = await this.#downloadFile(fileId);
+        thread.image_url = url;
+        await thread.save();
+      }
 
-      //   logger.info(fileResponse);
-      // }
+      let sender;
+      let content;
+      let attachment;
+      let customer;
+
+      if (isOutgoing) {
+        [customer] = await CustomerService.getOrCreateCustomer({
+          company_id: this.companyId,
+          thread_id: thread.id,
+        });
+
+        sender = await UserService.getUser({
+          companyId: this.companyId,
+          role: UserRole.OWNER,
+        });
+      } else {
+        [customer] = await CustomerService.getOrCreateCustomer({
+          customer_api_id: userId,
+          company_id: this.companyId,
+          thread_id: thread.id,
+        });
+
+        customer.first_name = firstName;
+        customer.last_name = lastName;
+        customer.phone_number = phoneNumber;
+        customer.profile = `t.me/${username}`;
+        customer.alias = `${firstName} ${lastName}`;
+
+        if (!customer.image_url && profilePhoto) {
+          const fileId = profilePhoto.big.id;
+          const url = await this.#downloadFile(fileId);
+          customer.image_url = url;
+        }
+
+        await customer.save();
+        sender = customer;
+      }
+
+      const [message, created] = await MessageService.getOrCreateMessage(
+        {
+          thread_id: thread.id,
+          message_api_id: messageId,
+        },
+        {
+          sender_type: isOutgoing ? SenderType.STAFF : SenderType.CUSTOMER,
+          sender_id: sender.id,
+          timestamp: date,
+        }
+      );
+
+      switch (messageContent._) {
+        case "messageText": {
+          content = messageContent.text.text;
+          break;
+        }
+        case "messageAudio": {
+          content = messageContent.caption.text;
+          const { fileName } = messageContent.audio;
+          const fileId = messageContent.audio.audio.id;
+          const url = await this.#downloadFile(fileId);
+
+          attachment = await AttachmentService.createAttachment({
+            messageId: message.id,
+            url,
+            type: AttachmentType.AUDIO,
+            name: fileName,
+          });
+
+          break;
+        }
+        case "messageDocument": {
+          content = messageContent.caption.text;
+          const { fileName } = messageContent.document;
+          const fileId = messageContent.document.document.id;
+          const url = await this.#downloadFile(fileId);
+
+          attachment = await AttachmentService.createAttachment({
+            messageId: message.id,
+            url,
+            type: AttachmentType.FILE,
+            name: fileName,
+          });
+
+          break;
+        }
+        case "messagePhoto": {
+          content = messageContent.caption.text;
+          const { sizes } = messageContent.photo;
+          const fileId = sizes[sizes.length - 1].photo.id;
+          const url = await this.#downloadFile(fileId);
+
+          attachment = await AttachmentService.createAttachment({
+            messageId: message.id,
+            url,
+            type: AttachmentType.IMAGE,
+          });
+
+          break;
+        }
+        case "messageVideo": {
+          content = messageContent.caption.text;
+          const { fileName } = messageContent.video;
+          const fileId = messageContent.video.video.id;
+          const url = await this.#downloadFile(fileId);
+
+          attachment = await AttachmentService.createAttachment({
+            messageId: message.id,
+            url,
+            type: AttachmentType.VIDEO,
+            name: fileName,
+          });
+
+          break;
+        }
+        default:
+          return;
+      }
+
+      message.content = content;
+      await message.save();
 
       await threadNotifier.onNewMessage({
+        created,
         channelType: ChannelType.TELEGRAM_USER,
         companyId: this.companyId,
-        channelId,
-        threadType: ThreadType.PRIVATE,
-        threadApiId: chatId,
-        threadTitle: title,
-        senderType: isOutgoing ? SenderType.STAFF : SenderType.CUSTOMER,
-        senderApiId: userId,
-        senderFirstName: firstName,
-        senderLastName: lastName,
-        senderPhoneNumber: phoneNumber,
-        senderProfile: `t.me/${username}`,
-        messageApiId: messageId,
-        messageContent: content._ === "messageText" ? content.text.text : "",
-        messageTimestamp: date,
+        thread,
+        customer,
+        message,
+        sender,
+        attachment: attachment ? [attachment] : [],
       });
     });
 
     this.connection.on("updateMessageSendSucceeded", async ({ update }) => {
-      const { oldMessageId, message } = update;
-      const { chatId, id: messageId, date } = message;
+      const { oldMessageId, message: newMessage } = update;
+      const { chatId, id: messageId, date } = newMessage;
       this.succeededMessages.add(messageId);
       const { senderId, content, attachment, callback, socket } =
         this.pendingMessages.get(oldMessageId);
@@ -215,22 +344,55 @@ export default class TelegramUserConnection {
       });
       const { title, type: chatType } = chatInfo.response;
 
+      const [thread] = await ThreadService.getOrCreateThread(
+        {
+          channel_id: channelId,
+          thread_api_id: chatId,
+        },
+        {
+          title,
+          type: ThreadType.PRIVATE,
+        }
+      );
+
+      const [customer] = await CustomerService.getOrCreateCustomer({
+        company_id: this.companyId,
+        thread_id: thread.id,
+      });
+
+      const [message] = await MessageService.getOrCreateMessage(
+        {
+          thread_id: thread.id,
+          message_api_id: messageId,
+        },
+        {
+          sender_type: SenderType.STAFF,
+          sender_id: senderId,
+          content,
+          timestamp: date,
+        }
+      );
+
+      const sender = UserService.getUserById(senderId);
+
+      if (attachment.length > 0) {
+        const { type, name, url } = attachment[0];
+        attachment[0] = await AttachmentService.createAttachment({
+          messageId: message.id,
+          url,
+          type,
+          name,
+        });
+      }
+
       await threadNotifier.onMessageSendSucceeded({
-        channelType: ChannelType.TELEGRAM_USER,
         companyId: this.companyId,
-        channelId,
-        threadType:
-          chatType._ === "chatTypePrivate"
-            ? ThreadType.PRIVATE
-            : ThreadType.GROUP,
-        threadApiId: chatId,
-        threadTitle: title,
-        senderType: SenderType.STAFF,
-        senderId,
-        messageApiId: messageId,
-        messageContent: content,
-        messageTimestamp: date,
-        messageAttachment: attachment,
+        channelType: ChannelType.TELEGRAM_USER,
+        thread,
+        customer,
+        message,
+        sender,
+        attachment,
         callback,
         socket,
       });
@@ -339,5 +501,22 @@ export default class TelegramUserConnection {
       callback,
       socket,
     });
+  }
+
+  async #downloadFile(fileId) {
+    const fileResponse = await this.connection.api.downloadFile({
+      fileId,
+      priority: 32,
+      offset: 0,
+      limit: 0,
+      synchronous: true,
+    });
+    const { path: filePath } = fileResponse.response.local;
+    const url = await S3.pushDiskStorageFileToS3({
+      filePath,
+      companyId: this.companyId,
+    });
+
+    return url;
   }
 }
