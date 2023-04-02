@@ -168,7 +168,7 @@ export default class TelegramUserConnection {
         type: userType,
       } = userInfo.response;
 
-      // if (userType._ !== "userTypeRegular") return;
+      if (userType._ !== "userTypeRegular") return;
 
       const chatInfo = await this.connection.api.getChat({
         chatId,
