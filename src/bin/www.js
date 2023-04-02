@@ -13,7 +13,7 @@ sequelize
     logger.info(`Database connection has been established successfully`);
 
     sequelize.sync({ logging: false });
-    await prefetch();
+    // await prefetch();
 
     httpServer.listen(PORT, () => {
       logger.info(`Server is running on port ${PORT}`);

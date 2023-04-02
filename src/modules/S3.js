@@ -8,11 +8,9 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import randomBytes from "randombytes";
 import path from "path";
 import fs from "fs";
-import mime from "mime-types";
 import logger from "../config/logger/index.js";
 
-const s3BucketUrl =
-  "https://uservice-internal-s3-bucket.s3.ap-southeast-1.amazonaws.com/";
+const s3BucketUrl = process.env.BUCKET_URL;
 
 const randomUniqueFileName = (originalName, bytes = 32) => {
   const ext = path.extname(originalName);
@@ -29,34 +27,26 @@ const s3 = new S3Client({
 });
 
 export default class S3 {
-  static async pushDiskStorageFileToS3(fileName, destinationFolder) {
+  static async pushDiskStorageFileToS3({ filePath, companyId }) {
     // Disk storage file path on server BE
-    const filePath = `./images/${fileName}`;
     const file = fs.readFileSync(filePath);
-    const fileBuffer = Buffer.from(file, "binary");
-    const mimeType = mime.lookup(filePath);
-
-    const randomName = randomUniqueFileName(fileName);
-    const key = !destinationFolder
-      ? `${destinationFolder}/${randomName}`
-      : `${randomName}`;
-    const params = {
-      Bucket: process.env.BUCKET_NAME,
-      Key: key,
-      Body: fileBuffer,
-      ContentType: mimeType,
-    };
+    const randomName = randomUniqueFileName(filePath);
+    const key = `company/${companyId}/${randomName}`;
 
     try {
-      const command = new PutObjectCommand(params);
+      const command = new PutObjectCommand({
+        Bucket: process.env.BUCKET_NAME,
+        Key: key,
+        Body: file.buffer,
+      });
       await s3.send(command);
-      logger.info("Upload image to S3");
+      fs.unlinkSync(filePath);
+      const url = `${s3BucketUrl}${key}`;
+
+      return url;
     } catch (error) {
       logger.error(error.message);
     }
-
-    const url = `${s3BucketUrl}${key}`;
-    return url;
   }
 
   // file: value read from file

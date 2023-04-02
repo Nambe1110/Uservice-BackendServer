@@ -1,4 +1,5 @@
 import MessageModel from "./messageModel.js";
+import AttachmentModel from "../attachment/attachmentModel.js";
 import sequelize from "../../config/database/index.js";
 
 export default class ThreadService {
@@ -35,10 +36,23 @@ export default class ThreadService {
           lastMessageId,
           limit,
         },
+        mapToModel: true,
         type: sequelize.QueryTypes.SELECT,
         nest: true,
       }
     );
+
+    const getAttachments = async (message) => {
+      const attachments = await AttachmentModel.findAll({
+        where: {
+          message_id: message.id,
+        },
+      });
+
+      message.attachment = attachments;
+    };
+
+    await Promise.all(messages.map((message) => getAttachments(message)));
 
     return messages;
   }

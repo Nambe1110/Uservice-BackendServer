@@ -1,4 +1,5 @@
 import ThreadModel from "./threadModel.js";
+import AttachmentModel from "../attachment/attachmentModel.js";
 import sequelize from "../../config/database/index.js";
 
 export default class ThreadService {
@@ -12,7 +13,7 @@ export default class ThreadService {
   }
 
   static async getThreadById(id) {
-    const thread = await sequelize.query(
+    const threads = await sequelize.query(
       `SELECT thread.*, 
         t3.id AS 'customer.id',
         t3.image_url AS 'customer.image_url',
@@ -39,7 +40,7 @@ export default class ThreadService {
           GROUP BY thread_id
         )
       ) AS t2 ON t2.thread_id = thread.id
-      LEFT JOIN customer AS t3 ON t3.id = t2.sender_id AND t2.sender_type = 'customer'
+      LEFT JOIN customer AS t3 ON t3.thread_id = thread.id
       LEFT JOIN user AS t4 ON t4.id = t2.sender_id AND t2.sender_type = 'staff'
       WHERE thread.id = :threadId`,
       {
@@ -51,7 +52,19 @@ export default class ThreadService {
       }
     );
 
-    return thread[0];
+    const getAttachments = async (thread) => {
+      const attachments = await AttachmentModel.findAll({
+        where: {
+          message_id: thread.last_message.id,
+        },
+      });
+
+      thread.last_message.attachment = attachments;
+    };
+
+    await Promise.all(threads.map((thread) => getAttachments(thread)));
+
+    return threads[0];
   }
 
   static async getThreads({ companyId, lastThreadId, limit }) {
@@ -82,7 +95,7 @@ export default class ThreadService {
           GROUP BY thread_id
         )
       ) AS t2 ON t2.thread_id = thread.id
-      LEFT JOIN customer AS t3 ON t3.id = t2.sender_id
+      LEFT JOIN customer AS t3 ON t3.thread_id = thread.id
       LEFT JOIN user AS t4 ON t4.id = t2.sender_id
       WHERE t1.company_id = :companyId ${
         lastThreadId ? `AND t2.id < :lastThreadId` : ""
@@ -99,6 +112,18 @@ export default class ThreadService {
         nest: true,
       }
     );
+
+    const getAttachments = async (thread) => {
+      const attachments = await AttachmentModel.findAll({
+        where: {
+          message_id: thread.last_message.id,
+        },
+      });
+
+      thread.last_message.attachment = attachments;
+    };
+
+    await Promise.all(threads.map((thread) => getAttachments(thread)));
 
     return threads;
   }
