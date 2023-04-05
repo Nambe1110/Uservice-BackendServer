@@ -11,6 +11,7 @@ export default async (io) => {
     thread,
     customer,
     message,
+    repliedMessage,
     sender,
     attachment,
   }) => {
@@ -39,6 +40,21 @@ export default async (io) => {
                 image_url: sender.image_url,
               },
               attachment,
+              repliedMessage: repliedMessage
+                ? {
+                    id: repliedMessage.id,
+                    sender_type: repliedMessage.sender_type,
+                    timestamp: repliedMessage.timestamp,
+                    content: repliedMessage.content,
+                    sender: {
+                      id: repliedMessage.sender.id,
+                      first_name: repliedMessage.sender.first_name,
+                      last_name: repliedMessage.sender.last_name,
+                      image_url: repliedMessage.sender.image_url,
+                    },
+                    attachment: repliedMessage.attachment,
+                  }
+                : null,
             },
           },
         },
@@ -54,6 +70,7 @@ export default async (io) => {
     thread,
     customer,
     message,
+    repliedMessage,
     sender,
     attachment,
     socket,
@@ -84,6 +101,21 @@ export default async (io) => {
                 image_url: sender.image_url,
               },
               attachment,
+              repliedMessage: repliedMessage
+                ? {
+                    id: repliedMessage.id,
+                    sender_type: repliedMessage.sender_type,
+                    timestamp: repliedMessage.timestamp,
+                    content: repliedMessage.content,
+                    sender: {
+                      id: repliedMessage.sender.id,
+                      first_name: repliedMessage.sender.first_name,
+                      last_name: repliedMessage.sender.last_name,
+                      image_url: repliedMessage.sender.image_url,
+                    },
+                    attachment: repliedMessage.attachment,
+                  }
+                : null,
             },
           },
         },

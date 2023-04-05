@@ -22,6 +22,9 @@ const MessageModel = sequelize.define(
     message_api_id: {
       type: DataTypes.STRING,
     },
+    replied_message_id: {
+      type: DataTypes.INTEGER,
+    },
     sender_type: {
       type: DataTypes.STRING,
     },
