@@ -2,6 +2,7 @@ import { listCompany } from "../../../../utils/singleton.js";
 import { ChannelType } from "../../../../constants.js";
 import AppError from "../../../../utils/AppError.js";
 import ChannelService from "../../channelService.js";
+import MessageService from "../../../message/messageService.js";
 import TelegramUserChannelModel from "./telegramUserChannelModel.js";
 import TelegramUserConnection from "./telegramUserChannelConnection.js";
 
@@ -141,13 +142,26 @@ export default class TelegramUserChannelService {
   static async sendMessage({
     companyId,
     channelDetailId,
+    threadId,
     threadApiId,
     senderId,
     content,
+    repliedMessageId,
     attachment,
     callback,
     socket,
   }) {
+    let repliedMessage = null;
+
+    if (repliedMessageId) {
+      repliedMessage = await MessageService.getMessageById({
+        id: repliedMessageId,
+        threadId,
+      });
+
+      if (!repliedMessage) throw new Error("Replied message not found");
+    }
+
     const channel = await TelegramUserChannelModel.findOne({
       where: {
         id: channelDetailId,
@@ -165,6 +179,7 @@ export default class TelegramUserChannelService {
     await connection.sendMessage({
       senderId,
       chatId: threadApiId,
+      repliedMessage,
       content,
       attachment,
       callback,

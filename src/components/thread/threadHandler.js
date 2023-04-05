@@ -8,7 +8,7 @@ export default async (io, socket) => {
   socket.join(user.company_id);
 
   socket.on("send-message", async (data, callback) => {
-    const { content, threadId, attachment = [] } = data;
+    const { content, threadId, attachment = [], repliedMessageId } = data;
 
     try {
       const thread = await ThreadService.getThreadById(threadId);
@@ -25,6 +25,7 @@ export default async (io, socket) => {
           threadApiId: thread.thread_api_id,
           senderId: user.id,
           content,
+          repliedMessageId,
           attachment,
           socket,
           callback,

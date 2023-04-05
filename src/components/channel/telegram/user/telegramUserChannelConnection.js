@@ -151,6 +151,7 @@ export default class TelegramUserConnection {
         content: messageContent,
         date,
         isOutgoing,
+        replyToMessageId,
       } = update.lastMessage;
       const { userId } = update.lastMessage.senderId;
 
@@ -204,6 +205,7 @@ export default class TelegramUserConnection {
       let content;
       let attachment;
       let customer;
+      let repliedMessage = null;
 
       if (isOutgoing) {
         [customer] = await CustomerService.getOrCreateCustomer({
@@ -225,7 +227,7 @@ export default class TelegramUserConnection {
         customer.first_name = firstName;
         customer.last_name = lastName;
         customer.phone_number = phoneNumber;
-        customer.profile = `t.me/${username}`;
+        customer.profile = username ? `t.me/${username}` : null;
         customer.alias = `${firstName} ${lastName}`;
 
         if (!customer.image_url && profilePhoto) {
@@ -319,6 +321,16 @@ export default class TelegramUserConnection {
       }
 
       message.content = content;
+
+      if (replyToMessageId) {
+        repliedMessage = await MessageService.getMessageByApiId({
+          apiId: replyToMessageId,
+          threadId: thread.id,
+        });
+      }
+
+      message.replied_message_id = repliedMessage?.id;
+
       await message.save();
 
       await threadNotifier.onNewMessage({
@@ -328,6 +340,7 @@ export default class TelegramUserConnection {
         thread,
         customer,
         message,
+        repliedMessage,
         sender,
         attachment: attachment ? [attachment] : [],
       });
@@ -337,8 +350,14 @@ export default class TelegramUserConnection {
       const { oldMessageId, message: newMessage } = update;
       const { chatId, id: messageId, date } = newMessage;
       this.succeededMessages.add(messageId);
-      const { senderId, content, attachment, callback, socket } =
-        this.pendingMessages.get(oldMessageId);
+      const {
+        senderId,
+        content,
+        attachment,
+        repliedMessage,
+        callback,
+        socket,
+      } = this.pendingMessages.get(oldMessageId);
       const chatInfo = await this.connection.api.getChat({
         chatId,
       });
@@ -370,6 +389,7 @@ export default class TelegramUserConnection {
           sender_id: senderId,
           content,
           timestamp: date,
+          replied_message_id: repliedMessage?.id,
         }
       );
 
@@ -404,6 +424,7 @@ export default class TelegramUserConnection {
   async sendMessage({
     senderId,
     chatId,
+    repliedMessage,
     content,
     attachment,
     callback,
@@ -475,6 +496,7 @@ export default class TelegramUserConnection {
       message = await this.connection.api.sendMessage({
         chatId,
         inputMessageContent,
+        replyToMessageId: repliedMessage?.message_api_id,
       });
     } else {
       message = await this.connection.api.sendMessage({
@@ -486,6 +508,7 @@ export default class TelegramUserConnection {
             text: content,
           },
         },
+        replyToMessageId: repliedMessage?.message_api_id,
       });
     }
 
@@ -498,6 +521,7 @@ export default class TelegramUserConnection {
       senderId,
       content,
       attachment,
+      repliedMessage,
       callback,
       socket,
     });

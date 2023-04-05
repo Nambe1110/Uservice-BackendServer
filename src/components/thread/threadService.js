@@ -1,5 +1,6 @@
 import ThreadModel from "./threadModel.js";
 import AttachmentModel from "../attachment/attachmentModel.js";
+import MessageService from "../message/messageService.js";
 import sequelize from "../../config/database/index.js";
 
 export default class ThreadService {
@@ -27,9 +28,10 @@ export default class ThreadService {
         t2.timestamp AS 'last_message.timestamp', 
         t2.content AS 'last_message.content',
         t2.sender_id AS 'last_message.sender.id',
+        t2.replied_message_id AS 'last_message.replied_message_id',
         IF (t2.sender_type = 'customer', t3.first_name, t4.first_name) AS 'last_message.sender.first_name',
         IF (t2.sender_type = 'customer', t3.last_name, t4.last_name) AS 'last_message.sender.last_name',
-        IF (t2.sender_type = 'customer', t3.image_url, t4.image_url) AS 'last_message.sender.avatar_url'
+        IF (t2.sender_type = 'customer', t3.image_url, t4.image_url) AS 'last_message.sender.image_url'
       FROM thread
       JOIN channel AS t1 ON t1.id = thread.channel_id 
       JOIN 
@@ -53,18 +55,27 @@ export default class ThreadService {
     );
 
     const getAttachments = async (thread) => {
-      const attachments = await AttachmentModel.findAll({
+      thread.last_message.attachment = await AttachmentModel.findAll({
         where: {
           message_id: thread.last_message.id,
         },
       });
-
-      thread.last_message.attachment = attachments;
     };
 
     await Promise.all(threads.map((thread) => getAttachments(thread)));
 
-    return threads[0];
+    const getRepliedMessage = async (thread) => {
+      thread.last_message.replied_message = await MessageService.getMessageById(
+        {
+          id: thread.last_message.replied_message_id,
+          threadId: thread.id,
+        }
+      );
+    };
+
+    await Promise.all(threads.map((thread) => getRepliedMessage(thread)));
+
+    return threads.length > 0 ? threads[0] : null;
   }
 
   static async getThreads({ companyId, lastThreadId, limit }) {
@@ -82,9 +93,10 @@ export default class ThreadService {
         t2.timestamp AS 'last_message.timestamp', 
         t2.content AS 'last_message.content',
         t2.sender_id AS 'last_message.sender.id',
+        t2.replied_message_id AS 'last_message.replied_message_id',
         IF (t2.sender_type = 'customer', t3.first_name, t4.first_name) AS 'last_message.sender.first_name',
         IF (t2.sender_type = 'customer', t3.last_name, t4.last_name) AS 'last_message.sender.last_name',
-        IF (t2.sender_type = 'customer', t3.image_url, t4.image_url) AS 'last_message.sender.avatar_url'
+        IF (t2.sender_type = 'customer', t3.image_url, t4.image_url) AS 'last_message.sender.image_url'
       FROM thread
       JOIN channel AS t1 ON t1.id = thread.channel_id 
       JOIN 
@@ -114,16 +126,25 @@ export default class ThreadService {
     );
 
     const getAttachments = async (thread) => {
-      const attachments = await AttachmentModel.findAll({
+      thread.last_message.attachment = await AttachmentModel.findAll({
         where: {
           message_id: thread.last_message.id,
         },
       });
-
-      thread.last_message.attachment = attachments;
     };
 
     await Promise.all(threads.map((thread) => getAttachments(thread)));
+
+    const getRepliedMessage = async (thread) => {
+      thread.last_message.replied_message = await MessageService.getMessageById(
+        {
+          id: thread.last_message.replied_message_id,
+          threadId: thread.id,
+        }
+      );
+    };
+
+    await Promise.all(threads.map((thread) => getRepliedMessage(thread)));
 
     return threads;
   }
