@@ -1,6 +1,7 @@
 import ThreadService from "./threadService.js";
 import ChannelService from "../channel/channelService.js";
-import TelegramUSerChannelService from "../channel/telegram/user/telegramUserChannelService.js";
+import TelegramUserChannelService from "../channel/telegram/user/telegramUserChannelService.js";
+import TelegramBotChannelService from "../channel/telegram/bot/telegramBotChannelService.js";
 import { StatusType, ChannelType } from "../../constants.js";
 
 export default async (io, socket) => {
@@ -18,7 +19,20 @@ export default async (io, socket) => {
         throw new Error("You don't have permission to send message");
 
       if (channel.type === ChannelType.TELEGRAM_USER) {
-        await TelegramUSerChannelService.sendMessage({
+        await TelegramUserChannelService.sendMessage({
+          companyId: user.company_id,
+          channelDetailId: channel.channel_detail_id,
+          threadId: thread.id,
+          threadApiId: thread.thread_api_id,
+          senderId: user.id,
+          content,
+          repliedMessageId,
+          attachment,
+          socket,
+          callback,
+        });
+      } else if (channel.type === ChannelType.TELEGRAM_BOT) {
+        await TelegramBotChannelService.sendMessage({
           companyId: user.company_id,
           channelDetailId: channel.channel_detail_id,
           threadId: thread.id,

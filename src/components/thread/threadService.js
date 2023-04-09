@@ -13,6 +13,17 @@ export default class ThreadService {
     return [newThread, created];
   }
 
+  static async getThread({ channelId, threadApiId }) {
+    const thread = ThreadModel.findOne({
+      where: {
+        channel_id: channelId,
+        thread_api_id: threadApiId,
+      },
+    });
+
+    return thread;
+  }
+
   static async getThreadById(id) {
     const threads = await sequelize.query(
       `SELECT thread.*, 

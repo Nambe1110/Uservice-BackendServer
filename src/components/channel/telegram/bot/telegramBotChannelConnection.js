@@ -19,10 +19,10 @@ import MessageService from "../../../message/messageService.js";
 import AttachmentService from "../../../attachment/attachmentService.js";
 import S3 from "../../../../modules/S3.js";
 
-export default class TelegramUserConnection {
-  constructor({ phoneNumber, companyId }) {
+export default class TelegramBotConnection {
+  constructor({ token, companyId }) {
     this.connection = null;
-    this.phoneNumber = phoneNumber;
+    this.token = token;
     this.companyId = companyId;
     this.isConnected = false;
     this.createdAt = null;
@@ -39,6 +39,7 @@ export default class TelegramUserConnection {
   }
 
   async createConnection() {
+    const validDirName = this.token.replace(/[^a-zA-Z0-9]/g, "_");
     this.createdAt = new Date();
     this.isConnected = false;
     this.connection = new Airgram({
@@ -50,102 +51,115 @@ export default class TelegramUserConnection {
         "company",
         String(this.companyId),
         "connection",
-        String(this.phoneNumber)
+        validDirName
       ),
       enableStorageOptimizer: true,
       logVerbosityLevel: 2,
     });
   }
 
-  async sendAuthenticationCode() {
-    if (this.connection) {
-      if (this.isConnected) throw new AppError("Kênh đã tồn tại", 400);
-      await this.connection.api.logOut();
-    }
+  async checkAuthenticationToken() {
+    if (this.isConnected) throw new AppError("Kênh đã tồn tại", 400);
     await this.createConnection();
 
-    const response = await this.connection.api.setAuthenticationPhoneNumber({
-      phoneNumber: this.phoneNumber,
-    });
-
-    if (response.response._ === "error") {
-      this.connection.api.logOut();
-      throw new AppError("Số điện thoại không hợp lệ", 400);
-    }
-
-    const authInfo = await this.connection.api.getAuthorizationState();
-
-    return {
-      message:
-        authInfo.response.codeInfo.type._ ===
-        "authenticationCodeTypeTelegramMessage"
-          ? "Mã xác thực đã được gửi đến ứng dụng Telegram của bạn"
-          : "Mã xác thực đã được gửi đến số điện thoại của bạn",
-    };
-  }
-
-  async checkAuthenticationCode({ code }) {
-    if (!this.connection)
-      throw new AppError("Vui lòng nhập số điện thoại", 401);
-
-    if (this.isConnected) throw new AppError("Kênh đã tồn tại", 400);
-
-    const checkCodeResponse = await this.connection.api.checkAuthenticationCode(
-      {
-        code,
-      }
-    );
-
-    const authState = await this.connection.api.getAuthorizationState();
-
-    if (checkCodeResponse.response._ === "error")
-      throw new AppError("Mã xác thực không hợp lệ", 400);
-    else if (authState.response._ === "authorizationStateWaitPassword")
-      return {
-        requiredPassword: true,
-      };
-    else if (authState.response._ === "authorizationStateReady") {
-      this.isConnected = true;
-      return {
-        requiredPassword: false,
-      };
-    }
-
-    throw new AppError(authState.response._, 400);
-  }
-
-  async checkAuthenticationPassword({ password }) {
-    if (!this.connection)
-      throw new AppError("Vui lòng nhập số điện thoại", 401);
-
-    if (this.isConnected) throw new AppError("Kênh đã tồn tại", 400);
-
-    const chekcPasswordResponse =
-      await this.connection.api.checkAuthenticationPassword({
-        password,
+    const checkTokenResponse =
+      await this.connection.api.checkAuthenticationBotToken({
+        token: this.token,
       });
 
-    const authState = await this.connection.api.getAuthorizationState();
-
-    if (chekcPasswordResponse.response._ === "error")
-      throw new AppError("Mật khẩu không chính xác", 400);
-    else if (authState.response._ === "authorizationStateReady") {
-      this.isConnected = true;
-      return;
+    if (checkTokenResponse.response._ === "error") {
+      await this.connection.api.logOut();
+      logger.error(checkTokenResponse);
+      throw new AppError("Token không hợp lệ", 400);
     }
 
-    logger.error(authState);
-    throw new AppError(authState.response._, 400);
+    this.isConnected = true;
   }
 
   async setUpdateListener({ channelId }) {
     try {
       await this.connection.api.getChats({
-        limit: NumberOfChatsLimit.TELEGRAM_USER,
+        limit: NumberOfChatsLimit.TELEGRAM_BOT,
       });
 
-      this.connection.on("updateChatLastMessage", async ({ update }) => {
-        if (update.lastMessage?.sendingState) return;
+      this.connection.on("updateMessageContent", async ({ update }) => {
+        const { chatId, messageId, newContent: messageContent } = update;
+
+        const thread = await ThreadService.getThread({
+          channelId,
+          threadApiId: chatId,
+        });
+
+        if (!thread) return;
+
+        const message = await MessageService.getMessage({
+          messageApiId: messageId,
+          threadId: thread.id,
+        });
+
+        if (!message) return;
+
+        const customer = await CustomerService.getCustomer({
+          threadId: thread.id,
+        });
+
+        const attachment = await AttachmentService.getAttachments({
+          messageId: message.id,
+        });
+
+        let content;
+        let repliedMessage;
+        let sender;
+
+        if (message.senderType === SenderType.STAFF) {
+          sender = await UserService.getUser({
+            companyId: this.companyId,
+            role: UserRole.OWNER,
+          });
+        } else {
+          sender = customer;
+        }
+
+        if (message.replied_message_id) {
+          repliedMessage = await MessageService.getMessageByApiId({
+            apiId: message.replied_message_id,
+            threadId: thread.id,
+          });
+        }
+
+        switch (messageContent._) {
+          case "messageText":
+            content = messageContent.text.text;
+            break;
+          case "messageAudio":
+          case "messageDocument":
+          case "messagePhoto":
+          case "messageVideo":
+            content = messageContent.caption.text;
+            break;
+          default:
+            return;
+        }
+
+        message.content = content;
+
+        await message.save();
+
+        await threadNotifier.onNewMessage({
+          created: false,
+          channelType: ChannelType.TELEGRAM_BOT,
+          companyId: this.companyId,
+          thread,
+          customer,
+          message,
+          repliedMessage,
+          sender,
+          attachment: attachment ? [attachment] : [],
+        });
+      });
+
+      this.connection.on("updateNewMessage", async ({ update }) => {
+        if (update.message?.sendingState) return;
         const {
           chatId,
           id: messageId,
@@ -153,7 +167,7 @@ export default class TelegramUserConnection {
           date,
           isOutgoing,
           replyToMessageId,
-        } = update.lastMessage;
+        } = update.message;
 
         const chatInfo = await this.connection.api.getChat({
           chatId,
@@ -236,18 +250,17 @@ export default class TelegramUserConnection {
           sender = customer;
         }
 
-        const [message, messageCreated] =
-          await MessageService.getOrCreateMessage(
-            {
-              thread_id: thread.id,
-              message_api_id: messageId,
-            },
-            {
-              sender_type: isOutgoing ? SenderType.STAFF : SenderType.CUSTOMER,
-              sender_id: sender.id,
-              timestamp: date,
-            }
-          );
+        const [message] = await MessageService.getOrCreateMessage(
+          {
+            thread_id: thread.id,
+            message_api_id: messageId,
+          },
+          {
+            sender_type: isOutgoing ? SenderType.STAFF : SenderType.CUSTOMER,
+            sender_id: sender.id,
+            timestamp: date,
+          }
+        );
 
         switch (messageContent._) {
           case "messageText": {
@@ -331,8 +344,8 @@ export default class TelegramUserConnection {
         await message.save();
 
         await threadNotifier.onNewMessage({
-          created: messageCreated,
-          channelType: ChannelType.TELEGRAM_USER,
+          created: true,
+          channelType: ChannelType.TELEGRAM_BOT,
           companyId: this.companyId,
           thread,
           customer,
@@ -404,7 +417,7 @@ export default class TelegramUserConnection {
 
         await threadNotifier.onMessageSendSucceeded({
           companyId: this.companyId,
-          channelType: ChannelType.TELEGRAM_USER,
+          channelType: ChannelType.TELEGRAM_BOT,
           thread,
           customer,
           message,
@@ -542,5 +555,10 @@ export default class TelegramUserConnection {
     });
 
     return url;
+  }
+
+  async getMe() {
+    const me = await this.connection.api.getMe();
+    return me.response;
   }
 }

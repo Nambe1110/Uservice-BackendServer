@@ -38,7 +38,7 @@ export default class TelegramUserChannelService {
     return response;
   }
 
-  static async checkCodeAuthentication({ phoneNumber, code, companyId }) {
+  static async checkAuthenticationCode({ phoneNumber, code, companyId }) {
     const { telegramUserChannel } = listCompany.get(companyId).listChannel;
 
     if (!telegramUserChannel.has(phoneNumber))
@@ -49,17 +49,18 @@ export default class TelegramUserChannelService {
 
     if (reponse.requiredPassword) return reponse;
 
-    const [newTelegramChannel] = await TelegramUserChannelModel.findOrCreate({
-      where: {
-        company_id: companyId,
-        phone_number: phoneNumber,
-      },
-    });
+    const [newTelegramUserChannel] =
+      await TelegramUserChannelModel.findOrCreate({
+        where: {
+          company_id: companyId,
+          phone_number: phoneNumber,
+        },
+      });
 
     const channel = await ChannelService.createChannel({
       companyId,
       type: ChannelType.TELEGRAM_USER,
-      channelDetailId: newTelegramChannel.dataValues.id,
+      channelDetailId: newTelegramUserChannel.id,
       name: phoneNumber,
       imageUrl: null,
     });
@@ -70,11 +71,11 @@ export default class TelegramUserChannelService {
 
     return {
       channel,
-      detail: newTelegramChannel,
+      detail: newTelegramUserChannel,
     };
   }
 
-  static async checkPasswordAuthentication({
+  static async checkAuthenticationPassword({
     phoneNumber,
     password,
     companyId,

@@ -40,7 +40,7 @@ export default async (io) => {
                 image_url: sender.image_url,
               },
               attachment,
-              repliedMessage: repliedMessage
+              replied_message: repliedMessage
                 ? {
                     id: repliedMessage.id,
                     sender_type: repliedMessage.sender_type,
@@ -101,7 +101,7 @@ export default async (io) => {
                 image_url: sender.image_url,
               },
               attachment,
-              repliedMessage: repliedMessage
+              replied_message: repliedMessage
                 ? {
                     id: repliedMessage.id,
                     sender_type: repliedMessage.sender_type,

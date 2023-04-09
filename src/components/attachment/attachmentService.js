@@ -11,4 +11,14 @@ export default class AttachmentService {
 
     return newAttachment;
   }
+
+  static async getAttachments({ messageId }) {
+    const attachments = await AttachmentModel.findAll({
+      where: {
+        message_id: messageId,
+      },
+    });
+
+    return attachments;
+  }
 }
