@@ -632,6 +632,36 @@
         }
       }
     },
+    "/api/channel/telegram/bot/connect": {
+      "post": {
+        "tags": [
+          "Telegram Bot"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "token": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/thread/": {
       "get": {
         "tags": [

@@ -12,6 +12,17 @@ export default class MessageService {
     return [newMessage, created];
   }
 
+  static async getMessage({ messageApiId, threadId }) {
+    const message = MessageModel.findOne({
+      where: {
+        message_api_id: messageApiId,
+        thread_id: threadId,
+      },
+    });
+
+    return message;
+  }
+
   static async getMessageById({ id, threadId }) {
     const messages = await sequelize.query(
       `SELECT message.id, message.sender_type, message.timestamp, message.content, message.message_api_id,
