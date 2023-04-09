@@ -1,5 +1,5 @@
 import express from "express";
-import { createConnection } from "./telegramBotChannelController.js";
+import { checkAuthenticationToken } from "./telegramBotChannelController.js";
 import { verifyToken } from "../../../../middlewares/verifyToken.js";
 
 const telegramBotRouter = express.Router({ mergeParams: true });
@@ -10,6 +10,6 @@ telegramBotRouter.use("/", (req, res, next) => {
 });
 telegramBotRouter.use("/", verifyToken());
 
-telegramBotRouter.post("/connect", createConnection);
+telegramBotRouter.post("/check-token", checkAuthenticationToken);
 
 export default telegramBotRouter;

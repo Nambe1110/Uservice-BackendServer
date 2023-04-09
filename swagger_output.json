@@ -632,7 +632,7 @@
         }
       }
     },
-    "/api/channel/telegram/bot/connect": {
+    "/api/channel/telegram/bot/check-token": {
       "post": {
         "tags": [
           "Telegram Bot"

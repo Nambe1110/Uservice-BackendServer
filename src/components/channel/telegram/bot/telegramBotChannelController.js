@@ -1,7 +1,7 @@
 import StatusEnum from "../../../../enums/Status.js";
 import TelegramBotService from "./telegramBotChannelService.js";
 
-export const createConnection = async (req, res) => {
+export const checkAuthenticationToken = async (req, res) => {
   const { user } = req;
 
   try {
