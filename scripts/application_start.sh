@@ -14,6 +14,7 @@ export NVM_DIR="$HOME/.nvm"
 #install node modules
 npm install
 npm install pm2 -g
+npm start
 
 #start our node app in the background
 pm2 start ecosystem.config.cjs
