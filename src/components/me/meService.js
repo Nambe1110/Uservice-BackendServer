@@ -41,4 +41,18 @@ export default class MeService {
     delete newUser.dataValues.password;
     return newUser.dataValues;
   }
+
+  static async leaveCompany({ user }) {
+    const currentUser = await UserModel.findOne({
+      where: { email: user.email },
+    });
+    if (!currentUser) {
+      throw new AppError("Người dùng không tồn tại", 400);
+    }
+    currentUser.company_id = null;
+    currentUser.role = null;
+    const updatedUser = await currentUser.save();
+    delete updatedUser.dataValues.password;
+    return updatedUser;
+  }
 }

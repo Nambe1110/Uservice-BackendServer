@@ -12,6 +12,7 @@ meRouter.use("/", verifyToken.verifyToken());
 
 meRouter.get("/", getProfile);
 meRouter.post("/change-password", validators.passwordValidator, changePassword);
+meRouter.post("/leave-company");
 meRouter.patch("/avatar", upload.single("avatar"), changeAvatar);
 
 export default meRouter;
