@@ -1,3 +1,4 @@
+import { StatusType } from "../../constants.js";
 import StatusEnum from "../../enums/Status.js";
 import MeService from "./meService.js";
 
@@ -23,6 +24,23 @@ export const changeAvatar = async (req, res) => {
     return res
       .status(200)
       .json({ status: StatusEnum.Success, data: updatedUser });
+  } catch (error) {
+    return res
+      .status(error.code ?? 500)
+      .json({ status: StatusEnum.Error, message: error.message });
+  }
+};
+
+export const changePassword = async (req, res) => {
+  try {
+    const { user } = req;
+    const { old_password: oldPassword, new_password: newPassword } = req.body;
+    const newUser = await MeService.changePassword({
+      email: user.email,
+      oldPassword,
+      newPassword,
+    });
+    return res.status(200).json({ status: StatusType.SUCCESS, data: newUser });
   } catch (error) {
     return res
       .status(error.code ?? 500)
