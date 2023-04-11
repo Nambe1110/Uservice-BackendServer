@@ -8,17 +8,10 @@ meRouter.use("/", (req, res, next) => {
   // #swagger.tags = ['Me']
   next();
 });
+meRouter.use("/", verifyToken.verifyToken());
 
-meRouter.get("/", verifyToken.verifyToken(), getProfile);
-meRouter.post(
-  "/change-password",
-  [verifyToken.verifyToken(), validators.passwordValidator],
-  changePassword
-);
-meRouter.patch(
-  "/avatar",
-  [verifyToken.verifyToken(), upload.single("avatar")],
-  changeAvatar
-);
+meRouter.get("/", getProfile);
+meRouter.post("/change-password", validators.passwordValidator, changePassword);
+meRouter.patch("/avatar", upload.single("avatar"), changeAvatar);
 
 export default meRouter;
