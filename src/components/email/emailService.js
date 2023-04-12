@@ -5,7 +5,7 @@ import { sendEmail } from "../../modules/Email.js";
 export default class EmailService {
   static async SendVerifyEmail(user) {
     if (user.is_verified) {
-      throw new AppError("Tài khoản đã được kích hoạt", 403);
+      throw new AppError("Tài khoản đã được kích hoạt", 400);
     }
     // Use email module to send
     const verifyToken = jwt.sign(user, process.env.VERIFY_TOKEN_SECRET, {
