@@ -19,5 +19,6 @@ companyRouter.use("/", verifyToken());
 companyRouter.post("/create", createCompany);
 companyRouter.post("/join", joinCompany);
 companyRouter.get("/:id", getCompanyDetails);
+companyRouter.delete("/delete");
 
 export default companyRouter;

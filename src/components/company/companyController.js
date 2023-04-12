@@ -51,3 +51,13 @@ export const getCompanyDetails = async (req, res) => {
       .json({ status: StatusEnum.Error, message: error.message });
   }
 };
+
+export const deleteCompany = async (req, res) => {
+  try {
+    // const { user } = req;
+  } catch (error) {
+    return res
+      .status(error.code ?? 500)
+      .json({ status: StatusEnum.Error, message: error.message });
+  }
+};
