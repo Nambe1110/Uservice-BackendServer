@@ -29,8 +29,14 @@ const TelegramBotChannelModel = sequelize.define(
     collate: "utf8_unicode_ci",
     createdAt: "created_at",
     updatedAt: "updated_at",
+    paranoid: true,
   }
 );
+
+TelegramBotChannelModel.belongsTo(CompanyModel);
+CompanyModel.hasMany(TelegramBotChannelModel, {
+  onDelete: "CASCADE",
+});
 
 TelegramBotChannelModel.sync({ logging: false });
 

@@ -1,6 +1,7 @@
 import pkg from "sequelize";
 import sequelize from "../../config/database/index.js";
 import Channel from "../channel/channelModel.js";
+import { ThreadType } from "../../constants.js";
 
 const { DataTypes } = pkg;
 
@@ -23,7 +24,9 @@ const ThreadModel = sequelize.define(
       type: DataTypes.STRING,
     },
     type: {
-      type: DataTypes.STRING,
+      type: DataTypes.ENUM({
+        values: Object.values(ThreadType),
+      }),
     },
     title: {
       type: DataTypes.STRING,
@@ -46,8 +49,14 @@ const ThreadModel = sequelize.define(
     collate: "utf8_unicode_ci",
     createdAt: "created_at",
     updatedAt: "updated_at",
+    paranoid: true,
   }
 );
+
+ThreadModel.belongsTo(Channel);
+Channel.hasMany(ThreadModel, {
+  onDelete: "CASCADE",
+});
 
 ThreadModel.sync({ logging: false });
 
