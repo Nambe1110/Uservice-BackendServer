@@ -36,10 +36,6 @@ const CompanyModel = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
-    is_archived: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
   },
   {
     tableName: "company",
