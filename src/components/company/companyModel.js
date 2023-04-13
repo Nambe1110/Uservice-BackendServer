@@ -22,8 +22,6 @@ const CompanyModel = sequelize.define(
     },
     image_url: {
       type: DataTypes.STRING,
-      default:
-        "https://uservice-internal-s3-bucket.s3.ap-southeast-1.amazonaws.com/avatar/uservice-default-company-avatar.png",
     },
     invite_code: {
       type: DataTypes.STRING,
@@ -49,6 +47,7 @@ const CompanyModel = sequelize.define(
     collate: "utf8_unicode_ci",
     createdAt: "created_at",
     updatedAt: "updated_at",
+    paranoid: true,
   }
 );
 

@@ -71,8 +71,17 @@ const CustomerModel = sequelize.define(
     collate: "utf8_unicode_ci",
     createdAt: "created_at",
     updatedAt: "updated_at",
+    paranoid: true,
   }
 );
+
+CustomerModel.belongsTo(Company);
+Company.hasMany(CustomerModel);
+
+CustomerModel.belongsTo(Thread);
+Thread.hasMany(CustomerModel, {
+  onDelete: "CASCADE",
+});
 
 CustomerModel.sync({ logging: false });
 
