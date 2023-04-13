@@ -57,10 +57,6 @@ const CustomerModel = sequelize.define(
     note: {
       type: DataTypes.STRING,
     },
-    is_archived: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
     profile: {
       type: DataTypes.STRING,
     },
