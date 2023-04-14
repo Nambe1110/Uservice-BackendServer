@@ -7,6 +7,10 @@ const io = new Server({
   /* options */
 });
 
+io.on("connection", (socket) => {
+  socket.emit("connection", "connected");
+});
+
 const threadIo = io.of("/thread").use(verifyTokenSocket);
 
 threadIo.on("connection", async (socket) => {
