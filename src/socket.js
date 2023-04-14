@@ -4,7 +4,9 @@ import registerThreadNotifier from "./components/thread/threadNotifier.js";
 import { verifyTokenSocket } from "./middlewares/verifyToken.js";
 
 const io = new Server({
-  /* options */
+  cors: {
+    origin: "*",
+  },
 });
 
 io.on("connection", (socket) => {
