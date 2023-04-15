@@ -18,6 +18,7 @@ const TelegramUserChannelModel = sequelize.define(
         model: CompanyModel,
         key: "id",
       },
+      onDelete: "CASCADE",
     },
     phone_number: {
       type: DataTypes.STRING,

@@ -22,6 +22,7 @@ const CustomerModel = sequelize.define(
         model: Company,
         key: "id",
       },
+      onDelete: "CASCADE",
     },
     thread_id: {
       type: DataTypes.INTEGER,
@@ -29,6 +30,7 @@ const CustomerModel = sequelize.define(
         model: Thread,
         key: "id",
       },
+      onDelete: "SET NULL",
     },
     image_url: {
       type: DataTypes.STRING,
