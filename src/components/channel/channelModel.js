@@ -18,6 +18,7 @@ const ChannelModel = sequelize.define(
         model: Company,
         key: "id",
       },
+      onDelete: "CASCADE",
     },
     type: {
       type: DataTypes.STRING,

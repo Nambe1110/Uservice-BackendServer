@@ -54,7 +54,12 @@ export const getCompanyDetails = async (req, res) => {
 
 export const deleteCompany = async (req, res) => {
   try {
-    // const { user } = req;
+    const { user } = req;
+    await CompanyService.deleteCompany(user);
+    return res.status(200).json({
+      status: StatusEnum.Success,
+      data: { message: "Xóa công ty thành công" },
+    });
   } catch (error) {
     return res
       .status(error.code ?? 500)
