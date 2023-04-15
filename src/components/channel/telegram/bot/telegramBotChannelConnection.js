@@ -6,7 +6,6 @@ import {
   UserRole,
   ThreadType,
   SenderType,
-  NumberOfChatsLimit,
   ChannelType,
   AttachmentType,
 } from "../../../../constants.js";
@@ -78,10 +77,6 @@ export default class TelegramBotConnection {
 
   async setUpdateListener({ channelId }) {
     try {
-      await this.connection.api.getChats({
-        limit: NumberOfChatsLimit.TELEGRAM_BOT,
-      });
-
       this.connection.on("updateMessageContent", async ({ update }) => {
         const { chatId, messageId, newContent: messageContent } = update;
 
@@ -443,6 +438,8 @@ export default class TelegramBotConnection {
     callback,
     socket,
   }) {
+    await this.connection.api.getChat({ chatId });
+
     let message;
 
     if (attachment.length > 0) {
