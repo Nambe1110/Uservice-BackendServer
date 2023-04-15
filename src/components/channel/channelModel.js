@@ -1,6 +1,7 @@
 import pkg from "sequelize";
 import sequelize from "../../config/database/index.js";
 import Company from "../company/companyModel.js";
+import { ChannelType } from "../../constants.js";
 
 const { DataTypes } = pkg;
 
@@ -21,7 +22,9 @@ const ChannelModel = sequelize.define(
       onDelete: "CASCADE",
     },
     type: {
-      type: DataTypes.STRING,
+      type: DataTypes.ENUM({
+        values: Object.values(ChannelType),
+      }),
     },
     channel_detail_id: {
       type: DataTypes.INTEGER,
@@ -38,9 +41,9 @@ const ChannelModel = sequelize.define(
     image_url: {
       type: DataTypes.STRING,
     },
-    is_archived: {
+    is_connected: {
       type: DataTypes.BOOLEAN,
-      defaultValue: false,
+      defaultValue: true,
     },
   },
   {
@@ -49,8 +52,12 @@ const ChannelModel = sequelize.define(
     collate: "utf8_unicode_ci",
     createdAt: "created_at",
     updatedAt: "updated_at",
+    paranoid: true,
   }
 );
+
+ChannelModel.belongsTo(Company);
+Company.hasMany(ChannelModel);
 
 ChannelModel.sync({ logging: false });
 

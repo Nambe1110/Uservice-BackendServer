@@ -51,41 +51,21 @@ export const verifyTokenSocket = async (socket, next) => {
   const { token } = socket.handshake.headers;
 
   if (!token) {
-    return next(
-      new Error({
-        status: StatusType.ERROR,
-        message: "Access token không được cung cấp",
-      })
-    );
+    return next(new Error("Access token không được cung cấp"));
   }
 
   try {
     const decoded = jwt.verify(token, process.env.TOKEN_SECRET);
     const user = await UserService.getUserById(decoded.id);
     if (user.is_verified === false)
-      return next(
-        new Error({
-          status: StatusType.ERROR,
-          message: "Tài khoản chưa xác thực",
-        })
-      );
+      return next(new Error("Tài khoản chưa xác thực"));
 
     if (!user.company_id)
-      return next(
-        new Error({
-          status: StatusType.ERROR,
-          message: "Tài khoản chưa gia nhập công ty",
-        })
-      );
+      return next(new Error("Tài khoản chưa gia nhập công ty"));
 
     socket.user = user;
     next();
   } catch (error) {
-    return next(
-      new Error({
-        status: StatusType.ERROR,
-        message: "Token không hợp lệ hoặc đã hết hạn",
-      })
-    );
+    return next(new Error("Token không hợp lệ hoặc đã hết hạn"));
   }
 };

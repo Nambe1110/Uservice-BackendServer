@@ -59,10 +59,6 @@ const CustomerModel = sequelize.define(
     note: {
       type: DataTypes.STRING,
     },
-    is_archived: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
     profile: {
       type: DataTypes.STRING,
     },
@@ -73,8 +69,17 @@ const CustomerModel = sequelize.define(
     collate: "utf8_unicode_ci",
     createdAt: "created_at",
     updatedAt: "updated_at",
+    paranoid: true,
   }
 );
+
+CustomerModel.belongsTo(Company);
+Company.hasMany(CustomerModel);
+
+CustomerModel.belongsTo(Thread);
+Thread.hasMany(CustomerModel, {
+  onDelete: "CASCADE",
+});
 
 CustomerModel.sync({ logging: false });
 

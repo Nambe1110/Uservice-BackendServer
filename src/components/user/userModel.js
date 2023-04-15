@@ -65,8 +65,6 @@ const UserModel = sequelize.define(
     },
     image_url: {
       type: DataTypes.STRING,
-      default:
-        "https://uservice-internal-s3-bucket.s3.ap-southeast-1.amazonaws.com/avatar/uservice-default-user-avatar.png",
     },
   },
   {
@@ -77,6 +75,9 @@ const UserModel = sequelize.define(
     updatedAt: "updated_at",
   }
 );
+
+UserModel.belongsTo(Company);
+Company.hasMany(UserModel);
 
 UserModel.sync({ logging: false });
 

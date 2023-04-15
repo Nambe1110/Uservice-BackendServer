@@ -33,16 +33,11 @@ const AttachmentType = {
   FILE: "File",
 };
 
-const NumberOfChatsLimit = {
-  TELEGRAM_USER: 200000,
-};
-
 export {
   UserRole,
   ThreadType,
   ChannelType,
   StatusType,
   SenderType,
-  NumberOfChatsLimit,
   AttachmentType,
 };

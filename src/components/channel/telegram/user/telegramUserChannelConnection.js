@@ -6,7 +6,6 @@ import {
   UserRole,
   ThreadType,
   SenderType,
-  NumberOfChatsLimit,
   ChannelType,
   AttachmentType,
 } from "../../../../constants.js";
@@ -140,10 +139,6 @@ export default class TelegramUserConnection {
 
   async setUpdateListener({ channelId }) {
     try {
-      await this.connection.api.getChats({
-        limit: NumberOfChatsLimit.TELEGRAM_USER,
-      });
-
       this.connection.on("updateChatLastMessage", async ({ update }) => {
         if (update.lastMessage?.sendingState) return;
         const {
@@ -430,6 +425,8 @@ export default class TelegramUserConnection {
     callback,
     socket,
   }) {
+    await this.connection.api.getChat({ chatId });
+
     let message;
 
     if (attachment.length > 0) {
