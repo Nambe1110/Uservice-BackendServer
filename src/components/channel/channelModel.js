@@ -1,6 +1,8 @@
 import pkg from "sequelize";
 import sequelize from "../../config/database/index.js";
 import Company from "../company/companyModel.js";
+import TelegramBotChannelModel from "./telegram/bot/telegramBotChannelModel.js";
+import TelegramUserChannelModel from "./telegram/user/telegramUserChannelModel.js";
 import { ChannelType } from "../../constants.js";
 
 const { DataTypes } = pkg;
@@ -51,13 +53,39 @@ const ChannelModel = sequelize.define(
     collate: "utf8_unicode_ci",
     createdAt: "created_at",
     updatedAt: "updated_at",
-    paranoid: true,
   }
 );
 
+Company.hasMany(ChannelModel, {
+  onDelete: "CASCADE",
+  hooks: true,
+});
 ChannelModel.belongsTo(Company);
-Company.hasMany(ChannelModel);
 
 ChannelModel.sync({ logging: false });
+
+ChannelModel.beforeDestroy(async (channel) => {
+  const { type, channel_detail_id: channelDetailId } = channel;
+  switch (type) {
+    case ChannelType.TELEGRAM_BOT:
+      await TelegramBotChannelModel.destroy({
+        where: {
+          id: channelDetailId,
+        },
+        individualHooks: true,
+      });
+      break;
+    case ChannelType.TELEGRAM_USER:
+      await TelegramUserChannelModel.destroy({
+        where: {
+          id: channelDetailId,
+        },
+        individualHooks: true,
+      });
+      break;
+    default:
+      break;
+  }
+});
 
 export default ChannelModel;

@@ -47,14 +47,14 @@ const MessageModel = sequelize.define(
     collate: "utf8_unicode_ci",
     createdAt: "created_at",
     updatedAt: "updated_at",
-    paranoid: true,
   }
 );
 
-MessageModel.belongsTo(Thread);
 Thread.hasMany(MessageModel, {
   onDelete: "CASCADE",
+  hooks: true,
 });
+MessageModel.belongsTo(Thread);
 
 MessageModel.sync({ logging: false });
 
