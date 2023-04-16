@@ -75,8 +75,8 @@ const UserModel = sequelize.define(
   }
 );
 
-UserModel.belongsTo(Company);
 Company.hasMany(UserModel);
+UserModel.belongsTo(Company);
 
 UserModel.sync({ logging: false });
 

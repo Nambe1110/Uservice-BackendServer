@@ -49,14 +49,14 @@ const ThreadModel = sequelize.define(
     collate: "utf8_unicode_ci",
     createdAt: "created_at",
     updatedAt: "updated_at",
-    paranoid: true,
   }
 );
 
-ThreadModel.belongsTo(Channel);
 Channel.hasMany(ThreadModel, {
   onDelete: "CASCADE",
+  hooks: true,
 });
+ThreadModel.belongsTo(Channel);
 
 ThreadModel.sync({ logging: false });
 

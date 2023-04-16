@@ -524,6 +524,10 @@ export default class TelegramUserConnection {
     });
   }
 
+  async disconnect() {
+    await this.connection.api.destroy();
+  }
+
   async #downloadFile(fileId) {
     const fileResponse = await this.connection.api.downloadFile({
       fileId,
