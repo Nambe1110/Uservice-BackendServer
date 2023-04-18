@@ -51,7 +51,7 @@ export const changePassword = async (req, res) => {
 export const leaveCompany = async (req, res) => {
   try {
     const { user } = req;
-    const updatedUser = await MeService.leaveCompany(user);
+    const updatedUser = await MeService.leaveCompany({ user });
     return res.status(200).json({
       status: StatusType.SUCCESS,
       data: updatedUser,

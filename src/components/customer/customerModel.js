@@ -2,6 +2,7 @@ import pkg from "sequelize";
 import sequelize from "../../config/database/index.js";
 import Company from "../company/companyModel.js";
 import Thread from "../thread/threadModel.js";
+import UserModel from "../user/userModel.js";
 
 const { DataTypes } = pkg;
 
@@ -71,6 +72,13 @@ const CustomerModel = sequelize.define(
 );
 
 Company.hasMany(CustomerModel);
+Company.beforeDestroy(async (company) => {
+  await UserModel.update(
+    { company_id: null, role: null },
+    { where: { company_id: company.id } }
+  );
+});
+
 CustomerModel.belongsTo(Company);
 
 Thread.hasMany(CustomerModel, {

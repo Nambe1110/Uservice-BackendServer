@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import UserModel from "../user/userModel.js";
 import S3 from "../../modules/S3.js";
 import AppError from "../../utils/AppError.js";
+import { UserRole } from "../../constants.js";
 
 export default class MeService {
   static async changeAvatar({ currentUser, avatar }) {
@@ -48,6 +49,9 @@ export default class MeService {
     });
     if (!currentUser) {
       throw new AppError("Người dùng không tồn tại", 400);
+    }
+    if (currentUser.role === UserRole.OWNER) {
+      throw new AppError("Chủ sở hữu không thể rời công ty", 400);
     }
     currentUser.company_id = null;
     currentUser.role = null;
