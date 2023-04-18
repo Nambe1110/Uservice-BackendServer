@@ -8,7 +8,7 @@ import { listCompany } from "../../utils/singleton.js";
 export default class CompanyService {
   static async createCompany({ user, companyName, imageUrl = null }) {
     if (user.company_id != null) {
-      throw new AppError("User already existed in another company.", 403);
+      throw new AppError("User already existed in another company.", 400);
     }
     const company = await CompanyModel.findOne({
       where: { name: companyName },

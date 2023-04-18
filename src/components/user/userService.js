@@ -8,7 +8,7 @@ import AppError from "../../utils/AppError.js";
 export default class UserService {
   static async joinCompany({ user, inviteCode, role = RoleEnum.Staff }) {
     if (user.company_id != null) {
-      throw new AppError("Người dùng đã tồn tại trong một công ty khác", 403);
+      throw new AppError("Người dùng đã tồn tại trong một công ty khác", 400);
     }
     const company = await CompanyModel.findOne({
       where: { invite_code: inviteCode },
@@ -30,7 +30,7 @@ export default class UserService {
   static async getUserById(id) {
     const user = await UserModel.findOne({ where: { id } });
     if (!user) {
-      throw new AppError("Người dùng không tồn tại", 403);
+      throw new AppError("Người dùng không tồn tại", 400);
     }
     delete user.dataValues.password;
     return user.dataValues;
@@ -42,7 +42,7 @@ export default class UserService {
       throw new AppError("Thông tin người dùng trong token không hợp lệ", 400);
     }
     if (currentUser.is_verified) {
-      throw new AppError("Tài khoản  đã được kích hoạt", 403);
+      throw new AppError("Tài khoản  đã được kích hoạt", 400);
     }
     currentUser.is_verified = true;
     const verifiedUser = await currentUser.save();
@@ -82,13 +82,13 @@ export default class UserService {
       delete updatedUser.dataValues.password;
       return updatedUser.dataValues;
     } catch (error) {
-      throw new AppError("Token không hợp lệ hoặc đã hết hạn", 403);
+      throw new AppError("Token không hợp lệ hoặc đã hết hạn", 400);
     }
   }
 
   static async getCompanyMembers({ user, limit, page }) {
     if (!user.company_id) {
-      throw new AppError("Người dùng không thuộc một công ty nào.", 403);
+      throw new AppError("Người dùng không thuộc một công ty nào.", 400);
     }
     const company = await CompanyModel.findOne({
       where: { id: user.company_id },
@@ -141,7 +141,7 @@ export default class UserService {
     if (user.company_id !== currentUser.company_id) {
       throw new AppError(
         "Người dùng không thuộc cùng một công ty với đối tượng cần thay đổi quyền.",
-        403
+        400
       );
     }
     if (user.role === newRole) {
@@ -162,7 +162,7 @@ export default class UserService {
     if (user.company_id !== currentUser.company_id) {
       throw new AppError(
         "Bạn không có quyền lấy thông tin của người dùng này.",
-        403
+        400
       );
     }
     delete user.password;

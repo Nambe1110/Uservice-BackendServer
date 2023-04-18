@@ -47,3 +47,18 @@ export const changePassword = async (req, res) => {
       .json({ status: StatusEnum.Error, message: error.message });
   }
 };
+
+export const leaveCompany = async (req, res) => {
+  try {
+    const { user } = req;
+    const updatedUser = await MeService.leaveCompany(user);
+    return res.status(200).json({
+      status: StatusType.SUCCESS,
+      data: updatedUser,
+    });
+  } catch (error) {
+    return res
+      .status(error.code ?? 500)
+      .json({ status: StatusEnum.Error, message: error.message });
+  }
+};

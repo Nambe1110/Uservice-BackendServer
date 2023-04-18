@@ -3,10 +3,14 @@ import jwt from "jsonwebtoken";
 import AppError from "../../utils/AppError.js";
 import UserModel from "../user/userModel.js";
 
-const generateTokens = ({ id, email }) => {
-  const accessToken = jwt.sign({ id, email }, process.env.TOKEN_SECRET, {
-    expiresIn: "5h",
-  });
+const generateTokens = ({ id, email, company_id: companyId }) => {
+  const accessToken = jwt.sign(
+    { id, email, company_id: companyId },
+    process.env.TOKEN_SECRET,
+    {
+      expiresIn: "5h",
+    }
+  );
 
   const refreshToken = jwt.sign(
     { id, email },
