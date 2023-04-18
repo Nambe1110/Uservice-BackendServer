@@ -19,7 +19,6 @@ const ThreadModel = sequelize.define(
         model: Channel,
         key: "id",
       },
-      onDelete: "CASCADE",
     },
     thread_api_id: {
       type: DataTypes.STRING,

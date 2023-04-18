@@ -19,7 +19,6 @@ const AttachmentModel = sequelize.define(
         model: Message,
         key: "id",
       },
-      onDelete: "CASCADE",
     },
     url: {
       type: DataTypes.STRING,

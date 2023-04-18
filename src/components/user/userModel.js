@@ -58,7 +58,6 @@ const UserModel = sequelize.define(
         model: Company,
         key: "id",
       },
-      onDelete: "SET NULL",
     },
     role: {
       type: DataTypes.STRING,

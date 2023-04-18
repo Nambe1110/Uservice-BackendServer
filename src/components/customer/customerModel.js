@@ -2,6 +2,7 @@ import pkg from "sequelize";
 import sequelize from "../../config/database/index.js";
 import Company from "../company/companyModel.js";
 import Thread from "../thread/threadModel.js";
+import UserModel from "../user/userModel.js";
 
 const { DataTypes } = pkg;
 
@@ -22,7 +23,6 @@ const CustomerModel = sequelize.define(
         model: Company,
         key: "id",
       },
-      onDelete: "CASCADE",
     },
     thread_id: {
       type: DataTypes.INTEGER,
@@ -30,7 +30,6 @@ const CustomerModel = sequelize.define(
         model: Thread,
         key: "id",
       },
-      onDelete: "SET NULL",
     },
     image_url: {
       type: DataTypes.STRING,
@@ -73,6 +72,13 @@ const CustomerModel = sequelize.define(
 );
 
 Company.hasMany(CustomerModel);
+Company.beforeDestroy(async (company) => {
+  await UserModel.update(
+    { company_id: null, role: null },
+    { where: { company_id: company.id } }
+  );
+});
+
 CustomerModel.belongsTo(Company);
 
 Thread.hasMany(CustomerModel, {

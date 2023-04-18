@@ -19,7 +19,6 @@ const MessageModel = sequelize.define(
         model: Thread,
         key: "id",
       },
-      onDelete: "CASCADE",
     },
     message_api_id: {
       type: DataTypes.STRING,

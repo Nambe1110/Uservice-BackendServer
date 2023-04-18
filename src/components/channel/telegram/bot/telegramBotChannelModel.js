@@ -19,7 +19,6 @@ const TelegramBotChannelModel = sequelize.define(
         model: CompanyModel,
         key: "id",
       },
-      onDelete: "CASCADE",
     },
     token: {
       type: DataTypes.STRING,
