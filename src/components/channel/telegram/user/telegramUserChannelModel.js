@@ -1,6 +1,7 @@
 import pkg from "sequelize";
 import sequelize from "../../../../config/database/index.js";
 import CompanyModel from "../../../company/companyModel.js";
+import { listCompany } from "../../../../utils/singleton.js";
 
 const { DataTypes } = pkg;
 
@@ -30,15 +31,23 @@ const TelegramUserChannelModel = sequelize.define(
     collate: "utf8_unicode_ci",
     createdAt: "created_at",
     updatedAt: "updated_at",
-    paranoid: true,
   }
 );
 
+CompanyModel.hasMany(TelegramUserChannelModel);
 TelegramUserChannelModel.belongsTo(CompanyModel);
-CompanyModel.hasMany(TelegramUserChannelModel, {
-  onDelete: "CASCADE",
-});
 
 TelegramUserChannelModel.sync({ logging: false });
+
+TelegramUserChannelModel.beforeDestroy(async (channel) => {
+  const { company_id: companyId, phone_number: phoneNumber } = channel;
+  const { connection } = listCompany
+    .get(companyId)
+    .listChannel.telegramUserChannel.get(phoneNumber);
+  await connection.disconnect();
+  listCompany
+    .get(companyId)
+    .listChannel.telegramUserChannel.delete(phoneNumber);
+});
 
 export default TelegramUserChannelModel;
