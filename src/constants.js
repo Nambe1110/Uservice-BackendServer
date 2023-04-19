@@ -33,6 +33,12 @@ const AttachmentType = {
   FILE: "File",
 };
 
+const ChatbotMode = {
+  OFF: "Off",
+  SUGGESTION: "Suggestion",
+  AUTO_REPLY: "Auto reply",
+};
+
 export {
   UserRole,
   ThreadType,
@@ -40,4 +46,5 @@ export {
   StatusType,
   SenderType,
   AttachmentType,
+  ChatbotMode,
 };
