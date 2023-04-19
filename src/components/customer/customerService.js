@@ -1,5 +1,6 @@
 import CustomerModel from "./customerModel.js";
 import sequelize from "../../config/database/index.js";
+import AppError from "../../utils/AppError.js";
 
 export default class CustomerService {
   static async getOrCreateCustomer(where, defaults) {
@@ -61,5 +62,16 @@ export default class CustomerService {
       current_page: page,
       items: customers,
     };
+  }
+
+  static async getCustomerById({ currentUser, customerId }) {
+    const customer = await CustomerModel.findByPk(customerId);
+    if (!customer) {
+      throw new AppError("Khách hàng không tồn tại", 403);
+    }
+    if (currentUser.company_id !== customer.company_id) {
+      throw new AppError("Khách hàng thuộc công ty khác", 403);
+    }
+    return customer;
   }
 }
