@@ -66,3 +66,44 @@ export const deleteCompany = async (req, res) => {
       .json({ status: StatusEnum.Error, message: error.message });
   }
 };
+
+export const changeAvatar = async (req, res) => {
+  try {
+    const avatar = req.file;
+    const currentUser = req.user;
+    const updatedCompany = await CompanyService.changeAvatar({
+      currentUser,
+      avatar,
+    });
+
+    return res
+      .status(200)
+      .json({ status: StatusEnum.Success, data: updatedCompany });
+  } catch (error) {
+    return res
+      .status(error.code ?? 500)
+      .json({ status: StatusEnum.Error, message: error.message });
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { name, email, phone_number: phoneNumber, website } = req.body;
+    const currentUser = req.user;
+    const updatedCompany = await CompanyService.updateProfile({
+      currentUser,
+      name,
+      email,
+      phoneNumber,
+      website,
+    });
+
+    return res
+      .status(200)
+      .json({ status: StatusEnum.Success, data: updatedCompany });
+  } catch (error) {
+    return res
+      .status(error.code ?? 500)
+      .json({ status: StatusEnum.Error, message: error.message });
+  }
+};

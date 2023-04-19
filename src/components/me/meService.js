@@ -72,18 +72,18 @@ export default class MeService {
     const user = await UserModel.findByPk(currentUser.id);
     const regex = /^[+]?[(]?[0-9]{3}[)]?[-s.]?[0-9]{3}[-s.]?[0-9]{4,6}$/;
     if (!firstName) {
-      throw new AppError("firstName không thể null");
+      throw new AppError("Tên không thể null");
     }
     if (!lastName) {
-      throw new AppError("lastName không thể null");
+      throw new AppError("Họ không thể null");
     }
-    if (!phoneNumber || !phoneNumber.match(regex)) {
-      throw new AppError("phoneNumber không hợp lệ hoặc null");
+    if (phoneNumber && !phoneNumber.match(regex)) {
+      throw new AppError("Số điện thoại không hợp lệ");
     }
 
     user.first_name = firstName;
     user.last_name = lastName;
-    user.phone_number = phoneNumber;
+    user.phone_number = phoneNumber ?? "";
     const updatedUser = await user.save();
     delete updatedUser.dataValues.password;
     delete updatedUser.dataValues.google_token;

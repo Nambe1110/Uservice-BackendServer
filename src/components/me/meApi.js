@@ -19,7 +19,11 @@ meRouter.use("/", verifyToken.verifyToken());
 meRouter.get("/", getProfile);
 meRouter.post("/change-password", validators.passwordValidator, changePassword);
 meRouter.put("/leave-company", leaveCompany);
-meRouter.patch("/avatar", upload.single("avatar"), changeAvatar);
+meRouter.patch(
+  "/avatar",
+  [verifyToken.verifyToken(), upload.single("avatar")],
+  changeAvatar
+);
 meRouter.put("/profile", verifyToken.verifyToken(), updateProfile);
 
 export default meRouter;
