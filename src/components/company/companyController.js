@@ -66,3 +66,19 @@ export const deleteCompany = async (req, res) => {
       .json({ status: StatusEnum.Error, message: error.message });
   }
 };
+
+export const changeChatbotMode = async (req, res) => {
+  try {
+    const { user } = req;
+    const { new_mode: newMode } = req.body;
+    const company = await CompanyService.setChatbotMode(user, newMode);
+    return res.status(200).json({
+      status: StatusEnum.Success,
+      data: company,
+    });
+  } catch (error) {
+    return res
+      .status(error.code ?? 500)
+      .json({ status: StatusEnum.Error, message: error.message });
+  }
+};
