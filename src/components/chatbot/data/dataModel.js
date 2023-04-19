@@ -27,6 +27,6 @@ const DataModel = sequelize.define(
   }
 );
 
-DataModel.sync({ logging: false });
+DataModel.sync({ logging: false, alter: true });
 
 export default DataModel;

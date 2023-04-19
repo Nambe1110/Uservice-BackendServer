@@ -1,5 +1,7 @@
 import pkg from "sequelize";
 import sequelize from "../../../config/database/index.js";
+import GptModel from "../gpt/gptModel.js";
+import DataModel from "../data/dataModel.js";
 
 const { DataTypes } = pkg;
 
@@ -13,9 +15,17 @@ const GptDataModel = sequelize.define(
     },
     gpt_id: {
       type: DataTypes.INTEGER,
+      references: {
+        model: GptModel,
+        key: "id",
+      },
     },
     data_id: {
       type: DataTypes.INTEGER,
+      references: {
+        model: DataModel,
+        key: "id",
+      },
     },
   },
   {
@@ -27,6 +37,11 @@ const GptDataModel = sequelize.define(
   }
 );
 
-GptDataModel.sync({ logging: false });
+GptDataModel.hasMany(GptModel);
+GptDataModel.hasMany(DataModel);
 
+GptModel.belongsTo(GptDataModel);
+DataModel.belongsTo(GptDataModel);
+
+GptDataModel.sync({ logging: false, alter: true });
 export default GptDataModel;
