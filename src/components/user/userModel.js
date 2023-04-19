@@ -62,6 +62,9 @@ const UserModel = sequelize.define(
     role: {
       type: DataTypes.STRING,
     },
+    phone_number: {
+      type: DataTypes.STRING,
+    },
     image_url: {
       type: DataTypes.STRING,
     },

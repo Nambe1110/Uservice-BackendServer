@@ -57,6 +57,38 @@ export default class MeService {
     currentUser.role = null;
     const updatedUser = await currentUser.save();
     delete updatedUser.dataValues.password;
+    delete updatedUser.dataValues.google_token;
+    delete updatedUser.dataValues.facebook_token;
+
+    return updatedUser;
+  }
+
+  static async updateProfile({
+    currentUser,
+    firstName,
+    lastName,
+    phoneNumber,
+  }) {
+    const user = await UserModel.findByPk(currentUser.id);
+    const regex = /^[+]?[(]?[0-9]{3}[)]?[-s.]?[0-9]{3}[-s.]?[0-9]{4,6}$/;
+    if (!firstName) {
+      throw new AppError("firstName không thể null");
+    }
+    if (!lastName) {
+      throw new AppError("lastName không thể null");
+    }
+    if (!phoneNumber || !phoneNumber.match(regex)) {
+      throw new AppError("phoneNumber không hợp lệ hoặc null");
+    }
+
+    user.first_name = firstName;
+    user.last_name = lastName;
+    user.phone_number = phoneNumber;
+    const updatedUser = await user.save();
+    delete updatedUser.dataValues.password;
+    delete updatedUser.dataValues.google_token;
+    delete updatedUser.dataValues.facebook_token;
+
     return updatedUser;
   }
 }

@@ -4,6 +4,7 @@ import {
   changeAvatar,
   changePassword,
   leaveCompany,
+  updateProfile,
 } from "./meController.js";
 import { upload, validators, verifyToken } from "../../middlewares/index.js";
 
@@ -19,5 +20,6 @@ meRouter.get("/", getProfile);
 meRouter.post("/change-password", validators.passwordValidator, changePassword);
 meRouter.put("/leave-company", leaveCompany);
 meRouter.patch("/avatar", upload.single("avatar"), changeAvatar);
+meRouter.put("/profile", verifyToken.verifyToken(), updateProfile);
 
 export default meRouter;

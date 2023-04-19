@@ -1,6 +1,5 @@
 import CustomerService from "./customerService.js";
 import { StatusType } from "../../constants.js";
-import logger from "../../config/logger/index.js";
 
 export const getCustomers = async (req, res) => {
   const { user } = req;
