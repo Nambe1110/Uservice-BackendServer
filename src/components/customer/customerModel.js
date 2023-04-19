@@ -2,6 +2,7 @@ import pkg from "sequelize";
 import sequelize from "../../config/database/index.js";
 import Company from "../company/companyModel.js";
 import Thread from "../thread/threadModel.js";
+import UserModel from "../user/userModel.js";
 
 const { DataTypes } = pkg;
 
@@ -57,10 +58,6 @@ const CustomerModel = sequelize.define(
     note: {
       type: DataTypes.STRING,
     },
-    is_archived: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
     profile: {
       type: DataTypes.STRING,
     },
@@ -73,6 +70,22 @@ const CustomerModel = sequelize.define(
     updatedAt: "updated_at",
   }
 );
+
+Company.hasMany(CustomerModel);
+Company.beforeDestroy(async (company) => {
+  await UserModel.update(
+    { company_id: null, role: null },
+    { where: { company_id: company.id } }
+  );
+});
+
+CustomerModel.belongsTo(Company);
+
+Thread.hasMany(CustomerModel, {
+  onDelete: "CASCADE",
+  hooks: true,
+});
+CustomerModel.belongsTo(Thread);
 
 CustomerModel.sync({ logging: false });
 

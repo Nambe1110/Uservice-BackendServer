@@ -8,7 +8,7 @@ import { listCompany } from "../../utils/singleton.js";
 export default class CompanyService {
   static async createCompany({ user, companyName, imageUrl = null }) {
     if (user.company_id != null) {
-      throw new AppError("User already existed in another company.", 403);
+      throw new AppError("User already existed in another company.", 400);
     }
     const company = await CompanyModel.findOne({
       where: { name: companyName },
@@ -48,5 +48,18 @@ export default class CompanyService {
       );
     }
     return CompanyModel.findByPk(id);
+  }
+
+  static async deleteCompany(user) {
+    const company = await CompanyModel.findOne({
+      where: { id: user.company_id },
+    });
+    if (!company) {
+      throw new AppError("Công ty không tồn tại", 400);
+    }
+    if (user.role !== RoleEnum.Owner) {
+      throw new AppError("Chỉ chủ sở hữu mới có thể xóa công ty", 400);
+    }
+    await company.destroy();
   }
 }

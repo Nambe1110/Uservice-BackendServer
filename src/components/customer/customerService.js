@@ -38,7 +38,7 @@ export default class CustomerService {
           GROUP BY sender_id
         )
       ) AS t2 ON t2.sender_id = customer.id
-      WHERE customer.is_archived = 0 AND customer.company_id = :companyId
+      WHERE customer.company_id = :companyId
       LIMIT :limit
       OFFSET :offset`,
       {

@@ -21,12 +21,12 @@ export const sendPhoneNumberVerificationCode = async (req, res) => {
   }
 };
 
-export const checkCodeAuthentication = async (req, res) => {
+export const checkAuthenticationCode = async (req, res) => {
   const { phoneNumber, code } = req.body;
   const { user } = req;
 
   try {
-    const response = await TelegramUserChannelService.checkCodeAuthentication({
+    const response = await TelegramUserChannelService.checkAuthenticationCode({
       phoneNumber,
       code,
       companyId: user.company_id,
@@ -40,13 +40,13 @@ export const checkCodeAuthentication = async (req, res) => {
   }
 };
 
-export const checkPasswordAuthentication = async (req, res) => {
+export const checkAuthenticationPassword = async (req, res) => {
   const { phoneNumber, password } = req.body;
   const { user } = req;
 
   try {
     const response =
-      await TelegramUserChannelService.checkPasswordAuthentication({
+      await TelegramUserChannelService.checkAuthenticationPassword({
         phoneNumber,
         password,
         companyId: user.company_id,

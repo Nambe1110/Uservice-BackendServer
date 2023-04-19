@@ -59,4 +59,13 @@ export default class ChannelService {
 
     return channel;
   }
+
+  static async deleteChannel({ channelId }) {
+    await ChannelModel.destroy({
+      where: {
+        id: channelId,
+      },
+      individualHooks: true,
+    });
+  }
 }

@@ -1,8 +1,8 @@
 import express from "express";
 import {
   sendPhoneNumberVerificationCode,
-  checkCodeAuthentication,
-  checkPasswordAuthentication,
+  checkAuthenticationCode,
+  checkAuthenticationPassword,
 } from "./telegramUserChannelController.js";
 import { verifyToken } from "../../../../middlewares/verifyToken.js";
 
@@ -15,7 +15,7 @@ telegramUserRouter.use("/", (req, res, next) => {
 telegramUserRouter.use("/", verifyToken());
 
 telegramUserRouter.post("/send-code", sendPhoneNumberVerificationCode);
-telegramUserRouter.post("/check-code", checkCodeAuthentication);
-telegramUserRouter.post("/check-password", checkPasswordAuthentication);
+telegramUserRouter.post("/check-code", checkAuthenticationCode);
+telegramUserRouter.post("/check-password", checkAuthenticationPassword);
 
 export default telegramUserRouter;

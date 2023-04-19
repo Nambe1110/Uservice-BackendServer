@@ -1,6 +1,7 @@
 import pkg from "sequelize";
 import sequelize from "../../config/database/index.js";
 import Thread from "../thread/threadModel.js";
+import { SenderType } from "../../constants.js";
 
 const { DataTypes } = pkg;
 
@@ -26,7 +27,9 @@ const MessageModel = sequelize.define(
       type: DataTypes.INTEGER,
     },
     sender_type: {
-      type: DataTypes.STRING,
+      type: DataTypes.ENUM({
+        values: Object.values(SenderType),
+      }),
     },
     sender_id: {
       type: DataTypes.INTEGER,
@@ -46,6 +49,12 @@ const MessageModel = sequelize.define(
     updatedAt: "updated_at",
   }
 );
+
+Thread.hasMany(MessageModel, {
+  onDelete: "CASCADE",
+  hooks: true,
+});
+MessageModel.belongsTo(Thread);
 
 MessageModel.sync({ logging: false });
 

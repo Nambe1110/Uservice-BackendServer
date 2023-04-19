@@ -1,6 +1,7 @@
 import pkg from "sequelize";
 import sequelize from "../../config/database/index.js";
 import Message from "../message/messageModel.js";
+import { AttachmentType } from "../../constants.js";
 
 const { DataTypes } = pkg;
 
@@ -26,7 +27,9 @@ const AttachmentModel = sequelize.define(
       type: DataTypes.STRING,
     },
     type: {
-      type: DataTypes.STRING,
+      type: DataTypes.ENUM({
+        values: Object.values(AttachmentType),
+      }),
     },
   },
   {
@@ -37,6 +40,12 @@ const AttachmentModel = sequelize.define(
     updatedAt: "updated_at",
   }
 );
+
+Message.hasMany(AttachmentModel, {
+  onDelete: "CASCADE",
+  hooks: true,
+});
+AttachmentModel.belongsTo(Message);
 
 AttachmentModel.sync({ logging: false });
 

@@ -5,8 +5,8 @@ import { listCompany } from "../../../../utils/singleton.js";
 
 const { DataTypes } = pkg;
 
-const TelegramUserChannelModel = sequelize.define(
-  "TelegramUserChannel",
+const TelegramBotChannelModel = sequelize.define(
+  "TelegramBotChannel",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -20,12 +20,12 @@ const TelegramUserChannelModel = sequelize.define(
         key: "id",
       },
     },
-    phone_number: {
+    token: {
       type: DataTypes.STRING,
     },
   },
   {
-    tableName: "telegram_user_channel",
+    tableName: "telegram_bot_channel",
     charset: "utf8",
     collate: "utf8_unicode_ci",
     createdAt: "created_at",
@@ -33,20 +33,18 @@ const TelegramUserChannelModel = sequelize.define(
   }
 );
 
-CompanyModel.hasMany(TelegramUserChannelModel);
-TelegramUserChannelModel.belongsTo(CompanyModel);
+CompanyModel.hasMany(TelegramBotChannelModel);
+TelegramBotChannelModel.belongsTo(CompanyModel);
 
-TelegramUserChannelModel.sync({ logging: false });
+TelegramBotChannelModel.sync({ logging: false });
 
-TelegramUserChannelModel.beforeDestroy(async (channel) => {
-  const { company_id: companyId, phone_number: phoneNumber } = channel;
+TelegramBotChannelModel.beforeDestroy(async (channel) => {
+  const { company_id: companyId, token } = channel;
   const { connection } = listCompany
     .get(companyId)
-    .listChannel.telegramUserChannel.get(phoneNumber);
+    .listChannel.telegramBotChannel.get(token);
   await connection.disconnect();
-  listCompany
-    .get(companyId)
-    .listChannel.telegramUserChannel.delete(phoneNumber);
+  listCompany.get(companyId).listChannel.telegramBotChannel.delete(token);
 });
 
-export default TelegramUserChannelModel;
+export default TelegramBotChannelModel;
