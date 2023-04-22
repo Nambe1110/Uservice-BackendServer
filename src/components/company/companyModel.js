@@ -1,6 +1,7 @@
 import pkg from "sequelize";
 import sequelize from "../../config/database/index.js";
 import { ChatbotMode } from "../../constants.js";
+import GptModel from "../chatbot/gpt/gptModel.js";
 
 const { DataTypes } = pkg;
 
@@ -52,6 +53,13 @@ const CompanyModel = sequelize.define(
     website: {
       type: DataTypes.STRING,
     },
+    gpt_id: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: GptModel,
+        key: "id",
+      },
+    },
   },
   {
     tableName: "company",
@@ -62,6 +70,6 @@ const CompanyModel = sequelize.define(
   }
 );
 
-CompanyModel.sync({ logging: false });
+CompanyModel.sync({ logging: false, alter: true });
 
 export default CompanyModel;
