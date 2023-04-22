@@ -42,6 +42,7 @@ const CompanyModel = sequelize.define(
         values: Object.values(ChatbotMode),
       }),
       defaultValue: ChatbotMode.SUGGESTION,
+    },
     email: {
       type: DataTypes.STRING,
     },
