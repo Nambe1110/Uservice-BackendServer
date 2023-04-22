@@ -1,5 +1,6 @@
 import pkg from "sequelize";
 import sequelize from "../../config/database/index.js";
+import { ChatbotMode } from "../../constants.js";
 
 const { DataTypes } = pkg;
 
@@ -36,6 +37,11 @@ const CompanyModel = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    chatbot_mode: {
+      type: DataTypes.ENUM({
+        values: Object.values(ChatbotMode),
+      }),
+      defaultValue: ChatbotMode.SUGGESTION,
     email: {
       type: DataTypes.STRING,
     },
