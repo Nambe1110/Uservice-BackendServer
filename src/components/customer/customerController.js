@@ -22,3 +22,22 @@ export const getCustomers = async (req, res) => {
       .json({ status: StatusType.ERROR, message: error.message });
   }
 };
+
+export const getCustomerById = async (req, res) => {
+  try {
+    const { customerId } = req.params;
+    const currentUser = req.user;
+    const customer = await CustomerService.getCustomerById({
+      currentUser,
+      customerId,
+    });
+    return res.status(200).json({
+      status: StatusType.SUCCESS,
+      data: customer,
+    });
+  } catch (error) {
+    return res
+      .status(error.code ?? 500)
+      .json({ status: StatusType.ERROR, message: error.message });
+  }
+};
