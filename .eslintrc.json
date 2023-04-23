@@ -12,14 +12,17 @@
   },
   "rules": {
     "prettier/prettier": ["error", { "endOfLine": "auto" }],
+    "camelcase": "off",
     "import/extensions": ["error", "ignorePackages"],
-    "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
+    "import/no-extraneous-dependencies": "off",
     "no-underscore-dangle": ["error", { "allow": ["__filename", "__dirname"] }],
     "import/prefer-default-export": "off",
     "no-restricted-syntax": "off",
     "radix": "off",
     "consistent-return": "off",
     "no-param-reassign": "off",
-    "import/no-unresolved": [2, { "caseSensitive": false }]
+    "import/no-unresolved": [2, { "caseSensitive": false }],
+    "no-constant-condition": "off",
+    "no-await-in-loop": "off"
   }
 }

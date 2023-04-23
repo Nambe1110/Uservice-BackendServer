@@ -1,0 +1,46 @@
+import pkg from "sequelize";
+import sequelize from "../../../config/database/index.js";
+import CompanyModel from "../../company/companyModel.js";
+
+const { DataTypes } = pkg;
+
+const MessengerChannelModel = sequelize.define(
+  "MessengerChannel",
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    company_id: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: CompanyModel,
+        key: "id",
+      },
+    },
+    page_id: {
+      type: DataTypes.STRING,
+    },
+    page_access_token: {
+      type: DataTypes.STRING,
+    },
+  },
+  {
+    tableName: "messenger_channel",
+    charset: "utf8",
+    collate: "utf8_unicode_ci",
+    createdAt: "created_at",
+    updatedAt: "updated_at",
+    paranoid: true,
+  }
+);
+
+MessengerChannelModel.belongsTo(CompanyModel);
+CompanyModel.hasMany(MessengerChannelModel, {
+  onDelete: "CASCADE",
+});
+
+MessengerChannelModel.sync({ logging: false });
+
+export default MessengerChannelModel;
