@@ -1,4 +1,5 @@
 import pkg from "sequelize";
+import CompanyModel from "../../company/companyModel.js";
 import sequelize from "../../../config/database/index.js";
 
 const { DataTypes } = pkg;
@@ -14,6 +15,20 @@ const GptModel = sequelize.define(
     name: {
       type: DataTypes.STRING,
     },
+    train_id: {
+      type: DataTypes.STRING,
+    },
+    is_training: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    company_id: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: CompanyModel,
+        key: "id",
+      },
+    },
   },
   {
     tableName: "gpt",
@@ -24,6 +39,11 @@ const GptModel = sequelize.define(
   }
 );
 
+CompanyModel.hasMany(GptModel, {
+  hooks: true,
+  onDelete: "CASCADE",
+});
+GptModel.belongsTo(CompanyModel);
 GptModel.sync({ logging: false });
 
 export default GptModel;

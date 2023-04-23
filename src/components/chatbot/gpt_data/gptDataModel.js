@@ -43,5 +43,5 @@ GptDataModel.hasMany(DataModel);
 GptModel.belongsTo(GptDataModel);
 DataModel.belongsTo(GptDataModel);
 
-GptDataModel.sync({ logging: false });
+GptDataModel.sync({ logging: false, alter: true });
 export default GptDataModel;
