@@ -11,9 +11,10 @@ export default class GPT3 {
     context = "",
     question,
     numberOfResponse = 3,
+    model = "davinci",
   }) {
     const generatedResponse = await openai.createCompletion({
-      model: "davinci",
+      model,
       prompt: `${context}Customer: ${question}\n`,
       temperature: 0.5,
       max_tokens: 70,

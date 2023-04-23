@@ -10,6 +10,7 @@ export const generateSuggestion = async (req, res) => {
       numberOfResponse: Number.isNaN(numberOfResponse)
         ? undefined
         : numberOfResponse,
+      user: req.user,
     });
     return res.status(200).json({
       status: StatusEnum.Success,

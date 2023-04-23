@@ -59,6 +59,7 @@ const CompanyModel = sequelize.define(
         model: GptModel,
         key: "id",
       },
+      defaultValue: 2,
     },
   },
   {
