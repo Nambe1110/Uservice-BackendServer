@@ -39,6 +39,10 @@ const ChatbotMode = {
   AUTO_REPLY: "Auto reply",
 };
 
+const DefaultGptModel = {
+  GPT_3_5: "text-davinci-003",
+};
+
 export {
   UserRole,
   ThreadType,
@@ -47,4 +51,5 @@ export {
   SenderType,
   AttachmentType,
   ChatbotMode,
+  DefaultGptModel,
 };

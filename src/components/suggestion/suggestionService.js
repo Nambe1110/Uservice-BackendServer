@@ -1,3 +1,4 @@
+import { DefaultGptModel } from "../../constants.js";
 import Lang from "../../enums/Lang.js";
 import GPT3 from "../../modules/GPT3.js";
 import Translate from "../../modules/Translate.js";
@@ -16,7 +17,7 @@ export default class SuggestionService {
         400
       );
     }
-    const gptModel = GptService.GetModelById(company.gpt_id);
+    const gptModel = await GptService.GetModelByCompanyId(company.id);
     const translatedQuestion = await Translate.translate({
       text: question,
       from: Lang.Vietnamese,
@@ -25,7 +26,7 @@ export default class SuggestionService {
     const answers = await GPT3.generateResponse({
       question: translatedQuestion,
       numberOfResponse,
-      model: gptModel.name,
+      model: gptModel?.name ?? DefaultGptModel.GPT_3_5,
     });
     const newAnswer = await Translate.translate({
       text: answers,

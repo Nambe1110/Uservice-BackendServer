@@ -51,6 +51,6 @@ CompanyModel.hasMany(DataModel, {
 });
 DataModel.belongsTo(CompanyModel);
 
-DataModel.sync({ logging: false, alter: true });
+DataModel.sync({ logging: false });
 
 export default DataModel;

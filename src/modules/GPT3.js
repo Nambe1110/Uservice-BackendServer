@@ -1,4 +1,5 @@
 import { Configuration, OpenAIApi } from "openai";
+import { DefaultGptModel } from "../constants.js";
 
 const configuration = new Configuration({
   apiKey: process.env.GPT_3_API_KEY,
@@ -11,7 +12,7 @@ export default class GPT3 {
     context = "",
     question,
     numberOfResponse = 3,
-    model = "davinci",
+    model = DefaultGptModel.GPT_3_5,
   }) {
     const generatedResponse = await openai.createCompletion({
       model,
@@ -27,7 +28,7 @@ export default class GPT3 {
 
     return generatedResponse.data.choices.map((response) => {
       const rs = response.text.replace(/^\n+/, "");
-      return rs.substring(rs.indexOf(":") + 2, rs.indexOf("\n"));
+      return rs.substring(rs.indexOf(":") + 2);
     });
   }
 }
