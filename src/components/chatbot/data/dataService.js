@@ -6,13 +6,12 @@ export class DataService {
   static async upload({ file, user, fileName }) {
     const formData = new FormData();
     formData.append("purpose", "fine-tune");
-    formData.append("file", Buffer.from(file), fileName);
+    formData.append("file", Buffer.from(file.buffer), fileName);
     const { data: uploadedFile } = await axios.post(
       "https://api.openai.com/v1/files",
       formData,
       {
         headers: {
-          ...formData.getHeaders(),
           Authorization: `Bearer ${process.env.GPT_3_API_KEY}`,
         },
       }
