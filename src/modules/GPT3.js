@@ -13,7 +13,6 @@ export default class GPT3 {
     numberOfResponse = 3,
     model = DefaultGptModel.GPT_3_5,
   }) {
-    console.log(context)
     const generatedResponse = await openai.createCompletion({
       model,
       prompt: `${context}Customer:`,
@@ -25,11 +24,6 @@ export default class GPT3 {
       n: numberOfResponse,
       stop: ["Customer:"],
     });
-
-    console.log(generatedResponse.data.choices.map((response) => {
-      const rs = response.text.replace(/^\n+/, "");
-      return rs.substring(rs.indexOf(":") + 2);
-    }))
 
     return generatedResponse.data.choices.map((response) => {
       const rs = response.text.replace(/^\n+/, "");
