@@ -4,6 +4,7 @@ import RoleEnum from "../../enums/Role.js";
 import UserModel from "./userModel.js";
 import CompanyModel from "../company/companyModel.js";
 import AppError from "../../utils/AppError.js";
+import { UserRole } from "../../constants.js";
 
 export default class UserService {
   static async joinCompany({ user, inviteCode, role = RoleEnum.Staff }) {
@@ -167,5 +168,16 @@ export default class UserService {
     }
     delete user.password;
     return user;
+  }
+
+  static async getOwnerOfCompany({ companyId }) {
+    const user = await UserModel.findOne({
+      where: { company_id: companyId, role: UserRole.OWNER },
+    });
+    if (!user) {
+      throw new AppError("Không tồn tại chủ sở hữu của công ty", 400);
+    }
+    delete user.dataValues.password;
+    return user.dataValues;
   }
 }
