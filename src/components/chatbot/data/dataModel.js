@@ -32,6 +32,10 @@ const DataModel = sequelize.define(
         key: "id",
       },
     },
+    is_using: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
     description: {
       type: DataTypes.STRING,
     },
