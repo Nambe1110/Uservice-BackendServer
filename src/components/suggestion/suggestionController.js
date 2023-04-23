@@ -1,12 +1,19 @@
+import { StatusType } from "../../constants.js";
 import StatusEnum from "../../enums/Status.js";
 import SuggestionService from "./suggestionService.js";
 
 export const generateSuggestion = async (req, res) => {
   try {
-    const { question, limit } = req.query;
+    const { thread_id: threadId, limit } = req.query;
     const numberOfResponse = Number.parseInt(limit, 10);
+    if (Number.isNaN(Number(threadId))) {
+      return res.status(400).json({
+        status: StatusType.ERROR,
+        message: "Id thread không tồn tại",
+      });
+    }
     const answers = await SuggestionService.generateSuggestion({
-      question,
+      threadId: Number(threadId),
       numberOfResponse: Number.isNaN(numberOfResponse)
         ? undefined
         : numberOfResponse,
