@@ -14,9 +14,6 @@ const GptModel = sequelize.define(
     name: {
       type: DataTypes.STRING,
     },
-    is_active: {
-      type: DataTypes.BOOLEAN,
-    },
   },
   {
     tableName: "gpt",
@@ -27,6 +24,6 @@ const GptModel = sequelize.define(
   }
 );
 
-GptModel.sync({ logging: false, alter: true });
+GptModel.sync({ logging: false });
 
 export default GptModel;
