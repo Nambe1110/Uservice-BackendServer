@@ -1,6 +1,8 @@
 import pkg from "sequelize";
+import axios from "axios";
 import sequelize from "../../../config/database/index.js";
 import CompanyModel from "../../company/companyModel.js";
+import logger from "../../../config/logger/index.js";
 
 const { DataTypes } = pkg;
 
@@ -42,5 +44,21 @@ CompanyModel.hasMany(MessengerChannelModel, {
 });
 
 MessengerChannelModel.sync({ logging: false });
+
+MessengerChannelModel.beforeDestroy(async (channel) => {
+  const { page_id } = channel;
+  try {
+    await axios.delete(
+      `${process.env.GRAPH_API_URL}/${page_id}/subscribed_apps`,
+      {
+        params: {
+          access_token: `${process.env.FACEBOOK_APP_ID}|${process.env.FACEBOOK_APP_SECRET}`,
+        },
+      }
+    );
+  } catch (error) {
+    logger.error(error.response.data);
+  }
+});
 
 export default MessengerChannelModel;

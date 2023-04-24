@@ -18,7 +18,6 @@ import CustomerService from "../../customer/customerService.js";
 import MessageService from "../../message/messageService.js";
 import AttachmentService from "../../attachment/attachmentService.js";
 
-const HOST_URL = "https://graph.facebook.com/v16.0";
 const pendingMessages = new Map();
 const attachmentTypeMapping = {};
 
@@ -34,14 +33,17 @@ attachmentTypeMapping.file = AttachmentType.FILE;
 export default class MessengerService {
   static async getPages({ userId, userAccessToken, companyId }) {
     try {
-      const tokenResponse = await axios.get(`${HOST_URL}/oauth/access_token`, {
-        params: {
-          grant_type: "fb_exchange_token",
-          client_id: process.env.FACEBOOK_APP_ID,
-          client_secret: process.env.FACEBOOK_APP_SECRET,
-          fb_exchange_token: userAccessToken,
-        },
-      });
+      const tokenResponse = await axios.get(
+        `${process.env.GRAPH_API_URL}/oauth/access_token`,
+        {
+          params: {
+            grant_type: "fb_exchange_token",
+            client_id: process.env.FACEBOOK_APP_ID,
+            client_secret: process.env.FACEBOOK_APP_SECRET,
+            fb_exchange_token: userAccessToken,
+          },
+        }
+      );
 
       userAccessToken = tokenResponse.data.access_token;
 
@@ -49,12 +51,15 @@ export default class MessengerService {
       let after = null;
 
       while (true) {
-        const response = await axios.get(`${HOST_URL}/${userId}/accounts`, {
-          params: {
-            access_token: userAccessToken,
-            after,
-          },
-        });
+        const response = await axios.get(
+          `${process.env.GRAPH_API_URL}/${userId}/accounts`,
+          {
+            params: {
+              access_token: userAccessToken,
+              after,
+            },
+          }
+        );
 
         response.data.data.forEach((page) => {
           pages.push({
@@ -70,7 +75,7 @@ export default class MessengerService {
 
       const pictures = await Promise.all(
         pages.map((page) =>
-          axios.get(`${HOST_URL}/${page.id}/picture`, {
+          axios.get(`${process.env.GRAPH_API_URL}/${page.id}/picture`, {
             params: {
               access_token: page.access_token,
               redirect: false,
@@ -107,25 +112,34 @@ export default class MessengerService {
 
   static async connectPage({ pageId, pageAccessToken, companyId }) {
     try {
-      await axios.post(`${HOST_URL}/${pageId}/subscribed_apps`, {
-        subscribed_fields: ["messages", "message_echoes"],
-        access_token: pageAccessToken,
-      });
-
-      const meResponse = await axios.get(`${HOST_URL}/${pageId}`, {
-        params: {
+      await axios.post(
+        `${process.env.GRAPH_API_URL}/${pageId}/subscribed_apps`,
+        {
+          subscribed_fields: ["messages", "message_echoes"],
           access_token: pageAccessToken,
-        },
-      });
+        }
+      );
 
-      const pictureResponse = await axios.get(`${HOST_URL}/${pageId}/picture`, {
-        params: {
-          access_token: pageAccessToken,
-          redirect: false,
-          height: 100,
-          width: 100,
-        },
-      });
+      const meResponse = await axios.get(
+        `${process.env.GRAPH_API_URL}/${pageId}`,
+        {
+          params: {
+            access_token: pageAccessToken,
+          },
+        }
+      );
+
+      const pictureResponse = await axios.get(
+        `${process.env.GRAPH_API_URL}/${pageId}/picture`,
+        {
+          params: {
+            access_token: pageAccessToken,
+            redirect: false,
+            height: 100,
+            width: 100,
+          },
+        }
+      );
 
       const [newMessengerChannel] = await MessengerChannelModel.findOrCreate({
         where: {
@@ -233,7 +247,7 @@ export default class MessengerService {
                   );
 
                   const customerInfo = await axios.get(
-                    `${HOST_URL}/${customerApiId}`,
+                    `${process.env.GRAPH_API_URL}/${customerApiId}`,
                     {
                       params: {
                         fields:
@@ -315,7 +329,7 @@ export default class MessengerService {
 
                   if (attachments.length > 0) {
                     const attachmentDetailResponse = await axios.get(
-                      `${HOST_URL}/${messageApiId}/attachments`,
+                      `${process.env.GRAPH_API_URL}/${messageApiId}/attachments`,
                       {
                         params: {
                           access_token: page_access_token,
@@ -334,7 +348,7 @@ export default class MessengerService {
 
                           const newAttchment =
                             await AttachmentService.createAttachment({
-                              message_id: newMessage.id,
+                              messageId: newMessage.id,
                               url,
                               type: attachmentTypeMapping[type],
                               name: attachmentName,
@@ -404,7 +418,7 @@ export default class MessengerService {
       attachment.map(async (attach) => {
         const { type, name, url } = attach;
         await AttachmentService.createAttachment({
-          message_id: message.id,
+          messageId: message.id,
           url,
           type,
           name,
@@ -454,16 +468,19 @@ export default class MessengerService {
       let messageResponse;
 
       if (content) {
-        messageResponse = await axios.post(`${HOST_URL}/${page_id}/messages`, {
-          recipient: {
-            id: threadApiId,
-          },
-          message: {
-            text: content,
-          },
-          messaging_type: "RESPONSE",
-          access_token: page_access_token,
-        });
+        messageResponse = await axios.post(
+          `${process.env.GRAPH_API_URL}/${page_id}/messages`,
+          {
+            recipient: {
+              id: threadApiId,
+            },
+            message: {
+              text: content,
+            },
+            messaging_type: "RESPONSE",
+            access_token: page_access_token,
+          }
+        );
       } else {
         if (attachment.length > 1)
           throw new Error("Only one attachment can be sent at a time");
@@ -471,22 +488,25 @@ export default class MessengerService {
         if (!Object.values(AttachmentType).includes(attachment[0].type))
           throw new Error("Attachment type is not supported");
 
-        messageResponse = await axios.post(`${HOST_URL}/${page_id}/messages`, {
-          recipient: {
-            id: threadApiId,
-          },
-          message: {
-            attachment: {
-              type: attachmentTypeMapping[attachment[0].type],
-              payload: {
-                url: attachment[0].url,
-                is_reusable: true,
+        messageResponse = await axios.post(
+          `${process.env.GRAPH_API_URL}/${page_id}/messages`,
+          {
+            recipient: {
+              id: threadApiId,
+            },
+            message: {
+              attachment: {
+                type: attachmentTypeMapping[attachment[0].type],
+                payload: {
+                  url: attachment[0].url,
+                  is_reusable: true,
+                },
               },
             },
-          },
-          messaging_type: "RESPONSE",
-          access_token: page_access_token,
-        });
+            messaging_type: "RESPONSE",
+            access_token: page_access_token,
+          }
+        );
       }
 
       pendingMessages.set(messageResponse.data.message_id, {
