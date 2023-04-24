@@ -30,4 +30,12 @@ export default class GPT3 {
       return rs.substring(rs.indexOf(":") + 2);
     });
   }
+
+  static async uploadFile({ file }) {
+    return openai.createFile(file, "fine-tune", {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  }
 }
