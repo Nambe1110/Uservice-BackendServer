@@ -17,6 +17,7 @@ import threadRouter from "./components/thread/threadApi.js";
 import customerRouter from "./components/customer/customerApi.js";
 import suggestionRouter from "./components/suggestion/suggestionApi.js";
 import uploaderRouter from "./components/uploader/uploaderApi.js";
+import dataRouter from "./components/chatbot/data/dataApi.js";
 
 dotenv.config();
 
@@ -48,6 +49,7 @@ app.use("/api/thread", threadRouter);
 app.use("/api/customer", customerRouter);
 app.use("/api/suggestion", suggestionRouter);
 app.use("/api/upload", uploaderRouter);
+app.use("/api/train-data", dataRouter);
 
 app.get("/", (req, res) => {
   res.status(200).send({

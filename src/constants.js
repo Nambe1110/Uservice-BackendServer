@@ -34,6 +34,16 @@ const AttachmentType = {
   FILE: "File",
 };
 
+const ChatbotMode = {
+  OFF: "Off",
+  SUGGESTION: "Suggestion",
+  AUTO_REPLY: "Auto reply",
+};
+
+const DefaultGptModel = {
+  GPT_3_5: "text-davinci-003",
+};
+
 export {
   UserRole,
   ThreadType,
@@ -41,4 +51,6 @@ export {
   StatusType,
   SenderType,
   AttachmentType,
+  ChatbotMode,
+  DefaultGptModel,
 };

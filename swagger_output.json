@@ -1103,7 +1103,7 @@
         "description": "",
         "parameters": [
           {
-            "name": "question",
+            "name": "thread_id",
             "in": "query",
             "type": "string"
           },
@@ -1116,6 +1116,9 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
           },
           "500": {
             "description": "Internal Server Error"
@@ -1133,6 +1136,23 @@
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/train-data/upload": {
+      "post": {
+        "tags": [
+          "Customer"
+        ],
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }
