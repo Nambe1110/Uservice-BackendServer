@@ -2,6 +2,7 @@ import ThreadService from "./threadService.js";
 import ChannelService from "../channel/channelService.js";
 import TelegramUserChannelService from "../channel/telegram/user/telegramUserChannelService.js";
 import TelegramBotChannelService from "../channel/telegram/bot/telegramBotChannelService.js";
+import MessengerChannelService from "../channel/messenger/messengerChannelService.js";
 import { StatusType, ChannelType } from "../../constants.js";
 
 export default async (io, socket) => {
@@ -18,38 +19,58 @@ export default async (io, socket) => {
       if (channel.company_id !== user.company_id)
         throw new Error("You don't have permission to send message");
 
-      if (channel.type === ChannelType.TELEGRAM_USER) {
-        await TelegramUserChannelService.sendMessage({
-          companyId: user.company_id,
-          channelDetailId: channel.channel_detail_id,
-          threadId: thread.id,
-          threadApiId: thread.thread_api_id,
-          senderId: user.id,
-          content,
-          repliedMessageId,
-          attachment,
-          socket,
-          callback,
-        });
-      } else if (channel.type === ChannelType.TELEGRAM_BOT) {
-        await TelegramBotChannelService.sendMessage({
-          companyId: user.company_id,
-          channelDetailId: channel.channel_detail_id,
-          threadId: thread.id,
-          threadApiId: thread.thread_api_id,
-          senderId: user.id,
-          content,
-          repliedMessageId,
-          attachment,
-          socket,
-          callback,
-        });
+      switch (channel.type) {
+        case ChannelType.TELEGRAM_USER:
+          await TelegramUserChannelService.sendMessage({
+            companyId: user.company_id,
+            channelDetailId: channel.channel_detail_id,
+            threadId: thread.id,
+            threadApiId: thread.thread_api_id,
+            senderId: user.id,
+            content,
+            repliedMessageId,
+            attachment,
+            socket,
+            callback,
+          });
+          break;
+        case ChannelType.TELEGRAM_BOT:
+          await TelegramBotChannelService.sendMessage({
+            companyId: user.company_id,
+            channelDetailId: channel.channel_detail_id,
+            threadId: thread.id,
+            threadApiId: thread.thread_api_id,
+            senderId: user.id,
+            content,
+            repliedMessageId,
+            attachment,
+            socket,
+            callback,
+          });
+          break;
+        case ChannelType.MESSENGER:
+          await MessengerChannelService.sendMessage({
+            companyId: user.company_id,
+            channelDetailId: channel.channel_detail_id,
+            threadId: thread.id,
+            threadApiId: thread.thread_api_id,
+            senderId: user.id,
+            content,
+            repliedMessageId,
+            attachment,
+            socket,
+            callback,
+          });
+          break;
+        default:
+          throw new Error("Channel type not supported");
       }
     } catch (error) {
-      callback({
-        status: StatusType.ERROR,
-        message: error.message,
-      });
+      if (callback)
+        callback({
+          status: StatusType.ERROR,
+          message: error.message,
+        });
     }
   });
 };

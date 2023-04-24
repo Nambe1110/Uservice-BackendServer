@@ -13,6 +13,7 @@ const ChannelType = {
   TELEGRAM_BOT: "TelegramBot",
   TELEGRAM_USER: "TelegramUser",
   EMAIL: "Email",
+  MESSENGER: "Messenger",
 };
 
 const StatusType = {

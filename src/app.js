@@ -28,7 +28,14 @@ const swaggerFile = JSON.parse(readFileSync(fileUrl));
 
 app.use("/doc", swaggerUi.serve, swaggerUi.setup(swaggerFile));
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(
+  express.json({
+    limit: "50mb",
+    verify: (req, res, buf) => {
+      req.rawBody = buf.toString();
+    },
+  })
+);
 app.use(cors());
 
 app.use("/api/example", exampleRouter);
