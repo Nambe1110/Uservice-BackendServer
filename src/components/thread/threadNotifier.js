@@ -132,10 +132,11 @@ export default async (io) => {
       });
     } catch (error) {
       logger.error(error.message);
-      callback({
-        status: StatusType.ERROR,
-        message: error.message,
-      });
+      if (callback)
+        callback({
+          status: StatusType.ERROR,
+          message: error.message,
+        });
     }
   };
 };

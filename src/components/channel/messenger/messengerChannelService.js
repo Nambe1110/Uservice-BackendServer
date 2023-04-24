@@ -19,6 +19,17 @@ import MessageService from "../../message/messageService.js";
 import AttachmentService from "../../attachment/attachmentService.js";
 
 const HOST_URL = "https://graph.facebook.com/v16.0";
+const pendingMessages = new Map();
+const attachmentTypeMapping = {};
+
+attachmentTypeMapping[AttachmentType.IMAGE] = "image";
+attachmentTypeMapping[AttachmentType.VIDEO] = "video";
+attachmentTypeMapping[AttachmentType.AUDIO] = "audio";
+attachmentTypeMapping[AttachmentType.FILE] = "file";
+attachmentTypeMapping.image = AttachmentType.IMAGE;
+attachmentTypeMapping.video = AttachmentType.VIDEO;
+attachmentTypeMapping.audio = AttachmentType.AUDIO;
+attachmentTypeMapping.file = AttachmentType.FILE;
 
 export default class MessengerService {
   static async getPages({ userId, userAccessToken }) {
@@ -156,6 +167,33 @@ export default class MessengerService {
                 pageId === recipientId ? senderId : recipientId;
               const customerApiId = threadApiId;
 
+              if (pendingMessages.has(messageApiId)) {
+                const {
+                  companyId,
+                  threadId,
+                  senderId: pendingSenderId,
+
+                  attachment,
+                  callback,
+                  socket,
+                } = pendingMessages.get(messageApiId);
+
+                await this.#messageSendSucceeded({
+                  companyId,
+                  threadId,
+                  messageApiId,
+                  senderId: pendingSenderId,
+                  content,
+                  timestamp,
+                  attachment,
+                  callback,
+                  socket,
+                });
+
+                pendingMessages.delete(messageApiId);
+                return;
+              }
+
               const channels = await sequelize.query(
                 `SELECT channel.id, channel.company_id, messenger_channel.page_access_token
                 FROM channel
@@ -213,6 +251,7 @@ export default class MessengerService {
                       last_name,
                       image_url: profile_pic,
                       alias: name,
+                      profile: `https://www.messenger.com/t/${customerApiId}`,
                     }
                   );
 
@@ -263,43 +302,38 @@ export default class MessengerService {
                     }
                   );
 
-                  await Promise.all(
-                    attachments.map(async (attach) => {
-                      const {
-                        type,
-                        payload: { url },
-                      } = attach;
-
-                      let attachmentType;
-
-                      switch (type) {
-                        case "image":
-                          attachmentType = AttachmentType.IMAGE;
-                          break;
-                        case "video":
-                          attachmentType = AttachmentType.VIDEO;
-                          break;
-                        case "audio":
-                          attachmentType = AttachmentType.AUDIO;
-                          break;
-                        case "file":
-                          attachmentType = AttachmentType.FILE;
-                          break;
-                        default:
-                          attachmentType = AttachmentType.FILE;
-                          break;
+                  if (attachments.length > 0) {
+                    const attachmentDetailResponse = await axios.get(
+                      `${HOST_URL}/${messageApiId}/attachments`,
+                      {
+                        params: {
+                          access_token: page_access_token,
+                        },
                       }
+                    );
 
-                      const newAttchment =
-                        await AttachmentService.createAttachment({
-                          message_id: newMessage.id,
-                          url,
-                          type: attachmentType,
-                        });
+                    await Promise.all(
+                      attachmentDetailResponse.data.data.map(
+                        async (attach, index) => {
+                          const {
+                            type,
+                            payload: { url },
+                          } = attachments[index];
+                          const { name: attachmentName } = attach;
 
-                      attachment.push(newAttchment);
-                    })
-                  );
+                          const newAttchment =
+                            await AttachmentService.createAttachment({
+                              message_id: newMessage.id,
+                              url,
+                              type: attachmentTypeMapping[type],
+                              name: attachmentName,
+                            });
+
+                          attachment.push(newAttchment);
+                        }
+                      )
+                    );
+                  }
 
                   await threadNotifier.onNewMessage({
                     created: true,
@@ -320,6 +354,142 @@ export default class MessengerService {
       );
     } catch (error) {
       logger.error(error.message);
+    }
+  }
+
+  static async #messageSendSucceeded({
+    companyId,
+    threadId,
+    messageApiId,
+    senderId,
+    content,
+    timestamp,
+    attachment,
+    callback,
+    socket,
+  }) {
+    const thread = await ThreadService.getThreadById(threadId);
+
+    const customer = await CustomerService.getCustomer({
+      threadId: thread.id,
+    });
+
+    const [message] = await MessageService.getOrCreateMessage(
+      {
+        thread_id: thread.id,
+        message_api_id: messageApiId,
+      },
+      {
+        sender_type: SenderType.STAFF,
+        sender_id: senderId,
+        content,
+        timestamp,
+      }
+    );
+
+    const sender = await UserService.getUserById(senderId);
+
+    await Promise.all(
+      attachment.map(async (attach) => {
+        const { type, name, url } = attach;
+        await AttachmentService.createAttachment({
+          message_id: message.id,
+          url,
+          type,
+          name,
+        });
+      })
+    );
+
+    await threadNotifier.onMessageSendSucceeded({
+      companyId,
+      channelType: ChannelType.TELEGRAM_USER,
+      thread,
+      customer,
+      message,
+      sender,
+      attachment,
+      callback,
+      socket,
+    });
+  }
+
+  static async sendMessage({
+    companyId,
+    channelDetailId,
+    threadId,
+    threadApiId,
+    senderId,
+    content,
+    attachment,
+    callback,
+    socket,
+  }) {
+    try {
+      if (content && attachment.length > 0)
+        throw new Error("Content and attachment cannot be sent together");
+
+      if (!content && attachment.length === 0)
+        throw new Error("Content or attachment must not be empty");
+
+      const messengerChannel = await MessengerChannelModel.findOne({
+        where: {
+          company_id: companyId,
+          id: channelDetailId,
+        },
+      });
+      const { page_id, page_access_token } = messengerChannel;
+
+      let messageResponse;
+
+      if (content) {
+        messageResponse = await axios.post(`${HOST_URL}/${page_id}/messages`, {
+          recipient: {
+            id: threadApiId,
+          },
+          message: {
+            text: content,
+          },
+          messaging_type: "RESPONSE",
+          access_token: page_access_token,
+        });
+      } else {
+        if (attachment.length > 1)
+          throw new Error("Only one attachment can be sent at a time");
+
+        if (!Object.values(AttachmentType).includes(attachment[0].type))
+          throw new Error("Attachment type is not supported");
+
+        messageResponse = await axios.post(`${HOST_URL}/${page_id}/messages`, {
+          recipient: {
+            id: threadApiId,
+          },
+          message: {
+            attachment: {
+              type: attachmentTypeMapping[attachment[0].type],
+              payload: {
+                url: attachment[0].url,
+                is_reusable: true,
+              },
+            },
+          },
+          messaging_type: "RESPONSE",
+          access_token: page_access_token,
+        });
+      }
+
+      pendingMessages.set(messageResponse.data.message_id, {
+        companyId,
+        threadId,
+        senderId,
+        attachment,
+        callback,
+        socket,
+      });
+    } catch (error) {
+      logger.error(error.response.data);
+      if (error.response) throw new Error(error.response.data.error.message);
+      else throw new Error(error.message);
     }
   }
 }
