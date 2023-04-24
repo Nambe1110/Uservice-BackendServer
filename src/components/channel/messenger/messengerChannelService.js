@@ -32,7 +32,7 @@ attachmentTypeMapping.audio = AttachmentType.AUDIO;
 attachmentTypeMapping.file = AttachmentType.FILE;
 
 export default class MessengerService {
-  static async getPages({ userId, userAccessToken }) {
+  static async getPages({ userId, userAccessToken, companyId }) {
     try {
       const tokenResponse = await axios.get(`${HOST_URL}/oauth/access_token`, {
         params: {
@@ -81,8 +81,19 @@ export default class MessengerService {
         )
       );
 
+      const messengerChannels = await MessengerChannelModel.findAll({
+        where: {
+          company_id: companyId,
+        },
+      });
+
+      const connectedPages = messengerChannels.map(
+        (channel) => channel.page_id
+      );
+
       pages.forEach((page, index) => {
         page.image_url = pictures[index].data.data.url;
+        page.is_connected = connectedPages.includes(page.id);
       });
 
       return pages;
@@ -487,7 +498,6 @@ export default class MessengerService {
         socket,
       });
     } catch (error) {
-      logger.error(error.response.data);
       if (error.response) throw new Error(error.response.data.error.message);
       else throw new Error(error.message);
     }

@@ -45,11 +45,13 @@ export const registerWebhook = async (req, res) => {
 
 export const getPages = async (req, res) => {
   const { userId, userAccessToken } = req.body;
+  const { user } = req;
 
   try {
     const pages = await MessengerService.getPages({
       userId,
       userAccessToken,
+      companyId: user.company_id,
     });
 
     return res.status(200).json({ status: StatusType.SUCCESS, data: pages });
