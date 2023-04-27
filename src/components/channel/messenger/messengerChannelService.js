@@ -17,6 +17,7 @@ import UserService from "../../user/userService.js";
 import CustomerService from "../../customer/customerService.js";
 import MessageService from "../../message/messageService.js";
 import AttachmentService from "../../attachment/attachmentService.js";
+import S3 from "../../../modules/S3.js";
 
 const pendingMessages = new Map();
 const attachmentTypeMapping = {};
@@ -141,6 +142,11 @@ export default class MessengerService {
         }
       );
 
+      const pictureUrl = await S3.uploadFromUrlToS3({
+        url: pictureResponse.data.data.url,
+        companyId,
+      });
+
       const [newMessengerChannel] = await MessengerChannelModel.findOrCreate({
         where: {
           company_id: companyId,
@@ -156,7 +162,7 @@ export default class MessengerService {
         type: ChannelType.MESSENGER,
         channelDetailId: newMessengerChannel.id,
         name: meResponse.data.name,
-        imageUrl: pictureResponse.data.data.url,
+        imageUrl: pictureUrl,
       });
 
       return {
@@ -265,6 +271,11 @@ export default class MessengerService {
                     profile_pic,
                   } = customerInfo.data;
 
+                  const pictureUrl = await S3.uploadFromUrlToS3({
+                    url: profile_pic,
+                    companyId: company_id,
+                  });
+
                   const [customer] = await CustomerService.getOrCreateCustomer(
                     {
                       thread_id: thread.id,
@@ -272,16 +283,16 @@ export default class MessengerService {
                       customer_api_id: customerApiId,
                     },
                     {
-                      first_name: `${middle_name} ${first_name}`,
-                      last_name,
-                      image_url: profile_pic,
+                      first_name: last_name,
+                      last_name: `${middle_name} ${first_name}`,
+                      image_url: pictureUrl,
                       alias: name,
                       profile: `https://www.messenger.com/t/${customerApiId}`,
                     }
                   );
 
                   if (!thread.image_url) {
-                    thread.image_url = profile_pic;
+                    thread.image_url = pictureUrl;
                     await thread.save();
                   }
 
@@ -346,10 +357,15 @@ export default class MessengerService {
                           } = attachments[index];
                           const { name: attachmentName } = attach;
 
+                          const attachmentUrl = await S3.uploadFromUrlToS3({
+                            url,
+                            companyId: company_id,
+                          });
+
                           const newAttchment =
                             await AttachmentService.createAttachment({
                               messageId: newMessage.id,
-                              url,
+                              url: attachmentUrl,
                               type: attachmentTypeMapping[type],
                               name: attachmentName,
                             });

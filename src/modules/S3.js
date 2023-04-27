@@ -8,6 +8,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import randomBytes from "randombytes";
 import path from "path";
 import fs from "fs";
+import axios from "axios";
 import logger from "../config/logger/index.js";
 
 const s3BucketUrl = process.env.BUCKET_URL;
@@ -49,9 +50,6 @@ export default class S3 {
     }
   }
 
-  // file: value read from file
-  // destinationFolder: folder on S3 bucket to upload file to
-  // ex: avatar
   static async pushMemoryStorageFileToS3(file, destinationFolder) {
     const randomName = randomUniqueFileName(file.originalname);
     const key =
@@ -74,6 +72,34 @@ export default class S3 {
     }
     const url = `${s3BucketUrl}${key}`;
     return url;
+  }
+
+  static async uploadFromUrlToS3({ url, companyId }) {
+    if (!url) return null;
+
+    try {
+      const response = await axios.get(url, {
+        responseType: "arraybuffer",
+        responseEncoding: "binary",
+      });
+
+      const randomName = randomUniqueFileName(url);
+      const key = `company/${companyId}/${randomName}`;
+
+      const command = new PutObjectCommand({
+        ContentType: response.headers["content-type"],
+        ContentLength: response.data.length.toString(),
+        Bucket: process.env.BUCKET_NAME,
+        Key: key,
+        Body: response.data,
+      });
+      await s3.send(command);
+      const S3url = `${s3BucketUrl}${key}`;
+
+      return S3url;
+    } catch {
+      logger.error("Error when upload file from url to S3");
+    }
   }
 
   static async getFileUrl(filePath, timeToLive = 7200) {
