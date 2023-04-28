@@ -58,3 +58,23 @@ export const getUserCompanyById = async (req, res) => {
       .json({ status: StatusEnum.Error, message: error.message });
   }
 };
+
+export const transferCompany = async (req, res) => {
+  try {
+    const { userID, password } = req.body;
+    const currentUser = req.user;
+    const updatedUser = await UserService.transferCompany({
+      currentUser,
+      userID,
+      password,
+    });
+
+    return res
+      .status(200)
+      .json({ status: StatusEnum.Success, data: updatedUser });
+  } catch (error) {
+    return res
+      .status(error.code ?? 500)
+      .json({ status: StatusEnum.Error, message: error.message });
+  }
+};
