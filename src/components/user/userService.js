@@ -192,18 +192,14 @@ export default class UserService {
     }
 
     const user = await UserModel.findByPk(userID);
-    if (!user) {
-      throw new AppError("User Id không tồn tại");
-    }
-    if (user.company_id) {
+    if (!user || !user.is_verified) {
       throw new AppError(
-        "Người dùng muốn chuyển nhượng đã tham gia một công ty khác.",
-        400
+        "User Id không tồn tại hoặc người dùng chưa kích hoạt tài khoản"
       );
     }
-    if (!user.is_verified) {
+    if (user.company_id !== currUser.company_id) {
       throw new AppError(
-        "Người dùng muốn chuyển nhượng chưa kích hoạt tài khoản.",
+        "Người được chuyển nhượng không thuộc cùng công ty với bạn.",
         400
       );
     }
@@ -212,8 +208,7 @@ export default class UserService {
     user.role = UserRole.OWNER;
     await user.save();
 
-    currUser.company_id = null;
-    currUser.role = null;
+    currUser.role = UserRole.MANAGER;
     const updatedCurrentUser = await currUser.save();
     delete updatedCurrentUser.dataValues.password;
 
