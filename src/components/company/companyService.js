@@ -4,9 +4,8 @@ import AppError from "../../utils/AppError.js";
 import UserService from "../user/userService.js";
 import CompanyModel from "./companyModel.js";
 import { listCompany } from "../../utils/singleton.js";
-import { ChatbotMode } from "../../constants.js";
+import { ChatbotMode, UserRole } from "../../constants.js";
 import S3 from "../../modules/S3.js";
-import { UserRole } from "../../constants.js";
 
 export default class CompanyService {
   static async createCompany({ user, companyName, imageUrl = null }) {
