@@ -27,7 +27,13 @@ export default class CustomerService {
       `SELECT customer.*,
         t2.id AS 'last_message.id',
         t2.content AS 'last_message.content',
-        t2.timestamp AS 'last_message.timestamp'
+        t2.timestamp AS 'last_message.timestamp',
+        t4.type AS 'channel.type',
+        t4.name AS 'channel.name',
+        t4.image_url AS 'channel.image_url',
+        t4.id AS 'channel.id',
+        t4.is_connected AS 'channel.is_connected'
+
       FROM customer
       JOIN 
       (
@@ -38,6 +44,8 @@ export default class CustomerService {
           GROUP BY sender_id
         )
       ) AS t2 ON t2.sender_id = customer.id
+      JOIN thread AS t3 ON t3.id = customer.thread_id
+      JOIN channel AS t4 ON t4.id = t3.channel_id
       WHERE customer.company_id = :companyId
       LIMIT :limit
       OFFSET :offset`,
