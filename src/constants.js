@@ -13,6 +13,7 @@ const ChannelType = {
   TELEGRAM_BOT: "TelegramBot",
   TELEGRAM_USER: "TelegramUser",
   EMAIL: "Email",
+  MESSENGER: "Messenger",
 };
 
 const StatusType = {
@@ -39,6 +40,10 @@ const ChatbotMode = {
   AUTO_REPLY: "Auto reply",
 };
 
+const DefaultGptModel = {
+  GPT_3_5: "text-davinci-003",
+};
+
 export {
   UserRole,
   ThreadType,
@@ -47,4 +52,5 @@ export {
   SenderType,
   AttachmentType,
   ChatbotMode,
+  DefaultGptModel,
 };

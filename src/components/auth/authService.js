@@ -65,8 +65,12 @@ export default class AuthService {
 
   static async refreshToken(token) {
     const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+    const user = await UserModel.findOne({ where: { id: decoded.id } });
+    if (!user) {
+      throw new AppError("Thông tin người dùng không hợp lệ", 401);
+    }
     return {
-      access_token: generateTokens(decoded).access_token,
+      access_token: generateTokens(user).access_token,
       refresh_token: token,
     };
   }

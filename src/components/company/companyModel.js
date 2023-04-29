@@ -43,6 +43,15 @@ const CompanyModel = sequelize.define(
       }),
       defaultValue: ChatbotMode.SUGGESTION,
     },
+    email: {
+      type: DataTypes.STRING,
+    },
+    phone_number: {
+      type: DataTypes.STRING,
+    },
+    website: {
+      type: DataTypes.STRING,
+    },
   },
   {
     tableName: "company",

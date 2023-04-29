@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyToken } from "../../middlewares/verifyToken.js";
+import { upload, verifyToken } from "../../middlewares/index.js";
 
 import {
   changeChatbotMode,
@@ -7,6 +7,8 @@ import {
   deleteCompany,
   getCompanyDetails,
   joinCompany,
+  changeAvatar,
+  updateProfile,
 } from "./companyController.js";
 import { verifyRole } from "../../middlewares/index.js";
 
@@ -17,7 +19,7 @@ companyRouter.use("/", (req, res, next) => {
   next();
 });
 
-companyRouter.use("/", verifyToken());
+companyRouter.use("/", verifyToken.verifyToken());
 
 companyRouter.post("/create", createCompany);
 companyRouter.post("/join", joinCompany);
@@ -28,5 +30,11 @@ companyRouter.put(
   changeChatbotMode
 );
 companyRouter.delete("/delete", deleteCompany);
+companyRouter.patch(
+  "/avatar",
+  [verifyToken.verifyToken(), upload.single("avatar")],
+  changeAvatar
+);
+companyRouter.put("/profile", verifyToken.verifyToken(), updateProfile);
 
 export default companyRouter;

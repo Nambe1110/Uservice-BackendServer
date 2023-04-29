@@ -4,6 +4,7 @@ import RoleEnum from "../../enums/Role.js";
 import UserModel from "./userModel.js";
 import CompanyModel from "../company/companyModel.js";
 import AppError from "../../utils/AppError.js";
+import { UserRole } from "../../constants.js";
 
 export default class UserService {
   static async joinCompany({ user, inviteCode, role = RoleEnum.Staff }) {
@@ -130,7 +131,7 @@ export default class UserService {
     if (newRole !== RoleEnum.Manager && newRole !== RoleEnum.Staff) {
       throw new AppError("Quyền muốn cập nhật không hợp lệ", 406);
     }
-    if (currentUser.id === userID) {
+    if (currentUser.id.toString() === userID) {
       throw new AppError("Không thể tự thay đổi quyền của bạn", 406);
     }
 
@@ -167,5 +168,50 @@ export default class UserService {
     }
     delete user.password;
     return user;
+  }
+
+  static async getOwnerOfCompany({ companyId }) {
+    const user = await UserModel.findOne({
+      where: { company_id: companyId, role: UserRole.OWNER },
+    });
+    if (!user) {
+      throw new AppError("Không tồn tại chủ sở hữu của công ty", 400);
+    }
+    delete user.dataValues.password;
+    return user.dataValues;
+  }
+
+  static async transferCompany({ currentUser, userID, password }) {
+    if (currentUser.id.toString() === userID) {
+      throw new AppError("Không thể chuyển nhượng công ty cho chính bạn", 406);
+    }
+
+    const currUser = await UserModel.findByPk(currentUser.id);
+    if (!(await bcrypt.compare(password, currUser.password))) {
+      throw new AppError("Mật khẩu không đúng", 401);
+    }
+
+    const user = await UserModel.findByPk(userID);
+    if (!user || !user.is_verified) {
+      throw new AppError(
+        "User Id không tồn tại hoặc người dùng chưa kích hoạt tài khoản"
+      );
+    }
+    if (user.company_id !== currUser.company_id) {
+      throw new AppError(
+        "Người được chuyển nhượng không thuộc cùng công ty với bạn.",
+        400
+      );
+    }
+
+    user.company_id = currUser.company_id;
+    user.role = UserRole.OWNER;
+    await user.save();
+
+    currUser.role = UserRole.MANAGER;
+    const updatedCurrentUser = await currUser.save();
+    delete updatedCurrentUser.dataValues.password;
+
+    return updatedCurrentUser;
   }
 }

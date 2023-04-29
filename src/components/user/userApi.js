@@ -4,6 +4,7 @@ import {
   getCompanyMembers,
   changeUserRole,
   getUserCompanyById,
+  transferCompany,
 } from "./userController.js";
 
 const userRouter = express.Router({ mergeParams: true });
@@ -28,5 +29,9 @@ userRouter.patch(
   [verifyToken.verifyToken(), verifyRole.isOwner],
   changeUserRole
 );
-
+userRouter.patch(
+  "/transfer-company",
+  [verifyToken.verifyToken(true), verifyRole.isOwner],
+  transferCompany
+);
 export default userRouter;

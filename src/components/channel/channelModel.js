@@ -3,6 +3,7 @@ import sequelize from "../../config/database/index.js";
 import Company from "../company/companyModel.js";
 import TelegramBotChannelModel from "./telegram/bot/telegramBotChannelModel.js";
 import TelegramUserChannelModel from "./telegram/user/telegramUserChannelModel.js";
+import MessengerChannelModel from "./messenger/messengerChannelModel.js";
 import { ChannelType } from "../../constants.js";
 
 const { DataTypes } = pkg;
@@ -77,6 +78,14 @@ ChannelModel.beforeDestroy(async (channel) => {
       break;
     case ChannelType.TELEGRAM_USER:
       await TelegramUserChannelModel.destroy({
+        where: {
+          id: channelDetailId,
+        },
+        individualHooks: true,
+      });
+      break;
+    case ChannelType.MESSENGER:
+      await MessengerChannelModel.destroy({
         where: {
           id: channelDetailId,
         },

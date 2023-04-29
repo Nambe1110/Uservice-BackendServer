@@ -1,4 +1,5 @@
 import { Configuration, OpenAIApi } from "openai";
+import { DefaultGptModel } from "../constants.js";
 
 const configuration = new Configuration({
   apiKey: process.env.GPT_3_API_KEY,
@@ -8,13 +9,13 @@ const openai = new OpenAIApi(configuration);
 
 export default class GPT3 {
   static async generateResponse({
-    context = "",
-    question,
+    context,
     numberOfResponse = 3,
+    model = DefaultGptModel.GPT_3_5,
   }) {
     const generatedResponse = await openai.createCompletion({
-      model: "davinci",
-      prompt: `${context}Customer: ${question}\n`,
+      model,
+      prompt: `${context}Customer:`,
       temperature: 0.5,
       max_tokens: 70,
       top_p: 1,
@@ -26,7 +27,15 @@ export default class GPT3 {
 
     return generatedResponse.data.choices.map((response) => {
       const rs = response.text.replace(/^\n+/, "");
-      return rs.substring(rs.indexOf(":") + 2, rs.indexOf("\n"));
+      return rs.substring(rs.indexOf(":") + 2);
+    });
+  }
+
+  static async uploadFile({ file }) {
+    return openai.createFile(file, "fine-tune", {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     });
   }
 }
