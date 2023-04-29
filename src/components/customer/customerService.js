@@ -1,6 +1,9 @@
 import CustomerModel from "./customerModel.js";
 import sequelize from "../../config/database/index.js";
 import AppError from "../../utils/AppError.js";
+import ThreadModel from "../thread/threadModel.js";
+import ChannelModel from "../channel/channelModel.js";
+import { ChannelType } from "../../constants.js";
 
 export default class CustomerService {
   static async getOrCreateCustomer(where, defaults) {
@@ -81,5 +84,31 @@ export default class CustomerService {
       throw new AppError("Khách hàng thuộc công ty khác", 403);
     }
     return customer;
+  }
+
+  static async updateCustomer({ customerId, user, updatedField }) {
+    const customer = await CustomerModel.findByPk(customerId);
+    if (user.company_id !== customer.company_id) {
+      throw new AppError("Khách hàng thuộc công ty khác", 403);
+    }
+    if (!customer) {
+      throw new AppError("Khách hàng không tồn tại", 403);
+    }
+    const thread = await ThreadModel.findOne({
+      where: { id: customer.dataValues.thread_id },
+    });
+    const channel = await ChannelModel.findOne({
+      where: { id: thread.channel_id },
+    });
+    customer.dataValues.alias = updatedField.alias;
+    customer.dataValues.birthday = updatedField.birthday;
+    customer.dataValues.address = updatedField.address;
+    customer.dataValues.note = updatedField.note;
+    customer.dataValues.email = updatedField.email;
+    if (channel.type !== ChannelType.TELEGRAM_USER) {
+      customer.dataValues.phone_number = updatedField.phone_number;
+    }
+    const updatedCustomer = await customer.save();
+    return updatedCustomer.dataValues;
   }
 }
