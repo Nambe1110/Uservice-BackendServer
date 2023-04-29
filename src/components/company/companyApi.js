@@ -2,6 +2,7 @@ import express from "express";
 import { upload, verifyToken } from "../../middlewares/index.js";
 
 import {
+  changeChatbotMode,
   createCompany,
   deleteCompany,
   getCompanyDetails,
@@ -9,6 +10,7 @@ import {
   changeAvatar,
   updateProfile,
 } from "./companyController.js";
+import { verifyRole } from "../../middlewares/index.js";
 
 const companyRouter = express.Router({ mergeParams: true });
 
@@ -22,6 +24,11 @@ companyRouter.use("/", verifyToken.verifyToken());
 companyRouter.post("/create", createCompany);
 companyRouter.post("/join", joinCompany);
 companyRouter.get("/:id", getCompanyDetails);
+companyRouter.put(
+  "/change-chatbot-mode",
+  verifyRole.isOwner,
+  changeChatbotMode
+);
 companyRouter.delete("/delete", deleteCompany);
 companyRouter.patch(
   "/avatar",
