@@ -16,7 +16,7 @@ export const upload = async (req, res) => {
     });
   } catch (error) {
     return res
-      .status(error?.status ?? 500)
+      .status(error.code ?? 500)
       .json({ status: StatusType.ERROR, message: error.message });
   }
 };
