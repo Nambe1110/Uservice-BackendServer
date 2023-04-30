@@ -1,5 +1,9 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import GptModel from "./gptModel.js";
+import Translate from "../../../modules/Translate.js";
+import Lang from "../../../enums/Lang.js";
+import AppError from "../../../utils/AppError.js";
+import DataModel from "../data/dataModel.js";
 
 export default class GptService {
   static async GetModelByCompanyId(companyId) {
@@ -9,19 +13,43 @@ export default class GptService {
     return gptModel?.dataValues;
   }
 
-  // static async createFineTune() {
-  //   const data = {};
-  //   const { data: response } = await axios.post(
-  //     "https://api.openai.com/v1/fine-tunes",
-  //     data,
-  //     {
-  //       headers: {
-  //         Authorization: `Bearer ${process.env.GPT_3_API_KEY}`,
-  //       },
-  //     }
-  //   );
-  //   const newModel = GptModel.create({
-
-  //   })
-  // }
+  static async createFineTune({ user, fileIds }) {
+    const files = await DataModel.findAll({
+      where: {
+        id: fileIds,
+      },
+    });
+    const data = {
+      model: "davinci",
+      training_files: files.map((file) => file.cloud_id),
+    };
+    try {
+      const { data: response } = await axios.post(
+        "https://api.openai.com/v1/fine-tunes",
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.GPT_3_API_KEY}`,
+          },
+        }
+      );
+      const newModel = await GptModel.create({
+        train_id: response.id,
+        is_training: true,
+        company_id: user.company_id,
+      });
+      const trainedModel = await newModel.save();
+      return trainedModel.dataValues;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        const errorMessage = await Translate.translate({
+          text: error.response.data.error.message,
+          from: Lang.English,
+          to: Lang.Vietnamese,
+        });
+        throw new AppError(errorMessage, 400);
+      }
+      throw error;
+    }
+  }
 }
