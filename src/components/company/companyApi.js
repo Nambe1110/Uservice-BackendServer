@@ -1,5 +1,5 @@
 import express from "express";
-import { upload, verifyToken } from "../../middlewares/index.js";
+import { upload, verifyToken, verifyRole } from "../../middlewares/index.js";
 
 import {
   changeChatbotMode,
@@ -10,7 +10,6 @@ import {
   changeAvatar,
   updateProfile,
 } from "./companyController.js";
-import { verifyRole } from "../../middlewares/index.js";
 
 const companyRouter = express.Router({ mergeParams: true });
 
@@ -35,6 +34,10 @@ companyRouter.patch(
   [verifyToken.verifyToken(), upload.single("avatar")],
   changeAvatar
 );
-companyRouter.put("/profile", verifyToken.verifyToken(), updateProfile);
+companyRouter.put(
+  "/profile",
+  [verifyToken.verifyToken(), verifyRole.isOwner],
+  updateProfile
+);
 
 export default companyRouter;
