@@ -1,7 +1,8 @@
 import express from "express";
-import { upload, verifyToken } from "../../middlewares/index.js";
+import { upload, verifyToken, verifyRole } from "../../middlewares/index.js";
 
 import {
+  changeChatbotMode,
   createCompany,
   deleteCompany,
   getCompanyDetails,
@@ -22,12 +23,21 @@ companyRouter.use("/", verifyToken.verifyToken());
 companyRouter.post("/create", createCompany);
 companyRouter.post("/join", joinCompany);
 companyRouter.get("/:id", getCompanyDetails);
+companyRouter.put(
+  "/change-chatbot-mode",
+  verifyRole.isOwner,
+  changeChatbotMode
+);
 companyRouter.delete("/delete", deleteCompany);
 companyRouter.patch(
   "/avatar",
   [verifyToken.verifyToken(), upload.single("avatar")],
   changeAvatar
 );
-companyRouter.put("/profile", verifyToken.verifyToken(), updateProfile);
+companyRouter.put(
+  "/profile",
+  [verifyToken.verifyToken(), verifyRole.isOwner],
+  updateProfile
+);
 
 export default companyRouter;

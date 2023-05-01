@@ -78,8 +78,8 @@ const UserModel = sequelize.define(
   }
 );
 
-Company.hasMany(UserModel);
-UserModel.belongsTo(Company);
+Company.hasMany(UserModel, { foreignKey: "company_id" });
+UserModel.belongsTo(Company, { foreignKey: "company_id" });
 
 UserModel.sync({ logging: false });
 
