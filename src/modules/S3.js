@@ -30,7 +30,7 @@ const s3 = new S3Client({
 export default class S3 {
   static async pushDiskStorageFileToS3({ filePath, companyId }) {
     // Disk storage file path on server BE
-    const file = fs.readFileSync(filePath);
+    const file = await fs.promises.readFile(filePath);
     const randomName = randomUniqueFileName(filePath);
     const key = `company/${companyId}/${randomName}`;
 
