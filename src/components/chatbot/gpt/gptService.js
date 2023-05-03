@@ -16,13 +16,14 @@ export default class GptService {
   static async createFineTune({ user, fileIds }) {
     const files = await DataModel.findAll({
       where: {
-        id: fileIds,
+        cloud_id: fileIds ?? [],
       },
     });
     const data = {
       model: "davinci",
       training_files: files.map((file) => file.cloud_id),
     };
+    console.log(data);
     try {
       const { data: response } = await axios.post(
         "https://api.openai.com/v1/fine-tunes",
@@ -42,6 +43,7 @@ export default class GptService {
       return trainedModel.dataValues;
     } catch (error) {
       if (error instanceof AxiosError) {
+        console.log(error.response.data.error.message)
         const errorMessage = await Translate.translate({
           text: error.response.data.error.message,
           from: Lang.English,

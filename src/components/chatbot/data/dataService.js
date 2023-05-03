@@ -7,9 +7,13 @@ import Lang from "../../../enums/Lang.js";
 
 export class DataService {
   static async upload({ file, user, fileName }) {
+    const { data: s3File } = await axios.get(
+      "https://uservice-internal-s3-bucket.s3.ap-southeast-1.amazonaws.com/mini_shoe_train.jsonl"
+    );
+
     const formData = new FormData();
     formData.append("purpose", "fine-tune");
-    formData.append("file", Buffer.from(file.buffer), fileName);
+    formData.append("file", Buffer.from(s3File), fileName);
 
     try {
       const { data: uploadedFile } = await axios.post(
