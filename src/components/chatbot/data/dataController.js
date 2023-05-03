@@ -45,3 +45,17 @@ export const uploadDataset = async (req, res) => {
       .json({ status: StatusType.ERROR, message: error.message });
   }
 };
+
+export const getDatasets = async (req, res) => {
+  try {
+    const datasets = await DataService.getDataset(req.user.company_id);
+    return res.status(200).json({
+      status: StatusType.SUCCESS,
+      data: datasets,
+    });
+  } catch (error) {
+    return res
+      .status(error.code ?? 500)
+      .json({ status: StatusType.ERROR, message: error.message });
+  }
+};

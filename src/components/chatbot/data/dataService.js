@@ -1,9 +1,11 @@
 import axios, { AxiosError } from "axios";
 import FormData from "form-data";
+import { Op } from "sequelize";
 import DataModel from "./dataModel.js";
 import AppError from "../../../utils/AppError.js";
 import Translate from "../../../modules/Translate.js";
 import Lang from "../../../enums/Lang.js";
+import CompanyModel from "../../company/companyModel.js";
 
 function getFileExtension(filename) {
   const dotIndex = filename.lastIndexOf(".");
@@ -62,5 +64,19 @@ export class DataService {
       company_id: user.company_id,
     });
     return newFile.dataValues;
+  }
+
+  static async getDataset(companyId) {
+    const company = await CompanyModel.findByPk(companyId);
+    if (!company) {
+      throw new AppError("Công ty của người dùng không tồn tại", 400);
+    }
+    const datasets = await DataModel.findAll({
+      where: {
+        [Op.or]: [{ is_default: true }, { company_id: companyId }],
+      },
+    });
+
+    return datasets;
   }
 }

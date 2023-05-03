@@ -1236,6 +1236,23 @@
         }
       }
     },
+    "/api/train-data/": {
+      "get": {
+        "tags": [
+          "Customer"
+        ],
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/train-data/upload": {
       "post": {
         "tags": [
