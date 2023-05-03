@@ -5,15 +5,21 @@ import AppError from "../../../utils/AppError.js";
 import Translate from "../../../modules/Translate.js";
 import Lang from "../../../enums/Lang.js";
 
-export class DataService {
-  static async upload({ file, user, fileName }) {
-    const { data: s3File } = await axios.get(
-      "https://uservice-internal-s3-bucket.s3.ap-southeast-1.amazonaws.com/mini_shoe_train.jsonl"
-    );
+function getFileExtension(filename) {
+  const dotIndex = filename.lastIndexOf(".");
+  if (dotIndex === -1) {
+    // No dot found in the filename
+    return null;
+  }
+  const extension = filename.substring(dotIndex + 1);
+  return extension.length > 0 ? extension : null;
+}
 
+export class DataService {
+  static async uploadToGPTServer({ fileString, user, fileName }) {
     const formData = new FormData();
     formData.append("purpose", "fine-tune");
-    formData.append("file", Buffer.from(s3File), fileName);
+    formData.append("file", Buffer.from(fileString), fileName);
 
     try {
       const { data: uploadedFile } = await axios.post(
@@ -43,5 +49,18 @@ export class DataService {
       }
       throw error;
     }
+  }
+
+  static async createDataset({ user, file }) {
+    if (getFileExtension(file.originalname) !== "jsonl") {
+      throw new AppError("Tập dữ liệu phải có dạng jsonl.", 400);
+    }
+    const newFile = await DataModel.create({
+      cloud_id: file.location,
+      name: file.originalname,
+      bytes: file.size,
+      company_id: user.company_id,
+    });
+    return newFile.dataValues;
   }
 }
