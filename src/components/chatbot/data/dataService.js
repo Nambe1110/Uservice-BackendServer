@@ -18,12 +18,11 @@ function getFileExtension(filename) {
 }
 
 export class DataService {
-  static async uploadToGPTServer({ fileString, user, fileName }) {
-    const formData = new FormData();
-    formData.append("purpose", "fine-tune");
-    formData.append("file", Buffer.from(fileString), fileName);
-
+  static async uploadToGPTServer({ fileString }) {
     try {
+      const formData = new FormData();
+      formData.append("purpose", "fine-tune");
+      formData.append("file", Buffer.from(fileString), "data_train.jsonl");
       const { data: uploadedFile } = await axios.post(
         "https://api.openai.com/v1/files",
         formData,
@@ -33,13 +32,7 @@ export class DataService {
           },
         }
       );
-      const newFile = await DataModel.create({
-        cloud_id: uploadedFile.id,
-        name: fileName,
-        bytes: uploadedFile.bytes,
-        company_id: user.company_id,
-      });
-      return newFile.dataValues;
+      return uploadedFile.id;
     } catch (error) {
       if (error instanceof AxiosError) {
         const errorMessage = await Translate.translate({
@@ -78,5 +71,16 @@ export class DataService {
     });
 
     return datasets;
+  }
+
+  static async collectFilesData(fileIds) {
+    const files = await DataModel.findAll({
+      where: {
+        id: fileIds ?? [],
+      },
+    });
+    const fetchStreams = files.map((file) => axios.get(file.cloud_id));
+    const contents = await Promise.all(fetchStreams);
+    return contents.map((content) => content.data).join("");
   }
 }

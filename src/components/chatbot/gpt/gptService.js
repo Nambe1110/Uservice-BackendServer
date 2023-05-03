@@ -3,7 +3,7 @@ import GptModel from "./gptModel.js";
 import Translate from "../../../modules/Translate.js";
 import Lang from "../../../enums/Lang.js";
 import AppError from "../../../utils/AppError.js";
-import DataModel from "../data/dataModel.js";
+import { DataService } from "../data/dataService.js";
 
 export default class GptService {
   static async GetModelByCompanyId(companyId) {
@@ -14,17 +14,16 @@ export default class GptService {
   }
 
   static async createFineTune({ user, fileIds }) {
-    const files = await DataModel.findAll({
-      where: {
-        cloud_id: fileIds ?? [],
-      },
-    });
-    const data = {
-      model: "davinci",
-      training_files: files.map((file) => file.cloud_id),
-    };
-    console.log(data);
     try {
+      const fileContent = await DataService.collectFilesData(fileIds);
+      const datasetId = await DataService.uploadToGPTServer({
+        fileString: fileContent,
+      });
+      const data = {
+        model: "davinci",
+        training_file: datasetId,
+      };
+
       const { data: response } = await axios.post(
         "https://api.openai.com/v1/fine-tunes",
         data,
@@ -43,7 +42,6 @@ export default class GptService {
       return trainedModel.dataValues;
     } catch (error) {
       if (error instanceof AxiosError) {
-        console.log(error.response.data.error.message)
         const errorMessage = await Translate.translate({
           text: error.response.data.error.message,
           from: Lang.English,
