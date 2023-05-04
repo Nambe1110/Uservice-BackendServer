@@ -34,9 +34,23 @@ export default class CompanyService {
     });
 
     listCompany.set(newCompany.id, {
-      telegramUserChannel: new Map(),
-      telegramBotChannel: new Map(),
-      EmailChannel: new Map(),
+      listChannel: {
+        telegramUserChannel: new Map(),
+        telegramBotChannel: new Map(),
+        EmailChannel: new Map(),
+      },
+      employees: new Map(),
+    });
+
+    listCompany.get(newCompany.id).employees.set(user.id, {
+      id: user.id,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      email: user.email,
+      phoneNumber: user.phone_number,
+      role: user.role,
+      imageUrl: user.image_url,
+      socketCount: 0,
     });
 
     return newCompany.dataValues;
@@ -62,6 +76,9 @@ export default class CompanyService {
     if (user.role !== RoleEnum.Owner) {
       throw new AppError("Chỉ chủ sở hữu mới có thể xóa công ty", 400);
     }
+
+    listCompany.delete(company.id);
+
     await company.destroy();
   }
 
