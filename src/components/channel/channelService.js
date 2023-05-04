@@ -1,3 +1,4 @@
+import { Op } from "sequelize";
 import ChannelModel from "./channelModel.js";
 
 export default class ChannelService {
@@ -23,9 +24,14 @@ export default class ChannelService {
     return newChannel.dataValues;
   }
 
-  static async getChannels({ companyId, page, limit }) {
+  static async getChannels({ companyId, page, limit, type }) {
     const { count, rows } = await ChannelModel.findAndCountAll({
-      where: { company_id: companyId },
+      where: {
+        company_id: companyId,
+        type: type ?? {
+          [Op.ne]: null,
+        },
+      },
       limit,
       offset: limit * (page - 1),
     });
