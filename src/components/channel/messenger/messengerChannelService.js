@@ -104,10 +104,12 @@ export default class MessengerService {
 
       return pages;
     } catch (error) {
-      throw new AppError(
-        error.response.data.error.message,
-        error.response.status
-      );
+      if (error.response)
+        throw new AppError(
+          error.response.data.error.message,
+          error.response.status
+        );
+      else throw new Error(error.message);
     }
   }
 
@@ -170,10 +172,12 @@ export default class MessengerService {
         detail: newMessengerChannel,
       };
     } catch (error) {
-      throw new AppError(
-        error.response.data.error.message,
-        error.response.status
-      );
+      if (error.response)
+        throw new AppError(
+          error.response.data.error.message,
+          error.response.status
+        );
+      else throw new Error(error.message);
     }
   }
 
