@@ -8,7 +8,7 @@ const getUser = (employees) =>
     last_name: employee.firstName,
     email: employee.email,
     phone_number: employee.phoneNumber,
-    image_url: employee.image_url,
+    image_url: employee.imageUrl,
     is_online: employee.socketCount > 0,
   }));
 
@@ -33,6 +33,8 @@ export default async (io, socket) => {
           users: getUser(employees),
         },
       });
+
+    logger.info(employee);
 
     socket.on("disconnect", () => {
       --employee.socketCount;
