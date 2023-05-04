@@ -62,6 +62,8 @@ export default class MessengerService {
           }
         );
 
+        if (response.data.data.length === 0) break;
+
         response.data.data.forEach((page) => {
           pages.push({
             id: page.id,
@@ -291,7 +293,7 @@ export default class MessengerService {
                       last_name: `${middle_name} ${first_name}`,
                       image_url: pictureUrl,
                       alias: name,
-                      profile: `https://www.messenger.com/t/${customerApiId}`,
+                      profile: `m.me/${customerApiId}`,
                     }
                   );
 
