@@ -1,1 +1,3 @@
-export const listCompany = new Map();
+const listCompany = new Map();
+
+export { listCompany };

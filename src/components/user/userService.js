@@ -5,6 +5,7 @@ import UserModel from "./userModel.js";
 import CompanyModel from "../company/companyModel.js";
 import AppError from "../../utils/AppError.js";
 import { UserRole } from "../../constants.js";
+import { listCompany } from "../../utils/singleton.js";
 
 export default class UserService {
   static async joinCompany({ user, inviteCode, role = RoleEnum.Staff }) {
@@ -23,6 +24,17 @@ export default class UserService {
     currentUser.company_id = company.dataValues.id;
     currentUser.role = role;
     const updatedUser = await currentUser.save();
+
+    listCompany.get(company.id).employees.set(user.id, {
+      id: user.id,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      email: user.email,
+      phoneNumber: user.phone_number,
+      role: user.role,
+      imageUrl: user.image_url,
+      socketCount: 0,
+    });
 
     delete updatedUser.dataValues.password;
     return updatedUser.dataValues;
@@ -204,9 +216,22 @@ export default class UserService {
       );
     }
 
+    listCompany.get(user.company_id).employees.delete(user.id);
+
     user.company_id = currUser.company_id;
     user.role = UserRole.OWNER;
     await user.save();
+
+    listCompany.get(user.company_id).employees.set(user.id, {
+      id: user.id,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      email: user.email,
+      phoneNumber: user.phone_number,
+      role: user.role,
+      imageUrl: user.image_url,
+      socketCount: 0,
+    });
 
     currUser.role = UserRole.MANAGER;
     const updatedCurrentUser = await currUser.save();
