@@ -38,7 +38,7 @@ const MessageModel = sequelize.define(
       type: DataTypes.STRING,
     },
     timestamp: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.BIGINT,
     },
   },
   {
