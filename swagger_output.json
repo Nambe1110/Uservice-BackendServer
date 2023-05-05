@@ -738,6 +738,11 @@
         "description": "",
         "parameters": [
           {
+            "name": "type",
+            "in": "query",
+            "type": "string"
+          },
+          {
             "name": "page",
             "in": "query",
             "type": "string"
@@ -1284,6 +1289,181 @@
               "type": "object",
               "properties": {
                 "files": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/campaign/create": {
+      "post": {
+        "tags": [
+          "Campaign"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "example": "any"
+                },
+                "channel": {
+                  "example": "any"
+                },
+                "send_now": {
+                  "example": "any"
+                },
+                "send_date": {
+                  "example": "any"
+                },
+                "content": {
+                  "example": "any"
+                },
+                "attachments": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/campaign/": {
+      "get": {
+        "tags": [
+          "Campaign"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/campaign/{id}": {
+      "get": {
+        "tags": [
+          "Campaign"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/campaign/delete": {
+      "delete": {
+        "tags": [
+          "Campaign"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/campaign/profile": {
+      "put": {
+        "tags": [
+          "Campaign"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "example": "any"
+                },
+                "name": {
+                  "example": "any"
+                },
+                "channel": {
+                  "example": "any"
+                },
+                "send_now": {
+                  "example": "any"
+                },
+                "send_date": {
+                  "example": "any"
+                },
+                "content": {
+                  "example": "any"
+                },
+                "attachments": {
                   "example": "any"
                 }
               }

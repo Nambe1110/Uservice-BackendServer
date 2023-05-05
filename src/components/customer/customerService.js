@@ -36,7 +36,6 @@ export default class CustomerService {
         t4.image_url AS 'channel.image_url',
         t4.id AS 'channel.id',
         t4.is_connected AS 'channel.is_connected'
-
       FROM customer
       JOIN 
       (
