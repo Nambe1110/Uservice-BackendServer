@@ -1,14 +1,22 @@
 import { StatusType } from "../../constants.js";
 import StatusEnum from "../../enums/Status.js";
+import CompanyService from "../company/companyService.js";
 import MeService from "./meService.js";
 
-export const getProfile = (req, res) => {
+export const getProfile = async (req, res) => {
   const { user } = req;
   delete user.password;
+  const company = await CompanyService.getCompanyById({
+    user,
+    id: user.company_id,
+  });
 
   return res.status(200).json({
     status: StatusEnum.Success,
-    data: user,
+    data: {
+      ...user,
+      chatbot_mode: company.chatbot_mode,
+    },
   });
 };
 
