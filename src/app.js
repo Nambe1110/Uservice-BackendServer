@@ -18,6 +18,7 @@ import customerRouter from "./components/customer/customerApi.js";
 import suggestionRouter from "./components/suggestion/suggestionApi.js";
 import uploaderRouter from "./components/uploader/uploaderApi.js";
 import dataRouter from "./components/chatbot/data/dataApi.js";
+import gptRouter from "./components/chatbot/gpt/gptApi.js";
 import campaignRouter from "./components/campaign/campaignApi.js";
 
 dotenv.config();
@@ -51,6 +52,7 @@ app.use("/api/customer", customerRouter);
 app.use("/api/suggestion", suggestionRouter);
 app.use("/api/upload", uploaderRouter);
 app.use("/api/train-data", dataRouter);
+app.use("/api/model", gptRouter);
 app.use("/api/campaign", campaignRouter);
 
 app.get("/", (req, res) => {
