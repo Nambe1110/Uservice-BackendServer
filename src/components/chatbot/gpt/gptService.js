@@ -6,6 +6,7 @@ import AppError from "../../../utils/AppError.js";
 import { DataService } from "../data/dataService.js";
 import RoleEnum from "../../../enums/Role.js";
 import GptDataModel from "../gpt_data/gptDataModel.js";
+import GptDataService from "../gpt_data/gptDataService.js";
 
 export default class GptService {
   static async GetModelByCompanyId(companyId) {
@@ -81,6 +82,11 @@ export default class GptService {
       },
     });
 
-    return gptModels;
+    const models = gptModels.map(async (gptModel) => ({
+      ...gptModel.dataValues,
+      dataset_ids: await GptDataService.getDatasetsOfModel(gptModel.id),
+    }));
+
+    return Promise.all(models);
   }
 }
