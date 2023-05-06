@@ -17,6 +17,16 @@ export default class GptService {
 
   static async createFineTune({ user, fileIds }) {
     try {
+      const currentModels = await this.getCompanyModels({ user });
+      if (
+        currentModels &&
+        currentModels.filter((model) => model.is_training).length > 0
+      ) {
+        throw new AppError(
+          "Chỉ có thể huấn luyện 1 mô hình 1 lần. Vui lòng đợi mô hình hiện tại hoàn thành",
+          400
+        );
+      }
       const fileContent = await DataService.collectFilesData(fileIds);
       const datasetId = await DataService.uploadToGPTServer({
         fileString: fileContent,
