@@ -91,6 +91,14 @@ CampaignModel.belongsTo(User, { foreignKey: "created_by" });
 
 Company.hasMany(CampaignModel, { foreignKey: "company_id" });
 CampaignModel.belongsTo(Company, { foreignKey: "company_id" });
+Company.beforeDestroy(async (company) => {
+  await CampaignModel.destroy({
+    where: {
+      company_id: company.id,
+    },
+    individualHooks: true,
+  });
+});
 
 CampaignModel.sync({ logging: false });
 
