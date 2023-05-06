@@ -48,6 +48,6 @@ CompanyModel.hasMany(GptModel, {
   onDelete: "CASCADE",
 });
 GptModel.belongsTo(CompanyModel);
-GptModel.sync({ logging: false, alter: true });
+GptModel.sync({ logging: false });
 
 export default GptModel;

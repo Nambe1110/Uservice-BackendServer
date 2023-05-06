@@ -5,6 +5,7 @@ import Lang from "../../../enums/Lang.js";
 import AppError from "../../../utils/AppError.js";
 import { DataService } from "../data/dataService.js";
 import RoleEnum from "../../../enums/Role.js";
+import GptDataModel from "../gpt_data/gptDataModel.js";
 
 export default class GptService {
   static async GetModelByCompanyId(companyId) {
@@ -34,12 +35,18 @@ export default class GptService {
           },
         }
       );
+
       const newModel = await GptModel.create({
         train_id: response.id,
         is_training: true,
         company_id: user.company_id,
       });
       const trainedModel = await newModel.save();
+      const gptDataRelations = fileIds.map((fileId) => ({
+        gpt_id: trainedModel.dataValues.id,
+        data_id: fileId,
+      }));
+      await GptDataModel.bulkCreate(gptDataRelations);
       return trainedModel.dataValues;
     } catch (error) {
       if (error instanceof AxiosError) {
