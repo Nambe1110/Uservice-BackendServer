@@ -9,6 +9,7 @@ import {
   joinCompany,
   changeAvatar,
   updateProfile,
+  getModels,
 } from "./companyController.js";
 
 const companyRouter = express.Router({ mergeParams: true });
@@ -22,6 +23,7 @@ companyRouter.use("/", verifyToken.verifyToken());
 
 companyRouter.post("/create", createCompany);
 companyRouter.post("/join", joinCompany);
+companyRouter.get("/model", getModels);
 companyRouter.get("/:id", getCompanyDetails);
 companyRouter.put(
   "/change-chatbot-mode",

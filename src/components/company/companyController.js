@@ -1,4 +1,6 @@
+import { StatusType } from "../../constants.js";
 import StatusEnum from "../../enums/Status.js";
+import GptService from "../chatbot/gpt/gptService.js";
 import UserService from "../user/userService.js";
 import CompanyService from "./companyService.js";
 
@@ -123,6 +125,20 @@ export const updateProfile = async (req, res) => {
     return res
       .status(200)
       .json({ status: StatusEnum.Success, data: updatedCompany });
+  } catch (error) {
+    return res
+      .status(error.code ?? 500)
+      .json({ status: StatusEnum.Error, message: error.message });
+  }
+};
+
+export const getModels = async (req, res) => {
+  try {
+    const models = await GptService.getCompanyModels({ user: req.user });
+    return res.status(200).json({
+      status: StatusType.SUCCESS,
+      data: models,
+    });
   } catch (error) {
     return res
       .status(error.code ?? 500)
