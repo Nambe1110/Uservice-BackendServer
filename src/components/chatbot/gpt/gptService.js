@@ -4,11 +4,12 @@ import Translate from "../../../modules/Translate.js";
 import Lang from "../../../enums/Lang.js";
 import AppError from "../../../utils/AppError.js";
 import { DataService } from "../data/dataService.js";
+import RoleEnum from "../../../enums/Role.js";
 
 export default class GptService {
   static async GetModelByCompanyId(companyId) {
     const gptModel = await GptModel.findOne({
-      where: { company_id: companyId, is_training: false },
+      where: { company_id: companyId, is_training: false, is_using: true },
     });
     return gptModel?.dataValues;
   }
@@ -51,5 +52,18 @@ export default class GptService {
       }
       throw error;
     }
+  }
+
+  static async getCompanyModels({ user }) {
+    if (user.role !== RoleEnum.Owner) {
+      throw new AppError("Người dùng không phải chủ sở hữu");
+    }
+    const gptModels = await GptModel.findAll({
+      where: {
+        company_id: user.company_id,
+      },
+    });
+
+    return gptModels;
   }
 }
