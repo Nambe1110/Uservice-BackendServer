@@ -89,4 +89,19 @@ export default class GptService {
 
     return Promise.all(models);
   }
+
+  static async changeCompanyModel({ companyId, modelId }) {
+    await GptModel.update(
+      { is_using: false },
+      { where: { company_id: companyId } }
+    );
+    if (!modelId) {
+      return {};
+    }
+    const usedModel = await GptModel.update(
+      { is_using: true },
+      { where: { id: modelId } }
+    );
+    return usedModel[0];
+  }
 }
