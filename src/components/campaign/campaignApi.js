@@ -19,19 +19,23 @@ campaignRouter.use("/", verifyToken.verifyToken());
 
 campaignRouter.post(
   "/create",
-  [verifyToken.verifyToken(), verifyRole.isManagerOrOwner],
+  [verifyToken.verifyToken(true), verifyRole.isManagerOrOwner],
   createCampaign
 );
-campaignRouter.get("/", verifyToken.verifyToken(), getAllCampaignsOfCompany);
-campaignRouter.get("/:id", verifyToken.verifyToken(), getCampaignDetails);
+campaignRouter.get(
+  "/",
+  verifyToken.verifyToken(true),
+  getAllCampaignsOfCompany
+);
+campaignRouter.get("/:id", verifyToken.verifyToken(true), getCampaignDetails);
 campaignRouter.delete(
   "/delete",
-  [verifyToken.verifyToken(), verifyRole.isManagerOrOwner],
+  [verifyToken.verifyToken(true), verifyRole.isManagerOrOwner],
   deleteCampaign
 );
 campaignRouter.put(
   "/profile",
-  [verifyToken.verifyToken(), verifyRole.isManagerOrOwner],
+  [verifyToken.verifyToken(true), verifyRole.isManagerOrOwner],
   updateCampaignDetails
 );
 
