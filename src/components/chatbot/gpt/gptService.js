@@ -73,21 +73,59 @@ export default class GptService {
   }
 
   static async getCompanyModels({ user }) {
-    if (user.role !== RoleEnum.Owner) {
-      throw new AppError("Người dùng không phải chủ sở hữu");
+    try {
+      if (user.role !== RoleEnum.Owner) {
+        throw new AppError("Người dùng không phải chủ sở hữu");
+      }
+      let gptModels = await GptModel.findAll({
+        where: {
+          company_id: user.company_id,
+        },
+      });
+      const trainingModel = gptModels.find((model) => model.is_training);
+      if (trainingModel) {
+        const { data } = await axios.get(
+          `https://api.openai.com/v1/fine-tunes/${trainingModel.train_id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.GPT_3_API_KEY}`,
+            },
+          }
+        );
+        if (
+          data.events &&
+          data.events.length > 0 &&
+          data.events[data.events.length - 1].message === "Fine-tune succeeded"
+        ) {
+          await GptModel.update(
+            { is_training: false },
+            { where: { id: trainingModel.id } }
+          );
+          gptModels = await GptModel.findAll({
+            where: {
+              company_id: user.company_id,
+            },
+          });
+        }
+      }
+
+      const models = gptModels.map(async (gptModel) => ({
+        ...gptModel.dataValues,
+        dataset_ids: await GptDataService.getDatasetsOfModel(gptModel.id),
+      }));
+
+      return Promise.all(models);
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        const errorMessage = await Translate.translate({
+          text: error.response.data.error.message,
+          from: Lang.English,
+          to: Lang.Vietnamese,
+        });
+        throw new AppError(errorMessage, 400);
+      }
+      throw error;
     }
-    const gptModels = await GptModel.findAll({
-      where: {
-        company_id: user.company_id,
-      },
-    });
-
-    const models = gptModels.map(async (gptModel) => ({
-      ...gptModel.dataValues,
-      dataset_ids: await GptDataService.getDatasetsOfModel(gptModel.id),
-    }));
-
-    return Promise.all(models);
   }
 
   static async changeCompanyModel({ companyId, modelId }) {
