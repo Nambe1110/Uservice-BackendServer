@@ -7,6 +7,15 @@ import { UserRole } from "../../constants.js";
 export default class MeService {
   static async changeAvatar({ currentUser, avatar }) {
     const user = await UserModel.findByPk(currentUser.id);
+
+    if (!user.image_url) {
+      const avatarUrl = await S3.pushMemoryStorageFileToS3(avatar, "avatar");
+      user.image_url = avatarUrl;
+      const updatedUser = await user.save();
+      delete updatedUser.dataValues.password;
+      return updatedUser;
+    }
+
     const strArr = user.image_url.split(
       "uservice-internal-s3-bucket.s3.ap-southeast-1.amazonaws.com/avatar/"
     );

@@ -110,6 +110,14 @@ export default class CompanyService {
     }
 
     const company = await CompanyModel.findByPk(currentUser.company_id);
+    if (!company.image_url) {
+      const avatarUrl = await S3.pushMemoryStorageFileToS3(avatar, "avatar");
+      company.image_url = avatarUrl;
+      const updatedCompany = await company.save();
+      delete updatedCompany.dataValues.invite_code;
+      return updatedCompany;
+    }
+
     const strArr = company.image_url.split(
       "uservice-internal-s3-bucket.s3.ap-southeast-1.amazonaws.com/avatar/"
     );

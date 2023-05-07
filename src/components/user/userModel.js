@@ -67,6 +67,8 @@ const UserModel = sequelize.define(
     },
     image_url: {
       type: DataTypes.STRING,
+      defaultValue:
+        "https://uservice-internal-s3-bucket.s3.ap-southeast-1.amazonaws.com/avatar/uservice-default-user-avatar.png",
     },
   },
   {
