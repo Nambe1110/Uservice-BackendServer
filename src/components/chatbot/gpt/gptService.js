@@ -7,6 +7,7 @@ import { DataService } from "../data/dataService.js";
 import RoleEnum from "../../../enums/Role.js";
 import GptDataModel from "../gpt_data/gptDataModel.js";
 import GptDataService from "../gpt_data/gptDataService.js";
+import { faker } from '@faker-js/faker';
 
 export default class GptService {
   static async GetModelByCompanyId(companyId) {
@@ -51,6 +52,7 @@ export default class GptService {
         train_id: response.id,
         is_training: true,
         company_id: user.company_id,
+        name: faker.name.firstName(),
       });
       const trainedModel = await newModel.save();
       const gptDataRelations = fileIds.map((fileId) => ({
