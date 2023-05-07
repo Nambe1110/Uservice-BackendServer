@@ -18,12 +18,8 @@ tagRouter.use("/", (req, res, next) => {
 
 tagRouter.use("/", verifyToken.verifyToken());
 
-tagRouter.post(
-  "/create",
-  [verifyToken.verifyToken(true), verifyRole.isManagerOrOwner],
-  createTag
-);
-tagRouter.get("/", verifyToken.verifyToken(true), getAllTagsOfCompany);
+tagRouter.post("/create", [verifyToken.verifyToken(true)], createTag);
+tagRouter.get("/all", verifyToken.verifyToken(true), getAllTagsOfCompany);
 tagRouter.get("/:id", verifyToken.verifyToken(true), getTagDetails);
 tagRouter.delete(
   "/delete",
