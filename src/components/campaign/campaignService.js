@@ -1,27 +1,21 @@
 import AppError from "../../utils/AppError.js";
 import CampaignModel from "./campaignModel.js";
 import UserModel from "../user/userModel.js";
-import { ChannelType } from "../../constants.js";
 
 export default class CampaignService {
   static async createCampaign({
     user,
     name,
-    channel,
     sendNow,
     sendDate,
     content,
     attachments,
   }) {
-    if (!name) {
-      throw new AppError("Tên chiến dịch không thể null", 400);
+    if (!name || !content) {
+      throw new AppError("Tên chiến dịch và nội dung không thể null", 400);
     }
 
-    const values = Object.values(ChannelType);
-    if (!channel || !values.includes(channel)) {
-      throw new AppError("Kênh bằng null hoặc không tồn tại", 400);
-    }
-
+    // Convert sendNow from string to boolean
     sendNow = sendNow === "true";
     let sendDateValue = null;
     // Throw error when sendNow: true and sendDate string is not null
@@ -31,8 +25,14 @@ export default class CampaignService {
         400
       );
     }
+    if (!sendDate && !sendNow) {
+      throw new AppError(
+        "Send_date không thể null khi send_now null hoặc false",
+        400
+      );
+    }
     if (sendDate) {
-      sendDateValue = new Date(sendDate);
+      sendDateValue = BigInt(sendDate);
     }
 
     // Regex to validate whether link is image url or not
@@ -56,7 +56,6 @@ export default class CampaignService {
 
     const newCampaign = await CampaignModel.create({
       name,
-      channel_type: channel,
       send_now: sendNow,
       send_date: sendDateValue,
       content,
@@ -131,16 +130,7 @@ export default class CampaignService {
     await campaign.destroy();
   }
 
-  static async updateCampaignDetails({
-    user,
-    id,
-    name,
-    channel,
-    sendNow,
-    sendDate,
-    content,
-    attachments,
-  }) {
+  static async updateCampaignDetails({ user, id, name, content, attachments }) {
     const oldCampaign = await CampaignModel.findOne({
       where: { id },
     });
@@ -154,26 +144,8 @@ export default class CampaignService {
       );
     }
 
-    if (!name) {
-      throw new AppError("Tên chiến dịch không thể null", 400);
-    }
-
-    const values = Object.values(ChannelType);
-    if (!channel || !values.includes(channel)) {
-      throw new AppError("Kênh bằng null hoặc không tồn tại", 400);
-    }
-
-    sendNow = sendNow === "true";
-    let sendDateValue = null;
-    // Throw error when sendNow: true and sendDate string is not null
-    if (sendDate && sendNow) {
-      throw new AppError(
-        "Không thể tùy chỉnh thời gian gửi(send_date) trong chế độ gửi ngay lập tức(sendNow: true)",
-        400
-      );
-    }
-    if (sendDate) {
-      sendDateValue = new Date(sendDate);
+    if (!name || !content) {
+      throw new AppError("Tên chiến dịch và nội dung không thể null", 400);
     }
 
     // Regex to validate whether link is image url or not
@@ -196,9 +168,6 @@ export default class CampaignService {
     }
 
     oldCampaign.name = name;
-    oldCampaign.channel_type = channel;
-    oldCampaign.send_now = sendNow;
-    oldCampaign.send_date = sendDateValue;
     oldCampaign.content = content;
     oldCampaign.attachments = attachments;
 

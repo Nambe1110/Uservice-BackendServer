@@ -2,7 +2,6 @@ import pkg from "sequelize";
 import sequelize from "../../config/database/index.js";
 import User from "../user/userModel.js";
 import Company from "../company/companyModel.js";
-import { ChannelType } from "../../constants.js";
 
 const { DataTypes } = pkg;
 
@@ -23,35 +22,27 @@ const CampaignModel = sequelize.define(
         },
       },
     },
-    recent_customer: {
-      type: DataTypes.STRING,
-      get() {
-        if (this.getDataValue("recent_customer")) {
-          return this.getDataValue("recent_customer").split(";");
-        }
-        return this.getDataValue("recent_customer");
-      },
-      set(val) {
-        this.setDataValue("recent_customer", val.join(","));
-      },
-    },
-    channel_type: {
-      type: DataTypes.ENUM({
-        values: Object.values(ChannelType),
-      }),
+    day_diff: {
+      type: DataTypes.INTEGER.UNSIGNED,
+      defaultValue: 7,
     },
     send_now: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
     send_date: {
-      type: DataTypes.DATE,
+      type: DataTypes.BIGINT,
     },
     content: {
       type: DataTypes.STRING,
+      validate: {
+        notNull: {
+          msg: "Campaign content is required",
+        },
+      },
     },
     attachments: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       get() {
         if (this.getDataValue("attachments")) {
           return this.getDataValue("attachments").split(";");
@@ -64,6 +55,11 @@ const CampaignModel = sequelize.define(
     },
     company_id: {
       type: DataTypes.INTEGER,
+      validate: {
+        notNull: {
+          msg: "Company id is required",
+        },
+      },
       references: {
         model: Company,
         key: "id",
