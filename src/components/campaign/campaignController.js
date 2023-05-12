@@ -5,20 +5,20 @@ export const createCampaign = async (req, res) => {
   try {
     const {
       name,
-      channel,
       send_now: sendNow,
       send_date: sendDate,
       content,
+      channels,
       attachments,
     } = req.body;
 
     const createdCampaign = await CampaignService.createCampaign({
       user: req.user,
       name,
-      channel,
       sendNow,
       sendDate,
       content,
+      channels,
       attachments,
     });
     return res
@@ -88,23 +88,12 @@ export const deleteCampaign = async (req, res) => {
 
 export const updateCampaignDetails = async (req, res) => {
   try {
-    const {
-      id,
-      name,
-      channel,
-      send_now: sendNow,
-      send_date: sendDate,
-      content,
-      attachments,
-    } = req.body;
+    const { id, name, content, attachments } = req.body;
 
     const createdCampaign = await CampaignService.updateCampaignDetails({
       user: req.user,
       id,
       name,
-      channel,
-      sendNow,
-      sendDate,
       content,
       attachments,
     });

@@ -1,27 +1,31 @@
 import AppError from "../../utils/AppError.js";
 import CampaignModel from "./campaignModel.js";
 import UserModel from "../user/userModel.js";
-import { ChannelType } from "../../constants.js";
+import ChannelModel from "../channel/channelModel.js";
+import CampaignChannelService from "./campaign_channel/campaignChannelService.js";
 
 export default class CampaignService {
   static async createCampaign({
     user,
     name,
-    channel,
     sendNow,
     sendDate,
     content,
+    channels,
     attachments,
   }) {
-    if (!name) {
-      throw new AppError("Tên chiến dịch không thể null", 400);
+    if (!name || !content) {
+      throw new AppError("Tên chiến dịch và nội dung không thể null", 400);
     }
 
-    const values = Object.values(ChannelType);
-    if (!channel || !values.includes(channel)) {
-      throw new AppError("Kênh bằng null hoặc không tồn tại", 400);
+    for (const channelId of channels) {
+      const existedChannel = await ChannelModel.findByPk(channelId);
+      if (!existedChannel) {
+        throw new AppError(`Id kênh: ${channelId} không tồn tại`, 400);
+      }
     }
 
+    // Convert sendNow from string to boolean
     sendNow = sendNow === "true";
     let sendDateValue = null;
     // Throw error when sendNow: true and sendDate string is not null
@@ -31,8 +35,14 @@ export default class CampaignService {
         400
       );
     }
+    if (!sendDate && !sendNow) {
+      throw new AppError(
+        "Send_date không thể null khi send_now null hoặc false",
+        400
+      );
+    }
     if (sendDate) {
-      sendDateValue = new Date(sendDate);
+      sendDateValue = BigInt(sendDate);
     }
 
     // Regex to validate whether link is image url or not
@@ -56,7 +66,6 @@ export default class CampaignService {
 
     const newCampaign = await CampaignModel.create({
       name,
-      channel_type: channel,
       send_now: sendNow,
       send_date: sendDateValue,
       content,
@@ -64,13 +73,23 @@ export default class CampaignService {
       company_id: user.company_id,
       created_by: user.id,
     });
-
     const campaign = await CampaignModel.findOne({
       where: { id: newCampaign.id },
       include: { model: UserModel },
     });
+
+    for (const channelId of channels) {
+      await CampaignChannelService.createCampaignChannelItem({
+        campaignId: campaign.id,
+        channelId,
+      });
+    }
+    const selectedChannels = await CampaignChannelService.getSelectedChannels({
+      campaignId: campaign.id,
+    });
+
     delete campaign.dataValues.User.password;
-    return campaign.dataValues;
+    return { campaign: campaign.dataValues, channels: selectedChannels };
   }
 
   static async getCampaignById({ user, id }) {
@@ -88,8 +107,13 @@ export default class CampaignService {
         401
       );
     }
+
+    const selectedChannels = await CampaignChannelService.getSelectedChannels({
+      campaignId: campaign.id,
+    });
+
     delete campaign.dataValues.User.password;
-    return campaign.dataValues;
+    return { campaign: campaign.dataValues, channels: selectedChannels };
   }
 
   static async getAllCampaignsOfCompany({ user, limit, page }) {
@@ -109,11 +133,22 @@ export default class CampaignService {
       offset: limit * (page - 1),
     });
 
+    const returnedCampaigns = [];
+    for (const c of campaigns) {
+      const selectedChannels = await CampaignChannelService.getSelectedChannels(
+        { campaignId: c.id }
+      );
+      returnedCampaigns.push({
+        campaign: c,
+        channels: selectedChannels,
+      });
+    }
+
     return {
       total_items: totalItems,
       total_pages: totalPages,
       current_page: page,
-      items: campaigns,
+      items: returnedCampaigns,
     };
   }
 
@@ -131,16 +166,7 @@ export default class CampaignService {
     await campaign.destroy();
   }
 
-  static async updateCampaignDetails({
-    user,
-    id,
-    name,
-    channel,
-    sendNow,
-    sendDate,
-    content,
-    attachments,
-  }) {
+  static async updateCampaignDetails({ user, id, name, content, attachments }) {
     const oldCampaign = await CampaignModel.findOne({
       where: { id },
     });
@@ -154,26 +180,8 @@ export default class CampaignService {
       );
     }
 
-    if (!name) {
-      throw new AppError("Tên chiến dịch không thể null", 400);
-    }
-
-    const values = Object.values(ChannelType);
-    if (!channel || !values.includes(channel)) {
-      throw new AppError("Kênh bằng null hoặc không tồn tại", 400);
-    }
-
-    sendNow = sendNow === "true";
-    let sendDateValue = null;
-    // Throw error when sendNow: true and sendDate string is not null
-    if (sendDate && sendNow) {
-      throw new AppError(
-        "Không thể tùy chỉnh thời gian gửi(send_date) trong chế độ gửi ngay lập tức(sendNow: true)",
-        400
-      );
-    }
-    if (sendDate) {
-      sendDateValue = new Date(sendDate);
+    if (!name || !content) {
+      throw new AppError("Tên chiến dịch và nội dung không thể null", 400);
     }
 
     // Regex to validate whether link is image url or not
@@ -196,9 +204,6 @@ export default class CampaignService {
     }
 
     oldCampaign.name = name;
-    oldCampaign.channel_type = channel;
-    oldCampaign.send_now = sendNow;
-    oldCampaign.send_date = sendDateValue;
     oldCampaign.content = content;
     oldCampaign.attachments = attachments;
 
@@ -208,7 +213,11 @@ export default class CampaignService {
       where: { id: updatedCampaign.id },
       include: { model: UserModel },
     });
+    const selectedChannels = await CampaignChannelService.getSelectedChannels({
+      campaignId: campaign.id,
+    });
+
     delete campaign.dataValues.User.password;
-    return campaign.dataValues;
+    return { campaign: campaign.dataValues, channels: selectedChannels };
   }
 }
