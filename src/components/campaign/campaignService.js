@@ -1,6 +1,8 @@
 import AppError from "../../utils/AppError.js";
 import CampaignModel from "./campaignModel.js";
 import UserModel from "../user/userModel.js";
+import ChannelModel from "../channel/channelModel.js";
+import CampaignChannelService from "./campaign_channel/campaignChannelService.js";
 
 export default class CampaignService {
   static async createCampaign({
@@ -9,10 +11,18 @@ export default class CampaignService {
     sendNow,
     sendDate,
     content,
+    channels,
     attachments,
   }) {
     if (!name || !content) {
       throw new AppError("Tên chiến dịch và nội dung không thể null", 400);
+    }
+
+    for (const channelId of channels) {
+      const existedChannel = await ChannelModel.findByPk(channelId);
+      if (!existedChannel) {
+        throw new AppError(`Id kênh: ${channelId} không tồn tại`, 400);
+      }
     }
 
     // Convert sendNow from string to boolean
@@ -63,13 +73,23 @@ export default class CampaignService {
       company_id: user.company_id,
       created_by: user.id,
     });
-
     const campaign = await CampaignModel.findOne({
       where: { id: newCampaign.id },
       include: { model: UserModel },
     });
+
+    for (const channelId of channels) {
+      await CampaignChannelService.createCampaignChannelItem({
+        campaignId: campaign.id,
+        channelId,
+      });
+    }
+    const selectedChannels = await CampaignChannelService.getSelectedChannels({
+      campaignId: campaign.id,
+    });
+
     delete campaign.dataValues.User.password;
-    return campaign.dataValues;
+    return { campaign: campaign.dataValues, channels: selectedChannels };
   }
 
   static async getCampaignById({ user, id }) {
@@ -87,8 +107,13 @@ export default class CampaignService {
         401
       );
     }
+
+    const selectedChannels = await CampaignChannelService.getSelectedChannels({
+      campaignId: campaign.id,
+    });
+
     delete campaign.dataValues.User.password;
-    return campaign.dataValues;
+    return { campaign: campaign.dataValues, channels: selectedChannels };
   }
 
   static async getAllCampaignsOfCompany({ user, limit, page }) {
@@ -108,11 +133,22 @@ export default class CampaignService {
       offset: limit * (page - 1),
     });
 
+    const returnedCampaigns = [];
+    for (const c of campaigns) {
+      const selectedChannels = await CampaignChannelService.getSelectedChannels(
+        { campaignId: c.id }
+      );
+      returnedCampaigns.push({
+        campaign: c,
+        channels: selectedChannels,
+      });
+    }
+
     return {
       total_items: totalItems,
       total_pages: totalPages,
       current_page: page,
-      items: campaigns,
+      items: returnedCampaigns,
     };
   }
 
@@ -177,7 +213,11 @@ export default class CampaignService {
       where: { id: updatedCampaign.id },
       include: { model: UserModel },
     });
+    const selectedChannels = await CampaignChannelService.getSelectedChannels({
+      campaignId: campaign.id,
+    });
+
     delete campaign.dataValues.User.password;
-    return campaign.dataValues;
+    return { campaign: campaign.dataValues, channels: selectedChannels };
   }
 }

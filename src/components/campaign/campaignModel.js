@@ -35,6 +35,7 @@ const CampaignModel = sequelize.define(
     },
     content: {
       type: DataTypes.STRING,
+      allowNull: false,
       validate: {
         notNull: {
           msg: "Campaign content is required",
@@ -55,6 +56,7 @@ const CampaignModel = sequelize.define(
     },
     company_id: {
       type: DataTypes.INTEGER,
+      allowNull: false,
       validate: {
         notNull: {
           msg: "Company id is required",
@@ -84,9 +86,18 @@ const CampaignModel = sequelize.define(
 
 User.hasMany(CampaignModel, { foreignKey: "created_by" });
 CampaignModel.belongsTo(User, { foreignKey: "created_by" });
+User.beforeDestroy(async (user) => {
+  await CampaignModel.update(
+    { created_by: null },
+    { where: { created_by: user.id } }
+  );
+});
 
 Company.hasMany(CampaignModel, { foreignKey: "company_id" });
 CampaignModel.belongsTo(Company, { foreignKey: "company_id" });
+Company.beforeDestroy(async (company) => {
+  await CampaignModel.destroy({ where: { company_id: company.id } });
+});
 
 CampaignModel.sync({ logging: false });
 

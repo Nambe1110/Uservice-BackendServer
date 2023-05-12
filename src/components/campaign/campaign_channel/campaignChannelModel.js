@@ -1,6 +1,5 @@
 import pkg from "sequelize";
 import sequelize from "../../../config/database/index.js";
-import User from "../../user/userModel.js";
 import Campaign from "../campaignModel.js";
 import Channel from "../../channel/channelModel.js";
 
@@ -16,6 +15,7 @@ const CampaignChannelModel = sequelize.define(
     },
     campaign_id: {
       type: DataTypes.INTEGER,
+      allowNull: false,
       validate: {
         notNull: {
           msg: "campaign_id is required",
@@ -28,6 +28,7 @@ const CampaignChannelModel = sequelize.define(
     },
     channel_id: {
       type: DataTypes.INTEGER,
+      allowNull: false,
       validate: {
         notNull: {
           msg: "channel_id is required",
@@ -50,12 +51,18 @@ const CampaignChannelModel = sequelize.define(
 
 Campaign.hasMany(CampaignChannelModel, { foreignKey: "campaign_id" });
 CampaignChannelModel.belongsTo(Campaign, { foreignKey: "campaign_id" });
+Campaign.beforeDestroy(async (campaign) => {
+  await CampaignChannelModel.destroy({ where: { campaign_id: campaign.id } });
+});
 
 Channel.hasMany(CampaignChannelModel, { foreignKey: "channel_id" });
 CampaignChannelModel.belongsTo(Channel, { foreignKey: "channel_id" });
+Channel.beforeDestroy(async (channel) => {
+  await CampaignChannelModel.destroy({ where: { channel_id: channel.id } });
+});
 
-Campaign.belongsToMany(Channel, { through: "CampaignChannelModel" });
-Channel.belongsToMany(Campaign, { through: "CampaignChannelModel" });
+// Campaign.belongsToMany(Channel, { through: "CampaignChannelModel" });
+// Channel.belongsToMany(Campaign, { through: "CampaignChannelModel" });
 
 CampaignChannelModel.sync({ logging: false });
 

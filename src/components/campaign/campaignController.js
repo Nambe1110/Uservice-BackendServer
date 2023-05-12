@@ -8,6 +8,7 @@ export const createCampaign = async (req, res) => {
       send_now: sendNow,
       send_date: sendDate,
       content,
+      channels,
       attachments,
     } = req.body;
 
@@ -17,6 +18,7 @@ export const createCampaign = async (req, res) => {
       sendNow,
       sendDate,
       content,
+      channels,
       attachments,
     });
     return res
