@@ -7,7 +7,6 @@ import { DataService } from "../data/dataService.js";
 import RoleEnum from "../../../enums/Role.js";
 import GptDataModel from "../gpt_data/gptDataModel.js";
 import GptDataService from "../gpt_data/gptDataService.js";
-import { faker } from '@faker-js/faker';
 
 export default class GptService {
   static async GetModelByCompanyId(companyId) {
@@ -17,8 +16,14 @@ export default class GptService {
     return gptModel?.dataValues;
   }
 
-  static async createFineTune({ user, fileIds }) {
+  static async createFineTune({ user, fileIds, name }) {
     try {
+      if (name === "" || name == null) {
+        throw new AppError("Yêu cầu tên mô hình", 400);
+      }
+      if (!fileIds?.length) {
+        throw new AppError("Yêu cầu danh sách các id của mô hình huấn luyện");
+      }
       const currentModels = await this.getCompanyModels({ user });
       if (
         currentModels &&
@@ -52,7 +57,7 @@ export default class GptService {
         train_id: response.id,
         is_training: true,
         company_id: user.company_id,
-        name: faker.name.firstName(),
+        name,
       });
       const trainedModel = await newModel.save();
       const gptDataRelations = fileIds.map((fileId) => ({

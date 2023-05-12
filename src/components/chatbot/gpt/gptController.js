@@ -8,6 +8,7 @@ export const createFineTune = async (req, res) => {
     const createdModel = await GptService.createFineTune({
       user,
       fileIds: files,
+      name: req.body.name ?? "Default name",
     });
     return res.status(200).json({
       status: StatusType.SUCCESS,
