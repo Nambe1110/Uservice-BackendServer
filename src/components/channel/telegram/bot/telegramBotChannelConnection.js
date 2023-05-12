@@ -176,7 +176,6 @@ export default class TelegramBotConnection {
           userId: customerId,
         });
 
-        /* eslint no-unused-vars: "off" */
         const {
           profilePhoto,
           username,
@@ -366,7 +365,7 @@ export default class TelegramBotConnection {
         const chatInfo = await this.connection.api.getChat({
           chatId,
         });
-        const { title, type: chatType } = chatInfo.response;
+        const { title } = chatInfo.response;
 
         const [thread] = await ThreadService.getOrCreateThread(
           {

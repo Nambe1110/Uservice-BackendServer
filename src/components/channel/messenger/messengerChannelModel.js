@@ -34,14 +34,11 @@ const MessengerChannelModel = sequelize.define(
     collate: "utf8_unicode_ci",
     createdAt: "created_at",
     updatedAt: "updated_at",
-    paranoid: true,
   }
 );
 
+CompanyModel.hasMany(MessengerChannelModel);
 MessengerChannelModel.belongsTo(CompanyModel);
-CompanyModel.hasMany(MessengerChannelModel, {
-  onDelete: "CASCADE",
-});
 
 MessengerChannelModel.sync({ logging: false });
 
@@ -59,6 +56,8 @@ MessengerChannelModel.beforeDestroy(async (channel) => {
   } catch (error) {
     logger.error(error.response.data);
   }
+
+  logger.info(`Unsubscribed app from page ${page_id}`);
 });
 
 export default MessengerChannelModel;
