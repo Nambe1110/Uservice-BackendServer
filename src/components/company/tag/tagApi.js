@@ -12,7 +12,7 @@ import {
 const tagRouter = express.Router({ mergeParams: true });
 
 tagRouter.use("/", (req, res, next) => {
-  // #swagger.tags = ['Company_tag']
+  // #swagger.tags = ['Tag']
   next();
 });
 

@@ -1,14 +1,12 @@
 import pkg from "sequelize";
 import sequelize from "../../../config/database/index.js";
-// import User from "../../user/userModel.js";
-// import Company from "../../company/companyModel.js";
-import CompanyTag from "../../company/tag/tagModel.js";
+import Tag from "../../company/tag/tagModel.js";
 import Customer from "../customerModel.js";
 
 const { DataTypes } = pkg;
 
-const TagModel = sequelize.define(
-  "Customer_tag",
+const TagSubscriptionModel = sequelize.define(
+  "Tag_subscription",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -22,16 +20,16 @@ const TagModel = sequelize.define(
         key: "id",
       },
     },
-    company_tag: {
+    tag_id: {
       type: DataTypes.INTEGER,
       references: {
-        model: CompanyTag,
+        model: Tag,
         key: "id",
       },
     },
   },
   {
-    tableName: "customer_tag",
+    tableName: "tag_subscription",
     charset: "utf8",
     collate: "utf8_unicode_ci",
     createdAt: "created_at",
@@ -39,10 +37,10 @@ const TagModel = sequelize.define(
   }
 );
 
-Customer.hasMany(TagModel, { foreignKey: "customer_id" });
-TagModel.belongsTo(Customer, { foreignKey: "customer_id" });
+Customer.hasMany(TagSubscriptionModel, { foreignKey: "customer_id" });
+TagSubscriptionModel.belongsTo(Customer, { foreignKey: "customer_id" });
 Customer.beforeDestroy(async (customer) => {
-  await TagModel.destroy({
+  await TagSubscriptionModel.destroy({
     where: {
       customer_id: customer.id,
     },
@@ -50,17 +48,17 @@ Customer.beforeDestroy(async (customer) => {
   });
 });
 
-CompanyTag.hasMany(TagModel, { foreignKey: "company_tag" });
-TagModel.belongsTo(CompanyTag, { foreignKey: "company_tag" });
-CompanyTag.beforeDestroy(async (companyTag) => {
-  await TagModel.destroy({
+Tag.hasMany(TagSubscriptionModel, { foreignKey: "tag_id" });
+TagSubscriptionModel.belongsTo(Tag, { foreignKey: "tag_id" });
+Tag.beforeDestroy(async (tag) => {
+  await TagSubscriptionModel.destroy({
     where: {
-      company_tag: companyTag.id,
+      tag_id: tag.id,
     },
     individualHooks: true,
   });
 });
 
-TagModel.sync({ logging: false });
+TagSubscriptionModel.sync({ logging: false });
 
-export default TagModel;
+export default TagSubscriptionModel;

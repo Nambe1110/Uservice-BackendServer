@@ -1,17 +1,17 @@
 import StatusEnum from "../../../enums/Status.js";
-import TagService from "./tagService.js";
+import TagSubscriptionService from "./tagSubscriptionService.js";
 
-export const createTag = async (req, res) => {
+export const subscribeTag = async (req, res) => {
   try {
-    const { customerId, companyTagId } = req.body;
-    const createdTag = await TagService.createTag({
+    const { customerId, tagId } = req.body;
+    const createdTagSubscription = await TagSubscriptionService.subscribeTag({
       user: req.user,
       customerId,
-      companyTagId,
+      tagId,
     });
     return res
       .status(200)
-      .json({ status: StatusEnum.Success, data: createdTag });
+      .json({ status: StatusEnum.Success, data: createdTagSubscription });
   } catch (error) {
     return res
       .status(error.code ?? 500)
@@ -19,11 +19,11 @@ export const createTag = async (req, res) => {
   }
 };
 
-export const deleteTag = async (req, res) => {
+export const unsubscribeTag = async (req, res) => {
   try {
     const { user } = req;
-    const tagId = req.body.id;
-    await TagService.deleteTag(user, tagId);
+    const tagSubscriptionId = req.body.id;
+    await TagSubscriptionService.unsubscribeTag(user, tagSubscriptionId);
     return res.status(200).json({
       status: StatusEnum.Success,
       data: { message: "Xóa tag thành công" },

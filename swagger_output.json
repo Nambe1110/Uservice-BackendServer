@@ -1500,7 +1500,7 @@
     "/api/company/tag/create": {
       "post": {
         "tags": [
-          "Company_tag"
+          "Tag"
         ],
         "description": "",
         "parameters": [
@@ -1533,7 +1533,7 @@
     "/api/company/tag/all": {
       "get": {
         "tags": [
-          "Company_tag"
+          "Tag"
         ],
         "description": "",
         "parameters": [
@@ -1561,7 +1561,7 @@
     "/api/company/tag/{id}": {
       "get": {
         "tags": [
-          "Company_tag"
+          "Tag"
         ],
         "description": "",
         "parameters": [
@@ -1585,7 +1585,7 @@
     "/api/company/tag/delete": {
       "delete": {
         "tags": [
-          "Company_tag"
+          "Tag"
         ],
         "description": "",
         "parameters": [
@@ -1615,7 +1615,7 @@
     "/api/company/tag/profile": {
       "put": {
         "tags": [
-          "Company_tag"
+          "Tag"
         ],
         "description": "",
         "parameters": [
@@ -1651,7 +1651,7 @@
     "/api/customer/tag/create": {
       "post": {
         "tags": [
-          "Customer_tag"
+          "Tag_subscription"
         ],
         "description": "",
         "parameters": [
@@ -1664,7 +1664,7 @@
                 "customerId": {
                   "example": "any"
                 },
-                "companyTagId": {
+                "tagId": {
                   "example": "any"
                 }
               }
@@ -1684,7 +1684,7 @@
     "/api/customer/tag/delete": {
       "delete": {
         "tags": [
-          "Customer_tag"
+          "Tag_subscription"
         ],
         "description": "",
         "parameters": [

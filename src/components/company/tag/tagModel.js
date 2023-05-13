@@ -1,12 +1,11 @@
 import pkg from "sequelize";
 import sequelize from "../../../config/database/index.js";
-// import User from "../../user/userModel.js";
 import Company from "../companyModel.js";
 
 const { DataTypes } = pkg;
 
 const TagModel = sequelize.define(
-  "Company_tag",
+  "Tag",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -34,7 +33,7 @@ const TagModel = sequelize.define(
     },
   },
   {
-    tableName: "company_tag",
+    tableName: "tag",
     charset: "utf8",
     collate: "utf8_unicode_ci",
     createdAt: "created_at",

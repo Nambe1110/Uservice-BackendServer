@@ -21,7 +21,7 @@ import dataRouter from "./components/chatbot/data/dataApi.js";
 import gptRouter from "./components/chatbot/gpt/gptApi.js";
 import campaignRouter from "./components/campaign/campaignApi.js";
 import companyTagRouter from "./components/company/tag/tagApi.js";
-import customerTagRouter from "./components/customer/tag/tagApi.js";
+import tagSubscriptionRouter from "./components/customer/tagSubscription/tagSubscriptionApi.js";
 
 dotenv.config();
 
@@ -57,7 +57,7 @@ app.use("/api/train-data", dataRouter);
 app.use("/api/model", gptRouter);
 app.use("/api/campaign", campaignRouter);
 app.use("/api/company/tag", companyTagRouter);
-app.use("/api/customer/tag", customerTagRouter);
+app.use("/api/customer/tag", tagSubscriptionRouter);
 
 app.get("/", (req, res) => {
   res.status(200).send({
