@@ -1385,6 +1385,12 @@
                 },
                 "attachments": {
                   "example": "any"
+                },
+                "tags": {
+                  "example": "any"
+                },
+                "and_filter": {
+                  "example": "any"
                 }
               }
             }

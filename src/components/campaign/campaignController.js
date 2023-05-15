@@ -10,6 +10,8 @@ export const createCampaign = async (req, res) => {
       content,
       channels,
       attachments,
+      tags,
+      and_filter: andFilter,
     } = req.body;
 
     const createdCampaign = await CampaignService.createCampaign({
@@ -20,6 +22,8 @@ export const createCampaign = async (req, res) => {
       content,
       channels,
       attachments,
+      tags,
+      andFilter,
     });
     return res
       .status(200)

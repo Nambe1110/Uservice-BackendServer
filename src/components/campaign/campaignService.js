@@ -3,6 +3,10 @@ import CampaignModel from "./campaignModel.js";
 import UserModel from "../user/userModel.js";
 import ChannelModel from "../channel/channelModel.js";
 import CampaignChannelService from "./campaign_channel/campaignChannelService.js";
+import CampaignChannelModel from "./campaign_channel/campaignChannelModel.js";
+import CampaignTagService from "./campaign_tag/campaignTagService.js";
+import CampaignTagModel from "./campaign_tag/campaignTagModel.js";
+import TagModel from "../company/tag/tagModel.js";
 
 export default class CampaignService {
   static async createCampaign({
@@ -13,6 +17,8 @@ export default class CampaignService {
     content,
     channels,
     attachments,
+    tags,
+    andFilter,
   }) {
     if (!name || !content) {
       throw new AppError("Tên chiến dịch và nội dung không thể null", 400);
@@ -25,8 +31,16 @@ export default class CampaignService {
       }
     }
 
-    // Convert sendNow from string to boolean
+    for (const tagId of tags) {
+      const existedTag = await TagModel.findByPk(tagId);
+      if (!existedTag) {
+        throw new AppError(`Id tag: ${tagId} không tồn tại`, 400);
+      }
+    }
+
+    // Convert sendNow, orFilter from string to boolean
     sendNow = sendNow === "true";
+    andFilter = andFilter === "true";
     let sendDateValue = null;
     // Throw error when sendNow: true and sendDate string is not null
     if (sendDate && sendNow) {
@@ -72,30 +86,74 @@ export default class CampaignService {
       attachments,
       company_id: user.company_id,
       created_by: user.id,
-    });
-    const campaign = await CampaignModel.findOne({
-      where: { id: newCampaign.id },
-      include: { model: UserModel },
+      tags,
+      andFilter,
     });
 
     for (const channelId of channels) {
       await CampaignChannelService.createCampaignChannelItem({
-        campaignId: campaign.id,
+        campaignId: newCampaign.id,
         channelId,
       });
     }
-    const selectedChannels = await CampaignChannelService.getSelectedChannels({
-      campaignId: campaign.id,
+
+    for (const tagId of tags) {
+      await CampaignTagService.createCampaignTagItem({
+        campaignId: newCampaign.id,
+        tagId,
+      });
+    }
+
+    const campaign = await CampaignModel.findOne({
+      where: { id: newCampaign.id },
+      include: [
+        { model: UserModel },
+        {
+          model: CampaignChannelModel,
+          include: [ChannelModel],
+          attributes: {
+            exclude: ["campaign_id", "channel_id", "created_at", "updated_at"],
+          },
+        },
+        {
+          model: CampaignTagModel,
+          include: [TagModel],
+          attributes: {
+            exclude: ["campaign_id", "tag_id", "created_at", "updated_at"],
+          },
+        },
+      ],
+      attributes: {
+        exclude: ["password"],
+      },
     });
 
-    delete campaign.dataValues.User.password;
-    return { campaign: campaign.dataValues, channels: selectedChannels };
+    return campaign;
   }
 
   static async getCampaignById({ user, id }) {
     const campaign = await CampaignModel.findOne({
       where: { id },
-      include: { model: UserModel },
+      include: [
+        { model: UserModel },
+        {
+          model: CampaignChannelModel,
+          include: [ChannelModel],
+          attributes: {
+            exclude: ["campaign_id", "channel_id", "created_at", "updated_at"],
+          },
+        },
+        {
+          model: CampaignTagModel,
+          include: [TagModel],
+          attributes: {
+            exclude: ["campaign_id", "tag_id", "created_at", "updated_at"],
+          },
+        },
+      ],
+      attributes: {
+        exclude: ["password"],
+      },
     });
     if (!campaign) {
       throw new AppError("Chiến dịch không tồn tại", 400);
@@ -108,12 +166,7 @@ export default class CampaignService {
       );
     }
 
-    const selectedChannels = await CampaignChannelService.getSelectedChannels({
-      campaignId: campaign.id,
-    });
-
-    delete campaign.dataValues.User.password;
-    return { campaign: campaign.dataValues, channels: selectedChannels };
+    return campaign;
   }
 
   static async getAllCampaignsOfCompany({ user, limit, page }) {
@@ -125,7 +178,23 @@ export default class CampaignService {
 
     const campaigns = await CampaignModel.findAll({
       where: { company_id: user.company_id },
-      include: { model: UserModel },
+      include: [
+        { model: UserModel },
+        {
+          model: CampaignChannelModel,
+          include: [ChannelModel],
+          attributes: {
+            exclude: ["campaign_id", "channel_id", "created_at", "updated_at"],
+          },
+        },
+        {
+          model: CampaignTagModel,
+          include: [TagModel],
+          attributes: {
+            exclude: ["campaign_id", "tag_id", "created_at", "updated_at"],
+          },
+        },
+      ],
       attributes: {
         exclude: ["password"],
       },
@@ -133,22 +202,11 @@ export default class CampaignService {
       offset: limit * (page - 1),
     });
 
-    const returnedCampaigns = [];
-    for (const c of campaigns) {
-      const selectedChannels = await CampaignChannelService.getSelectedChannels(
-        { campaignId: c.id }
-      );
-      returnedCampaigns.push({
-        campaign: c,
-        channels: selectedChannels,
-      });
-    }
-
     return {
       total_items: totalItems,
       total_pages: totalPages,
       current_page: page,
-      items: returnedCampaigns,
+      items: campaigns,
     };
   }
 

@@ -42,6 +42,10 @@ const CampaignModel = sequelize.define(
         },
       },
     },
+    and_filter: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
     attachments: {
       type: DataTypes.TEXT,
       get() {
