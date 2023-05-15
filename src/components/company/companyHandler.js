@@ -34,8 +34,6 @@ export default async (io, socket) => {
         },
       });
 
-    logger.info(employee);
-
     socket.on("disconnect", () => {
       --employee.socketCount;
 

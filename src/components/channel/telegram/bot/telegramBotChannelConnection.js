@@ -52,6 +52,8 @@ export default class TelegramBotConnection {
         "connection",
         validDirName
       ),
+      useFileDatabase: true,
+      useChatInfoDatabase: true,
       enableStorageOptimizer: true,
       logVerbosityLevel: 2,
     });

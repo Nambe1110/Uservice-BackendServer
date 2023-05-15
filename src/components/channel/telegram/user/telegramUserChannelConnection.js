@@ -51,6 +51,7 @@ export default class TelegramUserConnection {
         "connection",
         String(this.phoneNumber)
       ),
+      useChatInfoDatabase: true,
       enableStorageOptimizer: true,
       logVerbosityLevel: 2,
     });
