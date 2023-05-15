@@ -3,7 +3,7 @@ import path from "path";
 
 const upload = multer({
   storage: multer.memoryStorage({}),
-  limits: 1024 * 1024 * 2, // file limit: 2MB
+  limits: 1024 * 1024 * 1024 * 2, //  limit: 2 GB
   fileFilter: (req, file, callback) => {
     const ext = path.extname(file.originalname).toLowerCase();
     if (ext !== ".png" && ext !== ".jpg" && ext !== ".jpeg") {

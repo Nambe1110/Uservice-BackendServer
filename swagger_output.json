@@ -1305,7 +1305,40 @@
             "schema": {
               "type": "object",
               "properties": {
+                "name": {
+                  "example": "any"
+                },
                 "files": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/model/change-model": {
+      "patch": {
+        "tags": [
+          "Customer"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "model_id": {
                   "example": "any"
                 }
               }
@@ -1338,9 +1371,6 @@
                 "name": {
                   "example": "any"
                 },
-                "channel": {
-                  "example": "any"
-                },
                 "send_now": {
                   "example": "any"
                 },
@@ -1348,6 +1378,9 @@
                   "example": "any"
                 },
                 "content": {
+                  "example": "any"
+                },
+                "channels": {
                   "example": "any"
                 },
                 "attachments": {
@@ -1466,15 +1499,6 @@
                   "example": "any"
                 },
                 "name": {
-                  "example": "any"
-                },
-                "channel": {
-                  "example": "any"
-                },
-                "send_now": {
-                  "example": "any"
-                },
-                "send_date": {
                   "example": "any"
                 },
                 "content": {
