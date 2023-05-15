@@ -52,13 +52,19 @@ const CampaignChannelModel = sequelize.define(
 Campaign.hasMany(CampaignChannelModel, { foreignKey: "campaign_id" });
 CampaignChannelModel.belongsTo(Campaign, { foreignKey: "campaign_id" });
 Campaign.beforeDestroy(async (campaign) => {
-  await CampaignChannelModel.destroy({ where: { campaign_id: campaign.id } });
+  await CampaignChannelModel.destroy({
+    where: { campaign_id: campaign.id },
+    individualHooks: true,
+  });
 });
 
 Channel.hasMany(CampaignChannelModel, { foreignKey: "channel_id" });
 CampaignChannelModel.belongsTo(Channel, { foreignKey: "channel_id" });
 Channel.beforeDestroy(async (channel) => {
-  await CampaignChannelModel.destroy({ where: { channel_id: channel.id } });
+  await CampaignChannelModel.destroy({
+    where: { channel_id: channel.id },
+    individualHooks: true,
+  });
 });
 
 // Campaign.belongsToMany(Channel, { through: "CampaignChannelModel" });
