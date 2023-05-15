@@ -51,6 +51,7 @@ export default class TelegramUserConnection {
         "connection",
         String(this.phoneNumber)
       ),
+      useChatInfoDatabase: true,
       enableStorageOptimizer: true,
       logVerbosityLevel: 2,
     });
@@ -139,8 +140,84 @@ export default class TelegramUserConnection {
 
   async setUpdateListener({ channelId }) {
     try {
-      this.connection.on("updateChatLastMessage", async ({ update }) => {
-        if (update.lastMessage?.sendingState) return;
+      this.connection.on("updateMessageContent", async ({ update }) => {
+        const { chatId, messageId, newContent: messageContent } = update;
+
+        const thread = await ThreadService.getThread({
+          channelId,
+          threadApiId: chatId,
+        });
+
+        if (!thread) return;
+
+        const message = await MessageService.getMessage({
+          messageApiId: messageId,
+          threadId: thread.id,
+        });
+
+        if (!message) return;
+
+        const customer = await CustomerService.getCustomer({
+          threadId: thread.id,
+        });
+
+        const attachment = await AttachmentService.getAttachments({
+          messageId: message.id,
+        });
+
+        let content;
+        let repliedMessage;
+        let sender;
+
+        if (message.senderType === SenderType.STAFF) {
+          sender = await UserService.getUser({
+            companyId: this.companyId,
+            role: UserRole.OWNER,
+          });
+        } else {
+          sender = customer;
+        }
+
+        if (message.replied_message_id) {
+          repliedMessage = await MessageService.getMessageByApiId({
+            apiId: message.replied_message_id,
+            threadId: thread.id,
+          });
+        }
+
+        switch (messageContent._) {
+          case "messageText":
+            content = messageContent.text.text;
+            break;
+          case "messageAudio":
+          case "messageDocument":
+          case "messagePhoto":
+          case "messageVideo":
+            content = messageContent.caption.text;
+            break;
+          default:
+            return;
+        }
+
+        message.content = content;
+
+        await message.save();
+
+        await threadNotifier.onNewMessage({
+          created: false,
+          channelType: ChannelType.TELEGRAM_USER,
+          companyId: this.companyId,
+          thread,
+          customer,
+          message,
+          repliedMessage,
+          sender,
+          attachment: attachment ? [attachment] : [],
+        });
+      });
+
+      this.connection.on("updateNewMessage", async ({ update }) => {
+        if (update.message?.sendingState) return;
         const {
           chatId,
           id: messageId,
@@ -148,7 +225,7 @@ export default class TelegramUserConnection {
           date,
           isOutgoing,
           replyToMessageId,
-        } = update.lastMessage;
+        } = update.message;
 
         const chatInfo = await this.connection.api.getChat({
           chatId,
@@ -162,7 +239,6 @@ export default class TelegramUserConnection {
           userId: customerId,
         });
 
-        /* eslint no-unused-vars: "off" */
         const {
           profilePhoto,
           username,
@@ -231,18 +307,17 @@ export default class TelegramUserConnection {
           sender = customer;
         }
 
-        const [message, messageCreated] =
-          await MessageService.getOrCreateMessage(
-            {
-              thread_id: thread.id,
-              message_api_id: messageId,
-            },
-            {
-              sender_type: isOutgoing ? SenderType.STAFF : SenderType.CUSTOMER,
-              sender_id: sender.id,
-              timestamp: date,
-            }
-          );
+        const [message] = await MessageService.getOrCreateMessage(
+          {
+            thread_id: thread.id,
+            message_api_id: messageId,
+          },
+          {
+            sender_type: isOutgoing ? SenderType.STAFF : SenderType.CUSTOMER,
+            sender_id: sender.id,
+            timestamp: date,
+          }
+        );
 
         switch (messageContent._) {
           case "messageText": {
@@ -326,7 +401,7 @@ export default class TelegramUserConnection {
         await message.save();
 
         await threadNotifier.onNewMessage({
-          created: messageCreated,
+          created: true,
           channelType: ChannelType.TELEGRAM_USER,
           companyId: this.companyId,
           thread,
@@ -353,7 +428,7 @@ export default class TelegramUserConnection {
         const chatInfo = await this.connection.api.getChat({
           chatId,
         });
-        const { title, type: chatType } = chatInfo.response;
+        const { title } = chatInfo.response;
 
         const [thread] = await ThreadService.getOrCreateThread(
           {
