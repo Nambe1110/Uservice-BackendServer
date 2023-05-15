@@ -4,6 +4,9 @@ import AppError from "../../utils/AppError.js";
 import ThreadModel from "../thread/threadModel.js";
 import ChannelModel from "../channel/channelModel.js";
 import { ChannelType } from "../../constants.js";
+import TagSubscriptionService from "./tagSubscription/tagSubscriptionService.js";
+import TagSubscriptionModel from "./tagSubscription/tagSubscriptionModel.js";
+import TagModel from "../company/tag/tagModel.js";
 
 export default class CustomerService {
   static async getOrCreateCustomer(where, defaults) {
@@ -75,13 +78,25 @@ export default class CustomerService {
   }
 
   static async getCustomerById({ currentUser, customerId }) {
-    const customer = await CustomerModel.findByPk(customerId);
+    const customer = await CustomerModel.findOne({
+      where: { id: customerId },
+      include: [
+        {
+          model: TagSubscriptionModel,
+          include: [TagModel],
+        },
+      ],
+    });
     if (!customer) {
       throw new AppError("Khách hàng không tồn tại", 403);
     }
     if (currentUser.company_id !== customer.company_id) {
       throw new AppError("Khách hàng thuộc công ty khác", 403);
     }
+
+    delete customer.dataValues.ThreadId;
+    delete customer.dataValues.CompanyId;
+
     return customer;
   }
 

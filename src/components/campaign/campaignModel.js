@@ -42,6 +42,10 @@ const CampaignModel = sequelize.define(
         },
       },
     },
+    and_filter: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
     attachments: {
       type: DataTypes.TEXT,
       get() {
@@ -95,6 +99,14 @@ User.beforeDestroy(async (user) => {
 
 Company.hasMany(CampaignModel, { foreignKey: "company_id" });
 CampaignModel.belongsTo(Company, { foreignKey: "company_id" });
+Company.beforeDestroy(async (company) => {
+  await CampaignModel.destroy({
+    where: {
+      company_id: company.id,
+    },
+    individualHooks: true,
+  });
+});
 Company.beforeDestroy(async (company) => {
   await CampaignModel.destroy({ where: { company_id: company.id } });
 });

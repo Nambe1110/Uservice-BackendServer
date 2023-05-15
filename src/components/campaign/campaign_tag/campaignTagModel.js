@@ -1,12 +1,12 @@
 import pkg from "sequelize";
 import sequelize from "../../../config/database/index.js";
 import Campaign from "../campaignModel.js";
-import Channel from "../../channel/channelModel.js";
+import Tag from "../../company/tag/tagModel.js";
 
 const { DataTypes } = pkg;
 
-const CampaignChannelModel = sequelize.define(
-  "Campaign_Channel",
+const CampaignTagModel = sequelize.define(
+  "Campaign_Tag",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -26,22 +26,22 @@ const CampaignChannelModel = sequelize.define(
         key: "id",
       },
     },
-    channel_id: {
+    tag_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
         notNull: {
-          msg: "channel_id is required",
+          msg: "Tag id is required",
         },
       },
       references: {
-        model: Channel,
+        model: Tag,
         key: "id",
       },
     },
   },
   {
-    tableName: "campaign_channel",
+    tableName: "campaign_tag",
     charset: "utf8",
     collate: "utf8_unicode_ci",
     createdAt: "created_at",
@@ -49,27 +49,27 @@ const CampaignChannelModel = sequelize.define(
   }
 );
 
-Campaign.hasMany(CampaignChannelModel, { foreignKey: "campaign_id" });
-CampaignChannelModel.belongsTo(Campaign, { foreignKey: "campaign_id" });
+Campaign.hasMany(CampaignTagModel, { foreignKey: "campaign_id" });
+CampaignTagModel.belongsTo(Campaign, { foreignKey: "campaign_id" });
 Campaign.beforeDestroy(async (campaign) => {
-  await CampaignChannelModel.destroy({
+  await CampaignTagModel.destroy({
     where: { campaign_id: campaign.id },
     individualHooks: true,
   });
 });
 
-Channel.hasMany(CampaignChannelModel, { foreignKey: "channel_id" });
-CampaignChannelModel.belongsTo(Channel, { foreignKey: "channel_id" });
-Channel.beforeDestroy(async (channel) => {
-  await CampaignChannelModel.destroy({
-    where: { channel_id: channel.id },
+Tag.hasMany(CampaignTagModel, { foreignKey: "tag_id" });
+CampaignTagModel.belongsTo(Tag, { foreignKey: "tag_id" });
+Tag.beforeDestroy(async (tag) => {
+  await CampaignTagModel.destroy({
+    where: { tag_id: tag.id },
     individualHooks: true,
   });
 });
 
-// Campaign.belongsToMany(Channel, { through: "CampaignChannelModel" });
-// Channel.belongsToMany(Campaign, { through: "CampaignChannelModel" });
+// Campaign.belongsToMany(Channel, { through: "CampaignTagModel" });
+// Channel.belongsToMany(Campaign, { through: "CampaignTagModel" });
 
-CampaignChannelModel.sync({ logging: false });
+CampaignTagModel.sync({ logging: false });
 
-export default CampaignChannelModel;
+export default CampaignTagModel;

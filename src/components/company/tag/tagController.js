@@ -1,33 +1,17 @@
-import StatusEnum from "../../enums/Status.js";
-import CampaignService from "./campaignService.js";
+import StatusEnum from "../../../enums/Status.js";
+import TagService from "./tagService.js";
 
-export const createCampaign = async (req, res) => {
+export const createTag = async (req, res) => {
   try {
-    const {
-      name,
-      send_now: sendNow,
-      send_date: sendDate,
-      content,
-      channels,
-      attachments,
-      tags,
-      and_filter: andFilter,
-    } = req.body;
-
-    const createdCampaign = await CampaignService.createCampaign({
+    const { content, color } = req.body;
+    const createdTag = await TagService.createTag({
       user: req.user,
-      name,
-      sendNow,
-      sendDate,
+      color,
       content,
-      channels,
-      attachments,
-      tags,
-      andFilter,
     });
     return res
       .status(200)
-      .json({ status: StatusEnum.Success, data: createdCampaign });
+      .json({ status: StatusEnum.Success, data: createdTag });
   } catch (error) {
     return res
       .status(error.code ?? 500)
@@ -35,15 +19,15 @@ export const createCampaign = async (req, res) => {
   }
 };
 
-export const getCampaignDetails = async (req, res) => {
+export const getTagDetails = async (req, res) => {
   try {
     const { id } = req.params;
     const { user } = req;
-    const campaign = await CampaignService.getCampaignById({ user, id });
+    const tag = await TagService.getTagById({ user, id });
 
     return res.status(200).json({
       status: StatusEnum.Success,
-      data: campaign,
+      data: tag,
     });
   } catch (error) {
     return res
@@ -52,12 +36,12 @@ export const getCampaignDetails = async (req, res) => {
   }
 };
 
-export const getAllCampaignsOfCompany = async (req, res) => {
+export const getAllTagsOfCompany = async (req, res) => {
   try {
     const { user } = req;
     const limit = parseInt(req.query.limit ?? 20, 10);
     const page = parseInt(req.query.page ?? 1, 10);
-    const campaigns = await CampaignService.getAllCampaignsOfCompany({
+    const tags = await TagService.getAllTagsOfCompany({
       user,
       limit,
       page,
@@ -65,7 +49,7 @@ export const getAllCampaignsOfCompany = async (req, res) => {
 
     return res.status(200).json({
       status: StatusEnum.Success,
-      data: campaigns,
+      data: tags,
     });
   } catch (error) {
     return res
@@ -74,14 +58,14 @@ export const getAllCampaignsOfCompany = async (req, res) => {
   }
 };
 
-export const deleteCampaign = async (req, res) => {
+export const deleteTag = async (req, res) => {
   try {
     const { user } = req;
-    const campaignId = req.body.id;
-    await CampaignService.deleteCampaign(user, campaignId);
+    const tagId = req.body.id;
+    await TagService.deleteTag(user, tagId);
     return res.status(200).json({
       status: StatusEnum.Success,
-      data: { message: "Xóa chiến dịch thành công" },
+      data: { message: "Xóa tag thành công" },
     });
   } catch (error) {
     return res
@@ -90,20 +74,19 @@ export const deleteCampaign = async (req, res) => {
   }
 };
 
-export const updateCampaignDetails = async (req, res) => {
+export const updateTagDetails = async (req, res) => {
   try {
-    const { id, name, content, attachments } = req.body;
+    const { id, color, content } = req.body;
 
-    const updatedCampaign = await CampaignService.updateCampaignDetails({
+    const updatedTag = await TagService.updateTagDetails({
       user: req.user,
       id,
-      name,
+      color,
       content,
-      attachments,
     });
     return res
       .status(200)
-      .json({ status: StatusEnum.Success, data: updatedCampaign });
+      .json({ status: StatusEnum.Success, data: updatedTag });
   } catch (error) {
     return res
       .status(error.code ?? 500)
