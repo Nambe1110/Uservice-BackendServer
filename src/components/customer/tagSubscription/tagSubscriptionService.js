@@ -62,4 +62,13 @@ export default class TagSubscriptionService {
     }
     await tagSubscription.destroy();
   }
+
+  static async getAllTagSubscriptionOfCustomer({ customerId }) {
+    const allTagSubscription = await TagSubscriptionModel.findAll({
+      where: { customer_id: customerId },
+      include: { model: TagModel },
+    });
+
+    return allTagSubscription;
+  }
 }

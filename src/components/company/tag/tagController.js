@@ -3,10 +3,10 @@ import TagService from "./tagService.js";
 
 export const createTag = async (req, res) => {
   try {
-    const { name, content } = req.body;
+    const { content, color } = req.body;
     const createdTag = await TagService.createTag({
       user: req.user,
-      name,
+      color,
       content,
     });
     return res
@@ -76,12 +76,12 @@ export const deleteTag = async (req, res) => {
 
 export const updateTagDetails = async (req, res) => {
   try {
-    const { id, name, content } = req.body;
+    const { id, color, content } = req.body;
 
     const updatedTag = await TagService.updateTagDetails({
       user: req.user,
       id,
-      name,
+      color,
       content,
     });
     return res

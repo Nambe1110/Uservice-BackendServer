@@ -16,7 +16,7 @@ customerRouter.use("/", (req, res, next) => {
 customerRouter.use("/", verifyToken(true));
 
 customerRouter.get("/", getCustomers);
-customerRouter.get("/:customerId", verifyToken(), getCustomerById);
-customerRouter.post("/:customerId", verifyToken(), updateCustomer);
+customerRouter.get("/:customerId", verifyToken(true), getCustomerById);
+customerRouter.post("/:customerId", verifyToken(true), updateCustomer);
 
 export default customerRouter;

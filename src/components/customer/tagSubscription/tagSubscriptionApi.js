@@ -12,9 +12,9 @@ tagRouter.use("/", (req, res, next) => {
 
 tagRouter.use("/", verifyToken.verifyToken());
 
-tagRouter.post("/create", [verifyToken.verifyToken(true)], subscribeTag);
+tagRouter.post("/subscribe", [verifyToken.verifyToken(true)], subscribeTag);
 tagRouter.delete(
-  "/delete",
+  "/unsubscribe",
   [verifyToken.verifyToken(true), verifyRole.isManagerOrOwner],
   unsubscribeTag
 );

@@ -2,13 +2,13 @@ import AppError from "../../../utils/AppError.js";
 import TagModel from "./tagModel.js";
 
 export default class TagService {
-  static async createTag({ user, name, content }) {
-    if (!name) {
-      throw new AppError("Tên tag không thể null", 400);
+  static async createTag({ user, color, content }) {
+    if (!content) {
+      throw new AppError("Nội dung tag không thể null", 400);
     }
 
     const newTag = await TagModel.create({
-      name,
+      color,
       content,
       company_id: user.company_id,
     });
@@ -69,7 +69,7 @@ export default class TagService {
     await tag.destroy();
   }
 
-  static async updateTagDetails({ user, id, name, content }) {
+  static async updateTagDetails({ user, id, color, content }) {
     const oldTag = await TagModel.findOne({
       where: { id },
     });
@@ -83,11 +83,11 @@ export default class TagService {
       );
     }
 
-    if (!name) {
-      throw new AppError("Tên Tag không thể null", 400);
+    if (!content) {
+      throw new AppError("Nội dung Tag không thể null", 400);
     }
 
-    oldTag.name = name;
+    oldTag.color = color;
     oldTag.content = content;
 
     const updatedTag = await oldTag.save();

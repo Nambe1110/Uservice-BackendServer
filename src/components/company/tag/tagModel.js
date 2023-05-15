@@ -12,17 +12,17 @@ const TagModel = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    name: {
+    content: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
         notNull: {
-          msg: "Tag name is required",
+          msg: "Content of tag is required",
         },
       },
     },
-    content: {
-      type: DataTypes.STRING,
+    color: {
+      type: DataTypes.INTEGER,
     },
     company_id: {
       type: DataTypes.INTEGER,

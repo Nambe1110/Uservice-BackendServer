@@ -1510,10 +1510,10 @@
             "schema": {
               "type": "object",
               "properties": {
-                "name": {
+                "content": {
                   "example": "any"
                 },
-                "content": {
+                "color": {
                   "example": "any"
                 }
               }
@@ -1628,7 +1628,7 @@
                 "id": {
                   "example": "any"
                 },
-                "name": {
+                "color": {
                   "example": "any"
                 },
                 "content": {
@@ -1648,7 +1648,7 @@
         }
       }
     },
-    "/api/customer/tag/create": {
+    "/api/customer/tag/subscribe": {
       "post": {
         "tags": [
           "Tag_subscription"
@@ -1681,7 +1681,7 @@
         }
       }
     },
-    "/api/customer/tag/delete": {
+    "/api/customer/tag/unsubscribe": {
       "delete": {
         "tags": [
           "Tag_subscription"
