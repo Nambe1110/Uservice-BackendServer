@@ -24,7 +24,7 @@ const CampaignModel = sequelize.define(
     },
     day_diff: {
       type: DataTypes.INTEGER.UNSIGNED,
-      defaultValue: 7,
+      defaultValue: 0,
     },
     send_now: {
       type: DataTypes.BOOLEAN,
