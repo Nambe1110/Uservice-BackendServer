@@ -90,6 +90,7 @@ export default async function prefetch() {
           phoneNumber: employee.phone_number,
           role: employee.role,
           imageUrl: employee.image_url,
+          disconnectTimestamp: employee.disconnect_timestamp,
           socketCount: 0,
         });
       });

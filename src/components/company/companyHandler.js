@@ -1,4 +1,5 @@
 import { listCompany } from "../../utils/singleton.js";
+import UserService from "../user/userService.js";
 import logger from "../../config/logger/index.js";
 
 const getUser = (employees) =>
@@ -37,8 +38,13 @@ export default async (io, socket) => {
     socket.on("disconnect", () => {
       --employee.socketCount;
 
-      setTimeout(() => {
+      setTimeout(async () => {
         if (employee.socketCount === 0) {
+          const updatedUser = await UserService.updateDisconnectTimestamp(
+            user.id
+          );
+          employee.disconnectTimestamp = updatedUser.disconnect_timestamp;
+
           io.to(user.company_id).emit("user-status", {
             data: {
               users: getUser(employees),
