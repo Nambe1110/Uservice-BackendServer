@@ -4,20 +4,26 @@ import CompanyService from "../company/companyService.js";
 import MeService from "./meService.js";
 
 export const getProfile = async (req, res) => {
-  const { user } = req;
-  delete user.password;
-  const company = await CompanyService.getCompanyById({
-    user,
-    id: user.company_id,
-  });
+  try {
+    const { user } = req;
+    delete user.password;
+    if (user.company_id) {
+      const company = await CompanyService.getCompanyById({
+        user,
+        id: user.company_id,
+      });
+      user.chatbot_mode = company.chatbot_mode;
+    }
 
-  return res.status(200).json({
-    status: StatusEnum.Success,
-    data: {
-      ...user,
-      chatbot_mode: company.chatbot_mode,
-    },
-  });
+    return res.status(200).json({
+      status: StatusEnum.Success,
+      data: user,
+    });
+  } catch (error) {
+    return res
+      .status(error.code ?? 500)
+      .json({ status: StatusEnum.Error, message: error.message });
+  }
 };
 
 export const changeAvatar = async (req, res) => {
