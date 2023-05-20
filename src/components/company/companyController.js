@@ -32,6 +32,7 @@ export const createCompany = async (req, res) => {
       .status(200)
       .json({ status: StatusEnum.Success, data: insertedCompany });
   } catch (error) {
+    throw (error)
     return res
       .status(error.code ?? 500)
       .json({ status: StatusEnum.Error, message: error.message });
