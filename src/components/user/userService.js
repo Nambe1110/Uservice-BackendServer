@@ -239,4 +239,15 @@ export default class UserService {
 
     return updatedCurrentUser;
   }
+
+  static async updateDisconnectTimestamp(userId) {
+    const user = await UserModel.findByPk(userId);
+    if (!user) {
+      throw new AppError("User Id không tồn tại");
+    }
+    user.disconnect_timestamp = Date.now();
+    await user.save();
+
+    return user;
+  }
 }
