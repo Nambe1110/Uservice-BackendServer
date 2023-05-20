@@ -25,7 +25,7 @@ export default class UserService {
     currentUser.role = role;
     const updatedUser = await currentUser.save();
 
-    listCompany.get(company.id).employees.set(user.id, {
+    listCompany.get(company.id)?.employees.set(user.id, {
       id: user.id,
       firstName: user.first_name,
       lastName: user.last_name,

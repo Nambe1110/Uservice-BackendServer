@@ -19,8 +19,10 @@ export default class CompanyService {
       throw new AppError("Tên công ty đã tồn tại", 400);
     }
     const inviteCode = generator.generate({
-      length: 10,
+      length: 12,
       numbers: true,
+      uppercase: true,
+      lowercase: false,
     });
     const newCompany = await CompanyModel.create({
       name: companyName,
@@ -42,7 +44,7 @@ export default class CompanyService {
       employees: new Map(),
     });
 
-    listCompany.get(newCompany.id).employees.set(user.id, {
+    listCompany.get(newCompany.id)?.employees.set(user.id, {
       id: user.id,
       firstName: user.first_name,
       lastName: user.last_name,
