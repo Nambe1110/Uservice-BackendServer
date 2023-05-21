@@ -55,7 +55,11 @@ const CampaignModel = sequelize.define(
         return this.getDataValue("attachments");
       },
       set(val) {
-        this.setDataValue("attachments", val.join(";"));
+        if (val) {
+          this.setDataValue("attachments", val.join(";"));
+        } else {
+          this.setDataValue("attachments", val);
+        }
       },
     },
     company_id: {

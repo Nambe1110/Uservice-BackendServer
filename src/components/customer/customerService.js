@@ -5,8 +5,6 @@ import ThreadModel from "../thread/threadModel.js";
 import ChannelModel from "../channel/channelModel.js";
 import { ChannelType } from "../../constants.js";
 import TagSubscriptionService from "./tagSubscription/tagSubscriptionService.js";
-import TagSubscriptionModel from "./tagSubscription/tagSubscriptionModel.js";
-import TagModel from "../company/tag/tagModel.js";
 
 export default class CustomerService {
   static async getOrCreateCustomer(where, defaults) {
@@ -27,80 +25,6 @@ export default class CustomerService {
 
     return customer;
   }
-
-  // static async getCustomers({ companyId, page, limit }) {
-  //   const customers = await sequelize.query(
-  //     `SELECT DISTINCT customer.*,
-  //       t2.id AS 'last_message.id',
-  //       t2.content AS 'last_message.content',
-  //       t2.timestamp AS 'last_message.timestamp',
-  //       t4.type AS 'channel.type',
-  //       t4.name AS 'channel.name',
-  //       t4.image_url AS 'channel.image_url',
-  //       t4.id AS 'channel.id',
-  //       t4.is_connected AS 'channel.is_connected',
-  //       t5.id AS 'tag_subscription.id',
-  //       t5.customer_id AS 'tag_subscription.customer_id',
-  //       t5.tag_id AS 'tag_subscription.tag_id',
-  //       t5.created_at AS 'tag_subscription.created_at',
-  //       t5.updated_at AS 'tag_subscription.updated_at',
-  //       t6.id AS 'tag_subscription.tag.id',
-  //       t6.content AS 'tag_subscription.tag.content',
-  //       t6.color AS 'tag_subscription.tag.color',
-  //       t6.company_id AS 'tag_subscription.tag.company_id',
-  //       t6.created_at AS 'tag_subscription.tag.created_at',
-  //       t6.updated_at AS 'tag_subscription.tag.updated_at'
-  //     FROM customer
-  //     LEFT JOIN 
-  //     (
-  //       SELECT * FROM message
-  //       WHERE id IN (
-  //         SELECT MAX(id) FROM message
-  //         WHERE sender_type = 'customer'
-  //         GROUP BY sender_id
-  //       )
-  //     ) AS t2 ON t2.sender_id = customer.id
-  //     LEFT JOIN thread AS t3 ON t3.id = customer.thread_id
-  //     LEFT JOIN channel AS t4 ON t4.id = t3.channel_id
-  //     LEFT JOIN tag_subscription AS t5 ON t5.customer_id = customer.id
-  //     LEFT JOIN tag AS t6 ON t6.id = t5.tag_id
-  //     WHERE customer.company_id = :companyId
-  //     LIMIT :limit
-  //     OFFSET :offset`,
-  //     {
-  //       replacements: {
-  //         companyId,
-  //         limit,
-  //         offset: (page - 1) * limit,
-  //       },
-  //       type: sequelize.QueryTypes.SELECT,
-  //       nest: true,
-  //     }
-  //   );
-
-  //   for (const customer of customers) {
-  //     if (!customer.tag_subscription.id) {
-  //       customer.tag_subscription = [];
-  //     } else {
-  //       const tag_subscription =
-  //         await TagSubscriptionService.getAllTagSubscriptionOfCustomer({
-  //           customerId: customer.id,
-  //         });
-  //       customer.tag_subscription = tag_subscription;
-  //     }
-  //   }
-
-  //   const totalItems = await CustomerModel.count({
-  //     where: { company_id: companyId },
-  //   });
-
-  //   return {
-  //     total_items: totalItems,
-  //     total_pages: Math.ceil(totalItems / limit),
-  //     current_page: page,
-  //     items: customers,
-  //   };
-  // }
 
   static async getCustomers({ companyId, page, limit }) {
     const customers = await sequelize.query(

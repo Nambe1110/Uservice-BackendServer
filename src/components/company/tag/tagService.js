@@ -27,7 +27,7 @@ export default class TagService {
     if (Number.parseInt(tag.company_id, 10) !== user.company_id) {
       throw new AppError(
         "Bạn phải thuộc công ty sở hữu tag để xem được thông tin chi tiết",
-        401
+        400
       );
     }
 
@@ -35,10 +35,9 @@ export default class TagService {
   }
 
   static async getAllTagsOfCompany({ user, limit, page }) {
-    const allTags = await TagModel.findAndCountAll({
+    const totalItems = await TagModel.count({
       where: { company_id: user.company_id },
     });
-    const totalItems = allTags.count;
     const totalPages = Math.ceil(totalItems / limit);
 
     const tags = await TagModel.findAll({
@@ -63,7 +62,7 @@ export default class TagService {
     if (Number.parseInt(tag.company_id, 10) !== user.company_id) {
       throw new AppError(
         "Bạn phải có quyền 'Manager' hoặc 'Owner' của công ty sở hữu Tag để xóa Tag",
-        401
+        400
       );
     }
     await tag.destroy();
@@ -79,7 +78,7 @@ export default class TagService {
     if (Number.parseInt(oldTag.company_id, 10) !== user.company_id) {
       throw new AppError(
         "Bạn phải có quyền 'Manager' hoặc 'Owner' của công ty sở hữu Tag để cập nhật thông tin Tag",
-        401
+        400
       );
     }
 

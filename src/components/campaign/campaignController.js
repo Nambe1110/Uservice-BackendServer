@@ -55,12 +55,14 @@ export const getCampaignDetails = async (req, res) => {
 export const getAllCampaignsOfCompany = async (req, res) => {
   try {
     const { user } = req;
+    const name = req.query.name ?? null;
     const limit = parseInt(req.query.limit ?? 20, 10);
     const page = parseInt(req.query.page ?? 1, 10);
     const campaigns = await CampaignService.getAllCampaignsOfCompany({
       user,
       limit,
       page,
+      name,
     });
 
     return res.status(200).json({
