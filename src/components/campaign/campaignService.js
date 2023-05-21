@@ -1,3 +1,4 @@
+import { Sequelize } from "sequelize";
 import AppError from "../../utils/AppError.js";
 import CampaignModel from "./campaignModel.js";
 import UserModel from "../user/userModel.js";
@@ -7,6 +8,8 @@ import CampaignChannelModel from "./campaign_channel/campaignChannelModel.js";
 import CampaignTagService from "./campaign_tag/campaignTagService.js";
 import CampaignTagModel from "./campaign_tag/campaignTagModel.js";
 import TagModel from "../company/tag/tagModel.js";
+
+const { Op } = Sequelize;
 
 export default class CampaignService {
   static async createCampaign({
@@ -23,6 +26,9 @@ export default class CampaignService {
     if (!name || !content) {
       throw new AppError("Tên chiến dịch và nội dung không thể null", 400);
     }
+    if (!channels) {
+      throw new AppError("Kênh không thể null", 400);
+    }
 
     for (const channelId of channels) {
       const existedChannel = await ChannelModel.findByPk(channelId);
@@ -31,10 +37,12 @@ export default class CampaignService {
       }
     }
 
-    for (const tagId of tags) {
-      const existedTag = await TagModel.findByPk(tagId);
-      if (!existedTag) {
-        throw new AppError(`Id tag: ${tagId} không tồn tại`, 400);
+    if (tags) {
+      for (const tagId of tags) {
+        const existedTag = await TagModel.findByPk(tagId);
+        if (!existedTag) {
+          throw new AppError(`Id tag: ${tagId} không tồn tại`, 400);
+        }
       }
     }
 
@@ -59,19 +67,14 @@ export default class CampaignService {
       sendDateValue = BigInt(sendDate);
     }
 
-    // Regex to validate whether link is image url or not
-    const imageUrlRegex =
-      /(http(s?):)([/|.|\w|\s|-])*\.(?:jpe?g|gif|png|svg|bmp)/g;
+    // Regex to validate whether link is from S3
+    const s3UrlRegex =
+      /(https?:\/\/)(uservice-internal-s3-bucket\.)(s3\.)(ap-southeast-1)\.amazonaws\.com*/g;
     if (attachments) {
-      let isImageUrl;
-      // eslint-disable-next-line no-unneeded-ternary
-      const isAllImageUrl = attachments[0].match(imageUrlRegex) ? true : false;
       for (const element of attachments) {
-        // eslint-disable-next-line no-unneeded-ternary
-        isImageUrl = element.match(imageUrlRegex) ? true : false;
-        if (isAllImageUrl !== isImageUrl) {
+        if (!element.match(s3UrlRegex)) {
           throw new AppError(
-            "Tất cả các tệp đính kèm phải là ảnh hoặc file(không thể chứa ảnh và file lẫn lộn)",
+            "URL không xuất phát từ Uservice S3 bucket. ",
             400
           );
         }
@@ -97,11 +100,13 @@ export default class CampaignService {
       });
     }
 
-    for (const tagId of tags) {
-      await CampaignTagService.createCampaignTagItem({
-        campaignId: newCampaign.id,
-        tagId,
-      });
+    if (tags) {
+      for (const tagId of tags) {
+        await CampaignTagService.createCampaignTagItem({
+          campaignId: newCampaign.id,
+          tagId,
+        });
+      }
     }
 
     const campaign = await CampaignModel.findOne({
@@ -162,18 +167,32 @@ export default class CampaignService {
     if (Number.parseInt(campaign.company_id, 10) !== user.company_id) {
       throw new AppError(
         "Bạn phải thuộc công ty sở hữu chiến dịch để xem được thông tin chi tiết",
-        401
+        400
       );
     }
 
     return campaign;
   }
 
-  static async getAllCampaignsOfCompany({ user, limit, page }) {
-    const allCampaigns = await CampaignModel.findAndCountAll({
-      where: { company_id: user.company_id },
-    });
-    const totalItems = allCampaigns.count;
+  static async getAllCampaignsOfCompany({ user, limit, page, name }) {
+    let totalItems;
+    if (name) {
+      totalItems = await CampaignModel.count({
+        where: {
+          company_id: user.company_id,
+          name: {
+            [Op.like]: `%${name}%`,
+          },
+        },
+      });
+    } else {
+      totalItems = await CampaignModel.count({
+        where: {
+          company_id: user.company_id,
+        },
+      });
+    }
+
     const totalPages = Math.ceil(totalItems / limit);
 
     const campaigns = await CampaignModel.findAll({
@@ -218,7 +237,7 @@ export default class CampaignService {
     if (Number.parseInt(campaign.company_id, 10) !== user.company_id) {
       throw new AppError(
         "Bạn phải có quyền 'Manager' hoặc 'Owner' của công ty sở hữu chiến dịch để xóa chiến dịch",
-        401
+        400
       );
     }
     await campaign.destroy();
@@ -234,7 +253,7 @@ export default class CampaignService {
     if (Number.parseInt(oldCampaign.company_id, 10) !== user.company_id) {
       throw new AppError(
         "Bạn phải có quyền 'Manager' hoặc 'Owner' của công ty sở hữu chiến dịch để cập nhật thông tin chiến dịch",
-        401
+        400
       );
     }
 
@@ -242,19 +261,14 @@ export default class CampaignService {
       throw new AppError("Tên chiến dịch và nội dung không thể null", 400);
     }
 
-    // Regex to validate whether link is image url or not
-    const imageUrlRegex =
-      /(http(s?):)([/|.|\w|\s|-])*\.(?:jpe?g|gif|png|svg|bmp)/g;
+    // Regex to validate whether link is from S3
+    const s3UrlRegex =
+      /(https?:\/\/)(uservice-internal-s3-bucket\.)(s3\.)(ap-southeast-1)\.amazonaws\.com*/g;
     if (attachments) {
-      let isImageUrl;
-      // eslint-disable-next-line no-unneeded-ternary
-      const isAllImageUrl = attachments[0].match(imageUrlRegex) ? true : false;
       for (const element of attachments) {
-        // eslint-disable-next-line no-unneeded-ternary
-        isImageUrl = element.match(imageUrlRegex) ? true : false;
-        if (isAllImageUrl !== isImageUrl) {
+        if (!element.match(s3UrlRegex)) {
           throw new AppError(
-            "Tất cả các tệp đính kèm phải là ảnh hoặc file(không thể chứa ảnh và file lẫn lộn)",
+            "URL không xuất phát từ Uservice S3 bucket. ",
             400
           );
         }

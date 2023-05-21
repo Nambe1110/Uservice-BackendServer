@@ -62,7 +62,7 @@ export default class CompanyService {
     if (Number.parseInt(id, 10) !== user.company_id) {
       throw new AppError(
         "Công ty không tồn tại hoặc người dùng không thuộc công ty",
-        401
+        400
       );
     }
     return CompanyModel.findByPk(id);

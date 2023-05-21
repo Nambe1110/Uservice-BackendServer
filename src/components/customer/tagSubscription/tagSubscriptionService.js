@@ -10,7 +10,7 @@ export default class TagSubscriptionService {
       throw new AppError("Khách hàng không tồn tại", 400);
     }
     if (customer.company_id !== user.company_id) {
-      throw new AppError("Bạn không cùng thuộc công ty với khách hàng", 401);
+      throw new AppError("Bạn không cùng thuộc công ty với khách hàng", 400);
     }
 
     const tag = await TagModel.findByPk(tagId);
@@ -19,7 +19,7 @@ export default class TagSubscriptionService {
     }
 
     if (tag.company_id !== user.company_id) {
-      throw new AppError("Bạn không thuộc công ty sở hữu tag", 401);
+      throw new AppError("Bạn không thuộc công ty sở hữu tag", 400);
     }
 
     const tagSubscription = await TagSubscriptionModel.findOne({
@@ -57,7 +57,7 @@ export default class TagSubscriptionService {
     if (tag.company_id !== user.company_id) {
       throw new AppError(
         "Bạn phải có quyền 'Manager' hoặc 'Owner' của công ty sở hữu Tag để xóa unsubscribe tag",
-        401
+        400
       );
     }
     await tagSubscription.destroy();
