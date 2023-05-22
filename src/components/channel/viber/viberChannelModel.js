@@ -6,8 +6,8 @@ import logger from "../../../config/logger/index.js";
 
 const { DataTypes } = pkg;
 
-const MessengerChannelModel = sequelize.define(
-  "MessengerChannel",
+const ViberChannelModel = sequelize.define(
+  "ViberChannel",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -21,15 +21,12 @@ const MessengerChannelModel = sequelize.define(
         key: "id",
       },
     },
-    page_id: {
-      type: DataTypes.STRING,
-    },
-    page_access_token: {
+    token: {
       type: DataTypes.STRING,
     },
   },
   {
-    tableName: "messenger_channel",
+    tableName: "viber_channel",
     charset: "utf8",
     collate: "utf8_unicode_ci",
     createdAt: "created_at",
@@ -37,19 +34,22 @@ const MessengerChannelModel = sequelize.define(
   }
 );
 
-CompanyModel.hasMany(MessengerChannelModel);
-MessengerChannelModel.belongsTo(CompanyModel);
+CompanyModel.hasMany(ViberChannelModel);
+ViberChannelModel.belongsTo(CompanyModel);
 
-MessengerChannelModel.sync({ logging: false });
+ViberChannelModel.sync({ logging: false });
 
-MessengerChannelModel.beforeDestroy(async (channel) => {
-  const { page_id } = channel;
+ViberChannelModel.beforeDestroy(async (channel) => {
+  const { token } = channel;
   try {
-    await axios.delete(
-      `${process.env.GRAPH_API_URL}/${page_id}/subscribed_apps`,
+    await axios.post(
+      `${process.env.VIBER_API_URL}/pa/set_webhook`,
       {
-        params: {
-          access_token: `${process.env.FACEBOOK_APP_ID}|${process.env.FACEBOOK_APP_SECRET}`,
+        url: "",
+      },
+      {
+        headers: {
+          "X-Viber-Auth-Token": token,
         },
       }
     );
@@ -58,4 +58,4 @@ MessengerChannelModel.beforeDestroy(async (channel) => {
   }
 });
 
-export default MessengerChannelModel;
+export default ViberChannelModel;

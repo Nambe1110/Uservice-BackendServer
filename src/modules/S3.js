@@ -5,19 +5,14 @@ import {
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import randomBytes from "randombytes";
-import path from "path";
 import fs from "fs";
 import axios from "axios";
+import { v4 as uuidv4 } from "uuid";
 import logger from "../config/logger/index.js";
 
 const s3BucketUrl = process.env.BUCKET_URL;
 
-const randomUniqueFileName = (originalName, bytes = 32) => {
-  const ext = path.extname(originalName);
-  const randomCharacters = randomBytes(bytes).toString("hex");
-  return `${randomCharacters}${Date.now()}${ext}`;
-};
+const randomUniqueFileName = () => uuidv4();
 
 const s3 = new S3Client({
   credentials: {
@@ -31,7 +26,7 @@ export default class S3 {
   static async pushDiskStorageFileToS3({ filePath, companyId }) {
     // Disk storage file path on server BE
     const file = await fs.promises.readFile(filePath);
-    const randomName = randomUniqueFileName(filePath);
+    const randomName = randomUniqueFileName();
     const key = `company/${companyId}/${randomName}`;
 
     try {
@@ -51,7 +46,7 @@ export default class S3 {
   }
 
   static async pushMemoryStorageFileToS3(file, destinationFolder) {
-    const randomName = randomUniqueFileName(file.originalname);
+    const randomName = randomUniqueFileName();
     const key =
       destinationFolder != null
         ? `${destinationFolder}/${randomName}`
@@ -66,7 +61,6 @@ export default class S3 {
     try {
       const command = new PutObjectCommand(params);
       await s3.send(command);
-      logger.info("Upload file/image to S3");
     } catch (error) {
       logger.error(error.message);
     }
@@ -83,7 +77,7 @@ export default class S3 {
         responseEncoding: "binary",
       });
 
-      const randomName = randomUniqueFileName(url);
+      const randomName = randomUniqueFileName();
       const key = `company/${companyId}/${randomName}`;
 
       const command = new PutObjectCommand({
@@ -121,7 +115,6 @@ export default class S3 {
       };
       const command = new DeleteObjectCommand(deleteObjectParams);
       await s3.send(command);
-      logger.info("Remove file/image from S3");
     } catch (error) {
       logger.error(error.message);
     }

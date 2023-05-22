@@ -3,6 +3,7 @@ import ChannelService from "../channel/channelService.js";
 import TelegramUserChannelService from "../channel/telegram/user/telegramUserChannelService.js";
 import TelegramBotChannelService from "../channel/telegram/bot/telegramBotChannelService.js";
 import MessengerChannelService from "../channel/messenger/messengerChannelService.js";
+import ViberChannelService from "../channel/viber/viberChannelService.js";
 import { StatusType, ChannelType } from "../../constants.js";
 
 export default async (io, socket) => {
@@ -50,6 +51,20 @@ export default async (io, socket) => {
           break;
         case ChannelType.MESSENGER:
           await MessengerChannelService.sendMessage({
+            companyId: user.company_id,
+            channelDetailId: channel.channel_detail_id,
+            threadId: thread.id,
+            threadApiId: thread.thread_api_id,
+            senderId: user.id,
+            content,
+            repliedMessageId,
+            attachment,
+            socket,
+            callback,
+          });
+          break;
+        case ChannelType.VIBER:
+          await ViberChannelService.sendMessage({
             companyId: user.company_id,
             channelDetailId: channel.channel_detail_id,
             threadId: thread.id,
