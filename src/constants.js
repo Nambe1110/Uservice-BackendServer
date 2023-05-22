@@ -14,6 +14,7 @@ const ChannelType = {
   TELEGRAM_USER: "TelegramUser",
   EMAIL: "Email",
   MESSENGER: "Messenger",
+  VIBER: "Viber",
 };
 
 const StatusType = {

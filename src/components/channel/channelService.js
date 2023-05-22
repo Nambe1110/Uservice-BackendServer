@@ -21,7 +21,7 @@ export default class ChannelService {
       },
     });
 
-    return newChannel.dataValues;
+    return newChannel;
   }
 
   static async getChannels({ companyId, page, limit, type }) {
