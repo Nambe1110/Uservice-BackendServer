@@ -15,7 +15,7 @@ export default class GPT3 {
   }) {
     const generatedResponse = await openai.createCompletion({
       model,
-      prompt: `${context}Customer:`,
+      prompt: `${context}Staff:`,
       temperature: 0.5,
       max_tokens: 70,
       top_p: 1,
