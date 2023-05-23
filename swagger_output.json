@@ -1161,6 +1161,21 @@
         "description": "",
         "parameters": [
           {
+            "name": "name",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "channel",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "type": "string"
+          },
+          {
             "name": "page",
             "in": "query",
             "type": "string"
