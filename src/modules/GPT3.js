@@ -14,7 +14,7 @@ export default class GPT3 {
     model = DefaultGptModel.GPT_3_5,
   }) {
     console.log(model)
-    console.log(context)
+    console.log(`${context}Staff:`)
     const generatedResponse = await openai.createCompletion({
       model,
       prompt: `${context}Staff:`,
