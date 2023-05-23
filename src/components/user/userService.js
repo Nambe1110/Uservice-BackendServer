@@ -6,6 +6,7 @@ import CompanyModel from "../company/companyModel.js";
 import AppError from "../../utils/AppError.js";
 import { UserRole } from "../../constants.js";
 import { listCompany } from "../../utils/singleton.js";
+import sequelize from "../../config/database/index.js";
 
 export default class UserService {
   static async joinCompany({ user, inviteCode, role = RoleEnum.Staff }) {
@@ -25,7 +26,7 @@ export default class UserService {
     currentUser.role = role;
     const updatedUser = await currentUser.save();
 
-    listCompany.get(company.id).employees.set(user.id, {
+    listCompany.get(company.id)?.employees.set(user.id, {
       id: user.id,
       firstName: user.first_name,
       lastName: user.last_name,
@@ -99,7 +100,7 @@ export default class UserService {
     }
   }
 
-  static async getCompanyMembers({ user, limit, page }) {
+  static async getCompanyMembers({ user, limit, page, searchKey }) {
     if (!user.company_id) {
       throw new AppError("Người dùng không thuộc một công ty nào.", 400);
     }
@@ -110,26 +111,34 @@ export default class UserService {
       throw new AppError("Công ty không tồn tại", 400);
     }
 
-    const allCompanyMembers = await UserModel.findAndCountAll({
-      where: { company_id: user.company_id },
-    });
-    const totalItems = allCompanyMembers.count;
-    const totalPages = Math.ceil(totalItems / limit);
+    const selectQuery = `SELECT * FROM user WHERE company_id = :companyId `;
 
-    const companyMembers = await UserModel.findAll({
-      where: { company_id: user.company_id },
-      attributes: {
-        exclude: [
-          "password",
-          "google_token",
-          "facebook_token",
-          "createdAt",
-          "updatedAt",
-        ],
+    const searchStr = searchKey
+      ? ` AND ( 
+            CONCAT(first_name, " ", last_name) LIKE "%${searchKey}%"
+            OR
+            email LIKE "%${searchKey}%" )
+        `
+      : ``;
+
+    const sqlQuery = selectQuery.concat(
+      searchStr,
+      `
+      LIMIT :limit
+      OFFSET :offset;`
+    );
+
+    const companyMembers = await sequelize.query(sqlQuery, {
+      replacements: {
+        companyId: user.company_id,
+        limit,
+        offset: (page - 1) * limit,
       },
-      limit,
-      offset: limit * (page - 1),
+      type: sequelize.QueryTypes.SELECT,
+      nest: true,
     });
+    const totalItems = companyMembers.length;
+    const totalPages = Math.ceil(totalItems / limit);
 
     return {
       total_items: totalItems,
@@ -238,5 +247,16 @@ export default class UserService {
     delete updatedCurrentUser.dataValues.password;
 
     return updatedCurrentUser;
+  }
+
+  static async updateDisconnectTimestamp(userId) {
+    const user = await UserModel.findByPk(userId);
+    if (!user) {
+      throw new AppError("User Id không tồn tại");
+    }
+    user.disconnect_timestamp = Date.now();
+    await user.save();
+
+    return user;
   }
 }

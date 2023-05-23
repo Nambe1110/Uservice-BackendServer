@@ -648,11 +648,6 @@
             "name": "page",
             "in": "query",
             "type": "string"
-          },
-          {
-            "name": "searchKey",
-            "in": "query",
-            "type": "string"
           }
         ],
         "responses": {
@@ -1165,21 +1160,6 @@
         ],
         "description": "",
         "parameters": [
-          {
-            "name": "name",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "channel",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "order",
-            "in": "query",
-            "type": "string"
-          },
           {
             "name": "page",
             "in": "query",

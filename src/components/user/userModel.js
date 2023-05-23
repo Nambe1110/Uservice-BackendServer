@@ -68,6 +68,10 @@ const UserModel = sequelize.define(
     image_url: {
       type: DataTypes.STRING,
     },
+    disconnect_timestamp: {
+      type: DataTypes.BIGINT,
+      defaultValue: Date.now(),
+    },
   },
   {
     tableName: "user",

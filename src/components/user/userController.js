@@ -5,11 +5,13 @@ export const getCompanyMembers = async (req, res) => {
   try {
     const limit = parseInt(req.query.limit ?? 20, 10);
     const page = parseInt(req.query.page ?? 1, 10);
+    const searchKey = req.query.searchKey ?? null;
 
     const members = await UserService.getCompanyMembers({
       user: req.user,
       limit,
       page,
+      searchKey,
     });
 
     return res.status(200).json({ status: StatusEnum.Success, data: members });

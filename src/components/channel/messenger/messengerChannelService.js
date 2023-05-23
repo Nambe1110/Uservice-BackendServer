@@ -146,10 +146,7 @@ export default class MessengerService {
         }
       );
 
-      const pictureUrl = await S3.uploadFromUrlToS3({
-        url: pictureResponse.data.data.url,
-        companyId,
-      });
+      const { url: pagePictureUrl } = pictureResponse.data.data;
 
       const [newMessengerChannel] = await MessengerChannelModel.findOrCreate({
         where: {
@@ -166,8 +163,17 @@ export default class MessengerService {
         type: ChannelType.MESSENGER,
         channelDetailId: newMessengerChannel.id,
         name: meResponse.data.name,
-        imageUrl: pictureUrl,
       });
+
+      if (!channel.imageUrl && pagePictureUrl) {
+        const pictureUrl = await S3.uploadFromUrlToS3({
+          url: pagePictureUrl,
+          companyId,
+        });
+
+        channel.imageUrl = pictureUrl;
+        await channel.save();
+      }
 
       return {
         channel,
@@ -277,11 +283,6 @@ export default class MessengerService {
                     profile_pic,
                   } = customerInfo.data;
 
-                  const pictureUrl = await S3.uploadFromUrlToS3({
-                    url: profile_pic,
-                    companyId: company_id,
-                  });
-
                   const [customer] = await CustomerService.getOrCreateCustomer(
                     {
                       thread_id: thread.id,
@@ -291,15 +292,29 @@ export default class MessengerService {
                     {
                       first_name: last_name,
                       last_name: `${middle_name} ${first_name}`,
-                      image_url: pictureUrl,
                       alias: name,
                       profile: `m.me/${customerApiId}`,
                     }
                   );
 
-                  if (!thread.image_url) {
-                    thread.image_url = pictureUrl;
-                    await thread.save();
+                  if (
+                    (!thread.image_url || !customer.image_url) &&
+                    profile_pic
+                  ) {
+                    const pictureUrl = await S3.uploadFromUrlToS3({
+                      url: profile_pic,
+                      companyId: company_id,
+                    });
+
+                    if (!thread.image_url) {
+                      thread.image_url = pictureUrl;
+                      await thread.save();
+                    }
+
+                    if (!customer.image_url) {
+                      customer.image_url = pictureUrl;
+                      await customer.save();
+                    }
                   }
 
                   if (!thread.title) {
@@ -469,8 +484,8 @@ export default class MessengerService {
     senderId,
     content,
     attachment,
-    callback,
     socket,
+    callback,
   }) {
     try {
       if (content && attachment.length > 0)
@@ -486,7 +501,6 @@ export default class MessengerService {
         },
       });
       const { page_id, page_access_token } = messengerChannel;
-
       let messageResponse;
 
       if (content) {
