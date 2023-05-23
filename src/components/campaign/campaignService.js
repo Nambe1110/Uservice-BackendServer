@@ -175,33 +175,24 @@ export default class CampaignService {
   }
 
   static async getAllCampaignsOfCompany({ user, limit, page, name }) {
-    let totalItems;
-    if (name) {
-      totalItems = await CampaignModel.count({
-        where: {
+    const whereObject = name
+      ? {
           company_id: user.company_id,
           name: {
             [Op.like]: `%${name}%`,
           },
-        },
-      });
-    } else {
-      totalItems = await CampaignModel.count({
-        where: {
+        }
+      : {
           company_id: user.company_id,
-        },
-      });
-    }
+        };
 
+    const totalItems = await CampaignModel.count({
+      where: whereObject,
+    });
     const totalPages = Math.ceil(totalItems / limit);
 
     const campaigns = await CampaignModel.findAll({
-      where: {
-        company_id: user.company_id,
-        name: {
-          [Op.like]: `%${name}%`,
-        },
-      },
+      where: whereObject,
       include: [
         { model: UserModel },
         {

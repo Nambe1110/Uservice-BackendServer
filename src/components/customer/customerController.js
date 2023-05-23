@@ -4,12 +4,18 @@ import { StatusType } from "../../constants.js";
 export const getCustomers = async (req, res) => {
   const { user } = req;
   const { page = 1, limit = 20 } = req.query;
+  const name = req.query.name ?? null;
+  const channel = req.query.channel ?? null;
+  const order = req.query.order ?? null;
 
   try {
     const customers = await CustomerService.getCustomers({
       companyId: user.company_id,
       page: parseInt(page),
       limit: parseInt(limit),
+      name,
+      channel,
+      order,
     });
 
     return res.status(200).json({

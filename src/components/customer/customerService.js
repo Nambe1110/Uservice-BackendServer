@@ -26,9 +26,8 @@ export default class CustomerService {
     return customer;
   }
 
-  static async getCustomers({ companyId, page, limit }) {
-    const customers = await sequelize.query(
-      `SELECT DISTINCT customer.*,
+  static async getCustomers({ companyId, page, limit, name, channel, order }) {
+    const selectQuery = `SELECT DISTINCT customer.*,
         t2.id AS 'last_message.id',
         t2.content AS 'last_message.content',
         t2.timestamp AS 'last_message.timestamp',
@@ -50,18 +49,42 @@ export default class CustomerService {
       LEFT JOIN thread AS t3 ON t3.id = customer.thread_id
       LEFT JOIN channel AS t4 ON t4.id = t3.channel_id
       WHERE customer.company_id = :companyId
-      LIMIT :limit
-      OFFSET :offset`,
-      {
-        replacements: {
-          companyId,
-          limit,
-          offset: (page - 1) * limit,
-        },
-        type: sequelize.QueryTypes.SELECT,
-        nest: true,
+      `;
+
+    const nameQueryStr = name
+      ? ` AND CONCAT(customer.first_name, " ", customer.last_name) LIKE "%${name}%"`
+      : ``;
+    const channelTypeQueryStr = channel ? ` AND t4.type = "${channel}"` : ``;
+    let orderQueryStr = ``;
+    if (order) {
+      if (order.toUpperCase() === "DESC") {
+        orderQueryStr = `
+        ORDER BY CONCAT(customer.first_name, " ", customer.last_name) DESC`;
+      } else if (order.toUpperCase() === "ASC") {
+        orderQueryStr = `
+        ORDER BY CONCAT(customer.first_name, " ", customer.last_name) ASC`;
       }
+    }
+
+    const sqlQuery = selectQuery.concat(
+      nameQueryStr,
+      channelTypeQueryStr,
+      orderQueryStr,
+      `
+      LIMIT :limit
+      OFFSET :offset;
+      `
     );
+
+    const customers = await sequelize.query(sqlQuery, {
+      replacements: {
+        companyId,
+        limit,
+        offset: (page - 1) * limit,
+      },
+      type: sequelize.QueryTypes.SELECT,
+      nest: true,
+    });
 
     const addTagSubscrition = async (customer) => {
       const tag_subscriptions =
@@ -72,9 +95,7 @@ export default class CustomerService {
     };
     await Promise.all(customers.map((customer) => addTagSubscrition(customer)));
 
-    const totalItems = await CustomerModel.count({
-      where: { company_id: companyId },
-    });
+    const totalItems = customers.length;
 
     return {
       total_items: totalItems,
