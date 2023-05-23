@@ -152,13 +152,13 @@ export default class CustomerService {
     const channel = await ChannelModel.findOne({
       where: { id: thread.channel_id },
     });
-    customer.dataValues.alias = updatedField.alias;
-    customer.dataValues.birthday = updatedField.birthday;
-    customer.dataValues.address = updatedField.address;
-    customer.dataValues.note = updatedField.note;
-    customer.dataValues.email = updatedField.email;
+    customer.alias = updatedField.alias;
+    customer.birthday = updatedField.birthday;
+    customer.address = updatedField.address;
+    customer.note = updatedField.note;
+    customer.email = updatedField.email;
     if (channel.type !== ChannelType.TELEGRAM_USER) {
-      customer.dataValues.phone_number = updatedField.phone_number;
+      customer.phone_number = updatedField.phone_number;
     }
     const updatedCustomer = await customer.save();
     return updatedCustomer.dataValues;
