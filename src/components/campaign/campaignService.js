@@ -196,7 +196,12 @@ export default class CampaignService {
     const totalPages = Math.ceil(totalItems / limit);
 
     const campaigns = await CampaignModel.findAll({
-      where: { company_id: user.company_id },
+      where: {
+        company_id: user.company_id,
+        name: {
+          [Op.like]: `%${name}%`,
+        },
+      },
       include: [
         { model: UserModel },
         {

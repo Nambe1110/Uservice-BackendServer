@@ -34,7 +34,7 @@ const CampaignModel = sequelize.define(
       type: DataTypes.BIGINT,
     },
     content: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: false,
       validate: {
         notNull: {
