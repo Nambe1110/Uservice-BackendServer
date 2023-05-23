@@ -60,7 +60,7 @@ export default class CustomerService {
       if (order.toUpperCase() === "DESC") {
         orderQueryStr = `
         ORDER BY CONCAT(customer.first_name, " ", customer.last_name) DESC`;
-      } else {
+      } else if (order.toUpperCase() === "ASC") {
         orderQueryStr = `
         ORDER BY CONCAT(customer.first_name, " ", customer.last_name) ASC`;
       }
@@ -75,7 +75,7 @@ export default class CustomerService {
       OFFSET :offset;
       `
     );
-    console.log(sqlQuery);
+
     const customers = await sequelize.query(sqlQuery, {
       replacements: {
         companyId,
