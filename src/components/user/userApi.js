@@ -5,6 +5,8 @@ import {
   changeUserRole,
   getUserCompanyById,
   transferCompany,
+  lockAccount,
+  unlockAccount,
 } from "./userController.js";
 
 const userRouter = express.Router({ mergeParams: true });
@@ -34,4 +36,6 @@ userRouter.patch(
   [verifyToken.verifyToken(true), verifyRole.isOwner],
   transferCompany
 );
+userRouter.patch("/lock", verifyToken.verifyToken(true), lockAccount);
+userRouter.patch("/unlock", verifyToken.verifyToken(true), unlockAccount);
 export default userRouter;

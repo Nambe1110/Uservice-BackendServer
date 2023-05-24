@@ -80,3 +80,41 @@ export const transferCompany = async (req, res) => {
       .json({ status: StatusEnum.Error, message: error.message });
   }
 };
+
+export const lockAccount = async (req, res) => {
+  try {
+    const { userID } = req.body;
+    const currentUser = req.user;
+    const updatedUser = await UserService.lockAccount({
+      currentUser,
+      userID,
+    });
+
+    return res
+      .status(200)
+      .json({ status: StatusEnum.Success, data: updatedUser });
+  } catch (error) {
+    return res
+      .status(error.code ?? 500)
+      .json({ status: StatusEnum.Error, message: error.message });
+  }
+};
+
+export const unlockAccount = async (req, res) => {
+  try {
+    const { userID } = req.body;
+    const currentUser = req.user;
+    const updatedUser = await UserService.unlockAccount({
+      currentUser,
+      userID,
+    });
+
+    return res
+      .status(200)
+      .json({ status: StatusEnum.Success, data: updatedUser });
+  } catch (error) {
+    return res
+      .status(error.code ?? 500)
+      .json({ status: StatusEnum.Error, message: error.message });
+  }
+};
