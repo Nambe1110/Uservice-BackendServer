@@ -150,4 +150,15 @@ export default class MessageService {
 
     return messages;
   }
+
+  static async getLastMessage({ threadId }) {
+    const message = await MessageModel.findOne({
+      where: {
+        thread_id: threadId,
+      },
+      order: [["id", "DESC"]],
+    });
+
+    return message;
+  }
 }

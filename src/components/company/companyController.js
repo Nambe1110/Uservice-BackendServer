@@ -32,7 +32,6 @@ export const createCompany = async (req, res) => {
       .status(200)
       .json({ status: StatusEnum.Success, data: insertedCompany });
   } catch (error) {
-    throw (error)
     return res
       .status(error.code ?? 500)
       .json({ status: StatusEnum.Error, message: error.message });
@@ -41,9 +40,8 @@ export const createCompany = async (req, res) => {
 
 export const getCompanyDetails = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { user } = req;
-    const company = await CompanyService.getCompanyById({ id, user });
+    const { companyId } = req.params;
+    const company = await CompanyService.getCompanyById(companyId);
     const owner = await UserService.getOwnerOfCompany({
       companyId: company.id,
     });

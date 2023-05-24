@@ -33,12 +33,14 @@ export default async (io) => {
               sender_type: message.sender_type,
               timestamp: message.timestamp,
               content: message.content,
-              sender: {
-                id: sender.id,
-                first_name: sender.first_name,
-                last_name: sender.last_name,
-                image_url: sender.image_url,
-              },
+              sender: sender
+                ? {
+                    id: sender.id,
+                    first_name: sender.first_name,
+                    last_name: sender.last_name,
+                    image_url: sender.image_url,
+                  }
+                : null,
               attachment,
               replied_message: repliedMessage
                 ? {

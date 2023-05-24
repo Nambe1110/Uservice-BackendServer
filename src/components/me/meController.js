@@ -26,10 +26,7 @@ export const getProfile = async (req, res) => {
       });
     }
     if (user.company_id) {
-      const company = await CompanyService.getCompanyById({
-        user,
-        id: user.company_id,
-      });
+      const company = await CompanyService.getCompanyById(user.company_id);
       user.chatbot_mode = company.chatbot_mode;
     }
 

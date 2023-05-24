@@ -5,6 +5,7 @@ import SuggestionService from "./suggestionService.js";
 export const generateSuggestion = async (req, res) => {
   try {
     const { thread_id: threadId, limit } = req.query;
+    const { user } = req;
     const numberOfResponse = Number.parseInt(limit, 10);
     if (Number.isNaN(Number(threadId))) {
       return res.status(400).json({
@@ -17,7 +18,7 @@ export const generateSuggestion = async (req, res) => {
       numberOfResponse: Number.isNaN(numberOfResponse)
         ? undefined
         : numberOfResponse,
-      user: req.user,
+      companyId: user.company_id,
     });
     return res.status(200).json({
       status: StatusEnum.Success,

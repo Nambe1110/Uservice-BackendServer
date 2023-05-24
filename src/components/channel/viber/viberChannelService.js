@@ -6,6 +6,7 @@ import {
   SenderType,
   ChannelType,
   AttachmentType,
+  ChatbotMode,
 } from "../../../constants.js";
 import logger from "../../../config/logger/index.js";
 import { threadNotifier } from "../../thread/threadNotifier.js";
@@ -15,6 +16,8 @@ import CustomerService from "../../customer/customerService.js";
 import MessageService from "../../message/messageService.js";
 import AttachmentService from "../../attachment/attachmentService.js";
 import ChannelService from "../channelService.js";
+import CompanyService from "../../company/companyService.js";
+import SuggestionService from "../../suggestion/suggestionService.js";
 import S3 from "../../../modules/S3.js";
 import { parseFullName } from "../../../utils/parser.js";
 
@@ -104,7 +107,6 @@ export default class ViberService {
   }
 
   static async receiveMessage({ body, detailChannel }) {
-    logger.info(body);
     const {
       timestamp,
       sender: { id: senderId, name: senderName, avatar: senderAvatar },
@@ -254,6 +256,39 @@ export default class ViberService {
       sender: customer,
       attachment,
     });
+
+    const company = await CompanyService.getCompanyById(
+      detailChannel.company_id
+    );
+
+    if (
+      company.chatbot_mode !== ChatbotMode.AUTO_REPLY ||
+      thread.is_autoreply_disabled
+    )
+      return;
+
+    setTimeout(async () => {
+      const lastMessage = await MessageService.getLastMessage({
+        threadId: thread.id,
+      });
+
+      if (newMessage.id !== lastMessage.id) return;
+
+      const suggestions = await SuggestionService.generateSuggestion({
+        numberOfResponse: 1,
+        companyId: detailChannel.company_id,
+        threadId: thread.id,
+      });
+
+      await this.sendMessage({
+        companyId: detailChannel.company_id,
+        channelDetailId: detailChannel.id,
+        threadId: thread.id,
+        threadApiId: thread.thread_api_id,
+        senderType: SenderType.BOT,
+        content: suggestions[0],
+      });
+    }, 5000);
   }
 
   static async messageSendSucceeded({ body }) {
@@ -262,27 +297,61 @@ export default class ViberService {
       companyId,
       thread,
       customer,
-      message,
+      senderType,
       sender,
       attachment,
+      content,
       callback,
       socket,
     } = pendingMessages.get(message_token);
 
-    message.timestamp = timestamp;
-    await message.save();
+    const [message] = await MessageService.getOrCreateMessage(
+      {
+        thread_id: thread.id,
+        message_api_id: message_token,
+      },
+      {
+        sender_type: senderType,
+        sender_id: sender?.id,
+        content,
+        timestamp,
+      }
+    );
 
-    await threadNotifier.onMessageSendSucceeded({
-      companyId,
-      channelType: ChannelType.VIBER,
-      thread,
-      customer,
-      message,
-      sender,
-      attachment,
-      callback,
-      socket,
-    });
+    if (attachment.length > 0) {
+      await AttachmentService.createAttachment({
+        messageId: message.id,
+        url: attachment[0].url,
+        type: attachment[0].type,
+        name: attachment[0].name,
+      });
+    }
+
+    if (senderType === SenderType.STAFF) {
+      await threadNotifier.onMessageSendSucceeded({
+        companyId,
+        channelType: ChannelType.VIBER,
+        thread,
+        customer,
+        message,
+        sender,
+        attachment,
+        callback,
+        socket,
+      });
+    } else if (senderType === SenderType.BOT) {
+      await threadNotifier.onNewMessage({
+        created: true,
+        channelType: ChannelType.VIBER,
+        companyId,
+        thread,
+        customer,
+        message,
+        attachment,
+      });
+    }
+
+    pendingMessages.delete(message_token);
   }
 
   static async sendMessage({
@@ -290,9 +359,10 @@ export default class ViberService {
     channelDetailId,
     threadId,
     threadApiId,
+    senderType = SenderType.STAFF,
     senderId,
     content,
-    attachment,
+    attachment = [],
     socket,
     callback,
   }) {
@@ -312,14 +382,26 @@ export default class ViberService {
           "Viber does not support text with this attachment type"
         );
 
-      const viberCHannel = await ViberChannelModel.findOne({
+      const viberChannel = await ViberChannelModel.findOne({
         where: {
           company_id: companyId,
           id: channelDetailId,
         },
       });
-      const { token } = viberCHannel;
-      const sender = await UserService.getUserById(senderId);
+      const { token } = viberChannel;
+      const sender =
+        senderType === SenderType.STAFF
+          ? await UserService.getUserById(senderId)
+          : {
+              first_name: "BOT",
+              last_name: "",
+              image_url: null,
+            };
+      const thread = await ThreadService.getThreadById(threadId);
+      const customer = await CustomerService.getCustomer({
+        threadId: thread.id,
+      });
+
       let messageResponse;
 
       if (attachment.length === 0) {
@@ -426,40 +508,14 @@ export default class ViberService {
         throw new Error(messageResponse.data.status_message);
       }
 
-      const [message] = await MessageService.getOrCreateMessage(
-        {
-          thread_id: threadId,
-          message_api_id: messageResponse.data.message_token,
-        },
-        {
-          sender_type: SenderType.STAFF,
-          sender_id: senderId,
-          content,
-        }
-      );
-
-      if (attachment.length > 0) {
-        await AttachmentService.createAttachment({
-          messageId: message.id,
-          url: attachment[0].url,
-          type: attachment[0].type,
-          name: attachment[0].name,
-        });
-      }
-
-      const thread = await ThreadService.getThreadById(threadId);
-
-      const customer = await CustomerService.getCustomer({
-        threadId: thread.id,
-      });
-
       pendingMessages.set(messageResponse.data.message_token, {
         companyId,
         thread,
         customer,
-        message,
+        senderType,
         sender,
         attachment,
+        content,
         callback,
         socket,
       });

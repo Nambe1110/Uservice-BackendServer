@@ -50,7 +50,7 @@ const CustomerModel = sequelize.define(
       type: DataTypes.STRING,
     },
     birthday: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.DATEONLY,
     },
     address: {
       type: DataTypes.STRING,

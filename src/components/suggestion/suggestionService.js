@@ -2,23 +2,12 @@ import { DefaultGptModel, SenderType } from "../../constants.js";
 import Lang from "../../enums/Lang.js";
 import GPT3 from "../../modules/GPT3.js";
 import Translate from "../../modules/Translate.js";
-import AppError from "../../utils/AppError.js";
 import GptService from "../chatbot/gpt/gptService.js";
-import CompanyModel from "../company/companyModel.js";
 import MessageModel from "../message/messageModel.js";
 
 export default class SuggestionService {
-  static async generateSuggestion({ numberOfResponse, user, threadId }) {
-    const company = await CompanyModel.findOne({
-      where: { id: user.company_id },
-    });
-    if (!company) {
-      throw new AppError(
-        "Người dùng phải thuộc một công ty mới có thể sử dụng tính năng này",
-        400
-      );
-    }
-    const gptModel = await GptService.GetModelByCompanyId(company.id);
+  static async generateSuggestion({ numberOfResponse, companyId, threadId }) {
+    const gptModel = await GptService.GetModelByCompanyId(companyId);
     const context = await this.generateContext(threadId);
     const translatedContext = await Translate.translate({
       text: context.replace(/\n/g, "~"),
@@ -46,10 +35,13 @@ export default class SuggestionService {
     });
     let context = "";
     for (const message of messages) {
-      if (message.dataValues.sender_type === SenderType.STAFF) {
+      if (
+        message.sender_type === SenderType.STAFF ||
+        message.sender_type === SenderType.BOT
+      ) {
         context += `Staff: ${message.dataValues.content}\n`;
       }
-      if (message.dataValues.sender_type === SenderType.CUSTOMER) {
+      if (message.sender_type === SenderType.CUSTOMER) {
         context += `Customer: ${message.dataValues.content}\n`;
       }
     }
