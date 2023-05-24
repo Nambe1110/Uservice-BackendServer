@@ -7,6 +7,7 @@ import AppError from "../../utils/AppError.js";
 import { UserRole } from "../../constants.js";
 import { listCompany } from "../../utils/singleton.js";
 import sequelize from "../../config/database/index.js";
+import HasHigherRole from "../../utils/hasHigherRole.js";
 
 export default class UserService {
   static async joinCompany({ user, inviteCode, role = RoleEnum.Staff }) {
@@ -258,5 +259,73 @@ export default class UserService {
     await user.save();
 
     return user;
+  }
+
+  static async lockAccount({ currentUser, userID }) {
+    if (currentUser.id.toString() === userID) {
+      throw new AppError("Không thể tự thay đổi quyền của bạn", 406);
+    }
+
+    const user = await UserModel.findByPk(userID);
+    if (!user) {
+      throw new AppError("User Id không tồn tại");
+    }
+    if (user.company_id !== currentUser.company_id) {
+      throw new AppError(
+        "Người dùng không thuộc cùng một công ty với đối tượng cần thay đổi quyền.",
+        400
+      );
+    }
+    if (!HasHigherRole(currentUser.role, user.role)) {
+      throw new AppError(
+        "Bạn cần quyền cao hơn tài khoản muốn khóa để thực hiện khóa tài khoản.",
+        400
+      );
+    }
+    if (user.is_locked) {
+      throw new AppError(
+        "Tài khoản của người dùng đã bị khóa trước đây. ",
+        400
+      );
+    }
+
+    user.is_locked = true;
+    const updatedUser = await user.save();
+
+    return updatedUser;
+  }
+
+  static async unlockAccount({ currentUser, userID }) {
+    if (currentUser.id.toString() === userID) {
+      throw new AppError("Không thể tự thay đổi quyền của bạn", 406);
+    }
+
+    const user = await UserModel.findByPk(userID);
+    if (!user) {
+      throw new AppError("User Id không tồn tại");
+    }
+    if (user.company_id !== currentUser.company_id) {
+      throw new AppError(
+        "Người dùng không thuộc cùng một công ty với đối tượng cần thay đổi quyền.",
+        400
+      );
+    }
+    if (!HasHigherRole(currentUser.role, user.role)) {
+      throw new AppError(
+        "Bạn cần quyền cao hơn tài khoản muốn mở khóa để thực hiện mở khóa tài khoản.",
+        400
+      );
+    }
+    if (!user.is_locked) {
+      throw new AppError(
+        "Không thể mở khóa cho tài khoản ở trạng thái bình thường. ",
+        400
+      );
+    }
+
+    user.is_locked = false;
+    const updatedUser = await user.save();
+
+    return updatedUser;
   }
 }
