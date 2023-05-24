@@ -105,7 +105,7 @@ export default class GptService {
           data.events[data.events.length - 1].message === "Fine-tune succeeded"
         ) {
           await GptModel.update(
-            { is_training: false },
+            { is_training: false, train_id: data.fine_tuned_model },
             { where: { id: trainingModel.id } }
           );
           gptModels = await GptModel.findAll({

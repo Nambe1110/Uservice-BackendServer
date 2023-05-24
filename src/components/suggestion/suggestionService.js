@@ -16,7 +16,7 @@ export default class SuggestionService {
     });
     const answers = await GPT3.generateResponse({
       numberOfResponse,
-      model: gptModel?.name ?? DefaultGptModel.GPT_3_5,
+      model: gptModel?.train_id ?? DefaultGptModel.GPT_3_5,
       context: translatedContext.replace(/~/g, "\n"),
     });
     const newAnswer = await Translate.translate({
@@ -39,7 +39,7 @@ export default class SuggestionService {
         message.sender_type === SenderType.STAFF ||
         message.sender_type === SenderType.BOT
       ) {
-        context += `Shop: ${message.dataValues.content}\n`;
+        context += `Staff: ${message.dataValues.content}\n`;
       }
       if (message.sender_type === SenderType.CUSTOMER) {
         context += `Customer: ${message.dataValues.content}\n`;
