@@ -8,6 +8,7 @@ import {
   SenderType,
   ChannelType,
   AttachmentType,
+  ChatbotMode,
 } from "../../../../constants.js";
 import logger from "../../../../config/logger/index.js";
 import { threadNotifier } from "../../../thread/threadNotifier.js";
@@ -16,6 +17,8 @@ import UserService from "../../../user/userService.js";
 import CustomerService from "../../../customer/customerService.js";
 import MessageService from "../../../message/messageService.js";
 import AttachmentService from "../../../attachment/attachmentService.js";
+import CompanyService from "../../../company/companyService.js";
+import SuggestionService from "../../../suggestion/suggestionService.js";
 import S3 from "../../../../modules/S3.js";
 
 export default class TelegramUserConnection {
@@ -26,7 +29,6 @@ export default class TelegramUserConnection {
     this.isConnected = false;
     this.createdAt = null;
     this.pendingMessages = new Map();
-    this.succeededMessages = new Set();
   }
 
   async createConnectionFromDb() {
@@ -250,11 +252,6 @@ export default class TelegramUserConnection {
 
         if (userType._ !== "userTypeRegular") return;
 
-        if (this.succeededMessages.has(messageId)) {
-          this.succeededMessages.delete(messageId);
-          return;
-        }
-
         const [thread] = await ThreadService.getOrCreateThread(
           {
             channel_id: channelId,
@@ -411,13 +408,44 @@ export default class TelegramUserConnection {
           sender,
           attachment: attachment ? [attachment] : [],
         });
+
+        if (!isOutgoing) {
+          const company = await CompanyService.getCompanyById(this.companyId);
+
+          if (
+            company.chatbot_mode !== ChatbotMode.AUTO_REPLY ||
+            thread.is_autoreply_disabled
+          )
+            return;
+
+          setTimeout(async () => {
+            const lastMessage = await MessageService.getLastMessage({
+              threadId: thread.id,
+            });
+
+            if (message.id !== lastMessage.id) return;
+
+            const suggestions = await SuggestionService.generateSuggestion({
+              numberOfResponse: 1,
+              companyId: this.companyId,
+              threadId: thread.id,
+            });
+
+            await this.sendMessage({
+              senderType: SenderType.BOT,
+              chatId,
+              content: suggestions[0],
+            });
+          }, 5000);
+        }
       });
 
       this.connection.on("updateMessageSendSucceeded", async ({ update }) => {
         const { oldMessageId, message: newMessage } = update;
         const { chatId, id: messageId, date } = newMessage;
-        this.succeededMessages.add(messageId);
+        if (!this.pendingMessages.has(oldMessageId)) return;
         const {
+          senderType,
           senderId,
           content,
           attachment,
@@ -429,7 +457,6 @@ export default class TelegramUserConnection {
           chatId,
         });
         const { title } = chatInfo.response;
-
         const [thread] = await ThreadService.getOrCreateThread(
           {
             channel_id: channelId,
@@ -440,27 +467,23 @@ export default class TelegramUserConnection {
             type: ThreadType.PRIVATE,
           }
         );
-
         const [customer] = await CustomerService.getOrCreateCustomer({
           company_id: this.companyId,
           thread_id: thread.id,
         });
-
         const [message] = await MessageService.getOrCreateMessage(
           {
             thread_id: thread.id,
             message_api_id: messageId,
           },
           {
-            sender_type: SenderType.STAFF,
+            sender_type: senderType,
             sender_id: senderId,
             content,
             timestamp: date,
             replied_message_id: repliedMessage?.id,
           }
         );
-
-        const sender = UserService.getUserById(senderId);
 
         if (attachment.length > 0) {
           const { type, name, url } = attachment[0];
@@ -472,17 +495,31 @@ export default class TelegramUserConnection {
           });
         }
 
-        await threadNotifier.onMessageSendSucceeded({
-          companyId: this.companyId,
-          channelType: ChannelType.TELEGRAM_USER,
-          thread,
-          customer,
-          message,
-          sender,
-          attachment,
-          callback,
-          socket,
-        });
+        if (senderType === SenderType.STAFF) {
+          const sender = UserService.getUserById(senderId);
+
+          await threadNotifier.onMessageSendSucceeded({
+            companyId: this.companyId,
+            channelType: ChannelType.TELEGRAM_USER,
+            thread,
+            customer,
+            message,
+            sender,
+            attachment,
+            callback,
+            socket,
+          });
+        } else if (senderType === SenderType.BOT) {
+          await threadNotifier.onNewMessage({
+            created: true,
+            channelType: ChannelType.TELEGRAM_USER,
+            companyId: this.companyId,
+            thread,
+            customer,
+            message,
+            attachment,
+          });
+        }
 
         this.pendingMessages.delete(oldMessageId);
       });
@@ -492,11 +529,12 @@ export default class TelegramUserConnection {
   }
 
   async sendMessage({
+    senderType = SenderType.STAFF,
     senderId,
     chatId,
     repliedMessage,
     content,
-    attachment,
+    attachment = [],
     callback,
     socket,
   }) {
@@ -590,6 +628,7 @@ export default class TelegramUserConnection {
     }
 
     this.pendingMessages.set(message.response.id, {
+      senderType,
       senderId,
       content,
       attachment,

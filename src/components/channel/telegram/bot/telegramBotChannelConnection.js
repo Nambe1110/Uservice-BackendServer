@@ -392,12 +392,10 @@ export default class TelegramBotConnection {
           callback,
           socket,
         } = this.pendingMessages.get(oldMessageId);
-
         const chatInfo = await this.connection.api.getChat({
           chatId,
         });
         const { title } = chatInfo.response;
-
         const [thread] = await ThreadService.getOrCreateThread(
           {
             channel_id: channelId,
@@ -408,12 +406,10 @@ export default class TelegramBotConnection {
             type: ThreadType.PRIVATE,
           }
         );
-
         const [customer] = await CustomerService.getOrCreateCustomer({
           company_id: this.companyId,
           thread_id: thread.id,
         });
-
         const [message] = await MessageService.getOrCreateMessage(
           {
             thread_id: thread.id,
