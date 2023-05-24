@@ -14,11 +14,14 @@ meRouter.use("/", (req, res, next) => {
   // #swagger.tags = ['Me']
   next();
 });
-meRouter.use("/", verifyToken.verifyToken());
 
 meRouter.get("/", getProfile);
-meRouter.post("/change-password", validators.passwordValidator, changePassword);
-meRouter.put("/leave-company", leaveCompany);
+meRouter.post(
+  "/change-password",
+  [verifyToken.verifyToken(), validators.passwordValidator],
+  changePassword
+);
+meRouter.put("/leave-company", verifyToken.verifyToken(true), leaveCompany);
 meRouter.patch(
   "/avatar",
   [verifyToken.verifyToken(), upload.single("avatar")],
