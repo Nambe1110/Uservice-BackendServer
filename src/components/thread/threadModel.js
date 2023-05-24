@@ -42,6 +42,10 @@ const ThreadModel = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    is_autoreply_disabled: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
   },
   {
     tableName: "thread",

@@ -26,6 +26,7 @@ const StatusType = {
 const SenderType = {
   CUSTOMER: "Customer",
   STAFF: "Staff",
+  BOT: "Bot",
 };
 
 const AttachmentType = {

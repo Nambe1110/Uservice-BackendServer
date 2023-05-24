@@ -352,7 +352,7 @@
         }
       }
     },
-    "/api/company/{id}": {
+    "/api/company/{companyId}": {
       "get": {
         "tags": [
           "Company"
@@ -360,7 +360,7 @@
         "description": "",
         "parameters": [
           {
-            "name": "id",
+            "name": "companyId",
             "in": "path",
             "required": true,
             "type": "string"

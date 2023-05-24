@@ -6,7 +6,7 @@ const suggestionRouter = express.Router({ mergeParams: true });
 
 suggestionRouter.get(
   "/generate",
-  verifyToken.verifyToken(),
+  verifyToken.verifyToken(true),
   generateSuggestion
 );
 

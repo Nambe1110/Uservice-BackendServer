@@ -24,7 +24,11 @@ companyRouter.use("/", verifyToken.verifyToken());
 companyRouter.post("/create", createCompany);
 companyRouter.post("/join", joinCompany);
 companyRouter.get("/model", getModels);
-companyRouter.get("/:id", getCompanyDetails);
+companyRouter.get(
+  "/:companyId",
+  verifyToken.verifyToken(true),
+  getCompanyDetails
+);
 companyRouter.put(
   "/change-chatbot-mode",
   verifyRole.isOwner,

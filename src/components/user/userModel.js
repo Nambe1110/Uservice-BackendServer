@@ -70,7 +70,7 @@ const UserModel = sequelize.define(
     },
     disconnect_timestamp: {
       type: DataTypes.BIGINT,
-      defaultValue: Date.now(),
+      defaultValue: DataTypes.NOW,
     },
   },
   {

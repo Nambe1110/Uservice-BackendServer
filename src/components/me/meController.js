@@ -8,10 +8,7 @@ export const getProfile = async (req, res) => {
     const { user } = req;
     delete user.password;
     if (user.company_id) {
-      const company = await CompanyService.getCompanyById({
-        user,
-        id: user.company_id,
-      });
+      const company = await CompanyService.getCompanyById(user.company_id);
       user.chatbot_mode = company.chatbot_mode;
     }
 

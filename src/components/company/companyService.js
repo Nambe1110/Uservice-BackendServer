@@ -58,14 +58,8 @@ export default class CompanyService {
     return newCompany.dataValues;
   }
 
-  static async getCompanyById({ id, user }) {
-    if (Number.parseInt(id, 10) !== user.company_id) {
-      throw new AppError(
-        "Công ty không tồn tại hoặc người dùng không thuộc công ty",
-        400
-      );
-    }
-    return CompanyModel.findByPk(id);
+  static async getCompanyById(companyId) {
+    return CompanyModel.findByPk(companyId);
   }
 
   static async deleteCompany(user) {
