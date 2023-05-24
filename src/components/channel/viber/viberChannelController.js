@@ -8,37 +8,40 @@ export const handleCallback = async (req, res) => {
   const { companyId, token } = req.params;
   const signature = req.headers["x-viber-content-signature"];
 
-  if (body?.event === "webhook") return res.sendStatus(200);
-  if (body?.event === "message") {
-    const channel = await ViberService.getChannel({ companyId, token });
+  try {
+    if (body?.event === "webhook") res.sendStatus(200);
+    else if (body?.event === "message") {
+      const channel = await ViberService.getChannel({ companyId, token });
 
-    if (!signature || !channel) return res.sendStatus(404);
+      if (!signature || !channel) return res.sendStatus(404);
 
-    const expectedHash = crypto
-      .createHmac(
-        "sha256",
-        "510e5e647c67dff8-40f3ddbab6e6845d-cae6105734e3556c"
-      )
-      .update(rawBody)
-      .digest("hex");
+      const expectedHash = crypto
+        .createHmac(
+          "sha256",
+          "510e5e647c67dff8-40f3ddbab6e6845d-cae6105734e3556c"
+        )
+        .update(rawBody)
+        .digest("hex");
 
-    if (signature !== expectedHash) return res.sendStatus(404);
+      if (signature !== expectedHash) return res.sendStatus(404);
 
-    res.sendStatus(200);
+      res.sendStatus(200);
 
-    try {
-      await ViberService.receiveMessage({
-        body,
-        detailChannel: channel,
-      });
-    } catch (error) {
-      logger.error(error.message);
-    }
+      try {
+        await ViberService.receiveMessage({
+          body,
+          detailChannel: channel,
+        });
+      } catch (error) {
+        logger.error(error.message);
+      }
+    } else if (body?.event === "delivered") {
+      res.sendStatus(200);
+      ViberService.messageSendSucceeded({ body });
+    } else res.sendStatus(404);
+  } catch (error) {
+    logger.error(error.message);
   }
-  if (body?.event === "delivered") {
-    res.sendStatus(200);
-    ViberService.messageSendSucceeded({ body });
-  } else return res.sendStatus(404);
 };
 
 export const connectChannel = async (req, res) => {
