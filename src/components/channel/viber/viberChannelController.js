@@ -16,10 +16,7 @@ export const handleCallback = async (req, res) => {
       if (!signature || !channel) return res.sendStatus(404);
 
       const expectedHash = crypto
-        .createHmac(
-          "sha256",
-          "510e5e647c67dff8-40f3ddbab6e6845d-cae6105734e3556c"
-        )
+        .createHmac("sha256", token)
         .update(rawBody)
         .digest("hex");
 
