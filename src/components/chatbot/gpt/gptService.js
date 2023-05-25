@@ -17,6 +17,9 @@ export default class GptService {
   }
 
   static async createFineTune({ user, fileIds, name }) {
+    if (user.role !== RoleEnum.Owner) {
+      throw new AppError("Người dùng không phải chủ sở hữu");
+    }
     try {
       if (name === "" || name == null) {
         throw new AppError("Yêu cầu tên mô hình", 400);
@@ -81,9 +84,6 @@ export default class GptService {
 
   static async getCompanyModels({ user }) {
     try {
-      if (user.role !== RoleEnum.Owner) {
-        throw new AppError("Người dùng không phải chủ sở hữu");
-      }
       let gptModels = await GptModel.findAll({
         where: {
           company_id: user.company_id,
