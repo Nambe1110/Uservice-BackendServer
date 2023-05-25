@@ -39,3 +39,26 @@ export const getThread = async (req, res) => {
       .json({ status: StatusType.ERROR, message: error.message });
   }
 };
+
+export const updateThread = async (req, res) => {
+  const { threadId } = req.params;
+  const { title, imageUrl, isAutoreplyDisabled } = req.body;
+
+  try {
+    await ThreadService.updateThread({
+      threadId,
+      title,
+      imageUrl,
+      isAutoreplyDisabled,
+    });
+
+    return res.status(200).json({
+      status: "success",
+      data: null,
+    });
+  } catch (error) {
+    return res
+      .status(error.code ?? 500)
+      .json({ status: StatusType.ERROR, message: error.message });
+  }
+};
