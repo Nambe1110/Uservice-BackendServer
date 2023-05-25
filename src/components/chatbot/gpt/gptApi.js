@@ -10,10 +10,10 @@ gptRouter.use("/", (req, res, next) => {
   next();
 });
 
-gptRouter.use("/", [verifyToken(), verifyRole.isOwner]);
+gptRouter.use("/", [verifyToken()]);
 
 gptRouter.get("/");
-gptRouter.post("/create", createFineTune);
-gptRouter.patch("/change-model", changeModel);
+gptRouter.post("/create", verifyRole.isOwner, createFineTune);
+gptRouter.patch("/change-model", verifyRole.isOwner, changeModel);
 
 export default gptRouter;
