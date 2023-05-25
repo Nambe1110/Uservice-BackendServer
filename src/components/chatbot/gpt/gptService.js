@@ -18,14 +18,17 @@ export default class GptService {
 
   static async createFineTune({ user, fileIds, name }) {
     if (user.role !== RoleEnum.Owner) {
-      throw new AppError("Người dùng không phải chủ sở hữu");
+      throw new AppError("Người dùng không phải chủ sở hữu", 401);
     }
     try {
       if (name === "" || name == null) {
         throw new AppError("Yêu cầu tên mô hình", 400);
       }
       if (!fileIds?.length) {
-        throw new AppError("Yêu cầu danh sách các id của mô hình huấn luyện");
+        throw new AppError(
+          "Yêu cầu danh sách các id của mô hình huấn luyện",
+          400
+        );
       }
       const currentModels = await this.getCompanyModels({ user });
       if (
