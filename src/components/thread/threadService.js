@@ -34,6 +34,7 @@ export default class ThreadService {
         t3.last_name AS 'customer.last_name',
         t3.profile AS 'customer.profile',
         t1.type AS 'channel_type',
+        t1.company_id AS 'company_id',
         t2.id AS 'last_message.id',
         t2.sender_type AS 'last_message.sender_type', 
         t2.timestamp AS 'last_message.timestamp', 
@@ -99,6 +100,7 @@ export default class ThreadService {
         t3.last_name AS 'customer.last_name',
         t3.profile AS 'customer.profile',
         t1.type AS 'channel_type',
+        t1.company_id AS 'company_id',
         t2.id AS 'last_message.id',
         t2.sender_type AS 'last_message.sender_type', 
         t2.timestamp AS 'last_message.timestamp', 
@@ -158,5 +160,25 @@ export default class ThreadService {
     await Promise.all(threads.map((thread) => getRepliedMessage(thread)));
 
     return threads;
+  }
+
+  static async updateThread({
+    threadId,
+    title,
+    imageUrl,
+    isAutoreplyDisabled,
+  }) {
+    await ThreadModel.update(
+      {
+        title,
+        image_url: imageUrl,
+        is_autoreply_disabled: isAutoreplyDisabled,
+      },
+      {
+        where: {
+          id: threadId,
+        },
+      }
+    );
   }
 }

@@ -9,6 +9,7 @@ import {
   SenderType,
   ChannelType,
   AttachmentType,
+  ChatbotMode,
 } from "../../../constants.js";
 import logger from "../../../config/logger/index.js";
 import { threadNotifier } from "../../thread/threadNotifier.js";
@@ -17,6 +18,8 @@ import UserService from "../../user/userService.js";
 import CustomerService from "../../customer/customerService.js";
 import MessageService from "../../message/messageService.js";
 import AttachmentService from "../../attachment/attachmentService.js";
+import CompanyService from "../../company/companyService.js";
+import SuggestionService from "../../suggestion/suggestionService.js";
 import S3 from "../../../modules/S3.js";
 
 const pendingMessages = new Map();
@@ -214,8 +217,8 @@ export default class MessengerService {
                 const {
                   companyId,
                   threadId,
+                  senderType,
                   senderId: pendingSenderId,
-
                   attachment,
                   callback,
                   socket,
@@ -225,6 +228,7 @@ export default class MessengerService {
                   companyId,
                   threadId,
                   messageApiId,
+                  senderType,
                   senderId: pendingSenderId,
                   content,
                   timestamp,
@@ -238,7 +242,7 @@ export default class MessengerService {
               }
 
               const channels = await sequelize.query(
-                `SELECT channel.id, channel.company_id, messenger_channel.page_access_token
+                `SELECT channel.id, channel.company_id, channel.channel_detail_id, messenger_channel.page_access_token
                 FROM channel
                 JOIN messenger_channel ON channel.channel_detail_id = messenger_channel.id
                 WHERE channel.type = :channelType AND messenger_channel.page_id = :pageId`,
@@ -253,7 +257,11 @@ export default class MessengerService {
 
               await Promise.all(
                 channels.map(async (channel) => {
-                  const { company_id, page_access_token } = channel;
+                  const { company_id, channel_detail_id, page_access_token } =
+                    channel;
+                  const company = await CompanyService.getCompanyById(
+                    company_id
+                  );
                   const [thread] = await ThreadService.getOrCreateThread(
                     {
                       channel_id: channel.id,
@@ -408,6 +416,36 @@ export default class MessengerService {
                     sender,
                     attachment,
                   });
+
+                  if (
+                    senderType === SenderType.CUSTOMER &&
+                    company.chatbot_mode === ChatbotMode.AUTO_REPLY &&
+                    !thread.is_autoreply_disabled
+                  ) {
+                    setTimeout(async () => {
+                      const lastMessage = await MessageService.getLastMessage({
+                        threadId: thread.id,
+                      });
+
+                      if (newMessage.id !== lastMessage.id) return;
+
+                      const suggestions =
+                        await SuggestionService.generateSuggestion({
+                          numberOfResponse: 1,
+                          companyId: company_id,
+                          threadId: thread.id,
+                        });
+
+                      await this.sendMessage({
+                        companyId: company_id,
+                        channelDetailId: channel_detail_id,
+                        threadId: thread.id,
+                        threadApiId,
+                        senderType: SenderType.BOT,
+                        content: suggestions[0],
+                      });
+                    }, 5000);
+                  }
                 })
               );
             })
@@ -423,6 +461,7 @@ export default class MessengerService {
     companyId,
     threadId,
     messageApiId,
+    senderType,
     senderId,
     content,
     timestamp,
@@ -442,14 +481,12 @@ export default class MessengerService {
         message_api_id: messageApiId,
       },
       {
-        sender_type: SenderType.STAFF,
+        sender_type: senderType,
         sender_id: senderId,
         content,
         timestamp,
       }
     );
-
-    const sender = await UserService.getUserById(senderId);
 
     await Promise.all(
       attachment.map(async (attach) => {
@@ -463,17 +500,30 @@ export default class MessengerService {
       })
     );
 
-    await threadNotifier.onMessageSendSucceeded({
-      companyId,
-      channelType: ChannelType.TELEGRAM_USER,
-      thread,
-      customer,
-      message,
-      sender,
-      attachment,
-      callback,
-      socket,
-    });
+    if (senderType === SenderType.STAFF) {
+      const sender = await UserService.getUserById(senderId);
+      await threadNotifier.onMessageSendSucceeded({
+        companyId,
+        channelType: ChannelType.MESSENGER,
+        thread,
+        customer,
+        message,
+        sender,
+        attachment,
+        callback,
+        socket,
+      });
+    } else if (senderType === SenderType.BOT) {
+      await threadNotifier.onNewMessage({
+        created: true,
+        channelType: ChannelType.MESSENGER,
+        companyId,
+        thread,
+        customer,
+        message,
+        attachment,
+      });
+    }
   }
 
   static async sendMessage({
@@ -481,9 +531,10 @@ export default class MessengerService {
     channelDetailId,
     threadId,
     threadApiId,
+    senderType = SenderType.STAFF,
     senderId,
     content,
-    attachment,
+    attachment = [],
     socket,
     callback,
   }) {
@@ -548,6 +599,7 @@ export default class MessengerService {
       pendingMessages.set(messageResponse.data.message_id, {
         companyId,
         threadId,
+        senderType,
         senderId,
         attachment,
         callback,
