@@ -11,6 +11,7 @@ const getUser = (employees) =>
     phone_number: employee.phoneNumber,
     image_url: employee.imageUrl,
     is_online: employee.socketCount > 0,
+    disconnect_timestamp: employee.disconnectTimestamp,
   }));
 
 export default async (io, socket) => {
