@@ -29,8 +29,13 @@ dataRouter.use("/", (req, res, next) => {
   next();
 });
 
-dataRouter.use("/", [verifyToken(), verifyRole.isOwner]);
+dataRouter.use("/", [verifyToken()]);
 dataRouter.get("/", getDatasets);
-dataRouter.post("/upload", upload.array("file", 10), uploadDataset);
+dataRouter.post(
+  "/upload",
+  verifyRole.isOwner,
+  upload.array("file", 10),
+  uploadDataset
+);
 
 export default dataRouter;
