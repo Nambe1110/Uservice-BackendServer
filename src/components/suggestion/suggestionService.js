@@ -20,7 +20,7 @@ export default class SuggestionService {
       context: translatedContext.replace(/~/g, "\n"),
     });
     const newAnswer = await Translate.translate({
-      text: answers.join("~~~").replace(/"/g, ""),
+      text: answers.join("~~~"),
       from: Lang.English,
       to: Lang.Vietnamese,
     });
