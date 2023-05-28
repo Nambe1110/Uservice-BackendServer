@@ -1,5 +1,9 @@
 import { Configuration, OpenAIApi } from "openai";
+import axios, { AxiosError } from "axios";
 import { DefaultGptModel } from "../constants.js";
+import Translate from "./Translate.js";
+import Lang from "../enums/Lang.js";
+import AppError from "../utils/AppError.js";
 
 const configuration = new Configuration({
   apiKey: process.env.GPT_3_API_KEY,
@@ -37,5 +41,39 @@ export default class GPT3 {
         "Content-Type": "multipart/form-data",
       },
     });
+  }
+
+  static async removeTeenCode(text) {
+    const data = {
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "user",
+          content: `Câu sau có các từ viết tắt và teencode, hãy giúp tôi chuyển các từ viết tắt thành viết thường nhé: "${text}"`,
+        },
+      ],
+    };
+    try {
+      const { data: response } = await axios.post(
+        "https://api.openai.com/v1/chat/completions",
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.GPT_3_API_KEY}`,
+          },
+        }
+      );
+      return response?.choices[0]?.message?.content?.replace(/"/g, "");
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        const errorMessage = await Translate.translate({
+          text: error.response.data.error.message,
+          from: Lang.English,
+          to: Lang.Vietnamese,
+        });
+        throw new AppError(errorMessage, 400);
+      }
+      throw error;
+    }
   }
 }
