@@ -20,11 +20,11 @@ export default class SuggestionService {
       context: translatedContext.replace(/~/g, "\n"),
     });
     const newAnswer = await Translate.translate({
-      text: answers,
+      text: answers.join("~~~").replace(/"/g, ""),
       from: Lang.English,
       to: Lang.Vietnamese,
     });
-    return newAnswer;
+    return newAnswer?.split("~~~");
   }
 
   static async generateContext(threadId) {
