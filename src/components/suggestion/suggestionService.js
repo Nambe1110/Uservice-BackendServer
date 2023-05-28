@@ -8,7 +8,8 @@ import MessageModel from "../message/messageModel.js";
 export default class SuggestionService {
   static async generateSuggestion({ numberOfResponse, companyId, threadId }) {
     const gptModel = await GptService.GetModelByCompanyId(companyId);
-    const context = await this.generateContext(threadId);
+    let context = await this.generateContext(threadId);
+    context = await GPT3.removeTeenCode(context);
     const translatedContext = await Translate.translate({
       text: context.replace(/\n/g, "~"),
       from: Lang.Vietnamese,
