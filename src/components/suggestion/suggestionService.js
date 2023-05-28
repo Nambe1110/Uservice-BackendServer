@@ -8,8 +8,7 @@ import MessageModel from "../message/messageModel.js";
 export default class SuggestionService {
   static async generateSuggestion({ numberOfResponse, companyId, threadId }) {
     const gptModel = await GptService.GetModelByCompanyId(companyId);
-    let context = await this.generateContext(threadId);
-    context = await GPT3.removeTeenCode(context);
+    const context = await this.generateContext(threadId);
     const translatedContext = await Translate.translate({
       text: context.replace(/\n/g, "~"),
       from: Lang.Vietnamese,
@@ -35,15 +34,19 @@ export default class SuggestionService {
       where: { thread_id: threadId },
     });
     let context = "";
-    for (const message of messages) {
+    for (const [key, message] of Object.entries(messages)) {
+      let messageContent = message.dataValues.content;
+      if (key === messages.length - 1) {
+        messageContent = await GPT3.removeTeenCode(messageContent);
+      }
       if (
         message.sender_type === SenderType.STAFF ||
         message.sender_type === SenderType.BOT
       ) {
-        context += `Staff: ${message.dataValues.content}\n`;
+        context += `Staff: ${messageContent}\n`;
       }
       if (message.sender_type === SenderType.CUSTOMER) {
-        context += `Customer: ${message.dataValues.content}\n`;
+        context += `Customer: ${messageContent}\n`;
       }
     }
     return context;
