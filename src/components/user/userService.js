@@ -121,15 +121,22 @@ export default class UserService {
             email LIKE "%${searchKey}%" )
         `
       : ``;
+    const getAllQuery = selectQuery.concat(searchStr);
+    const allCompanyMembers = await sequelize.query(getAllQuery, {
+      replacements: {
+        companyId: user.company_id,
+      },
+      type: sequelize.QueryTypes.SELECT,
+      nest: true,
+    });
 
-    const sqlQuery = selectQuery.concat(
+    const filteredQuery = selectQuery.concat(
       searchStr,
       `
       LIMIT :limit
       OFFSET :offset;`
     );
-
-    const companyMembers = await sequelize.query(sqlQuery, {
+    const companyMembers = await sequelize.query(filteredQuery, {
       replacements: {
         companyId: user.company_id,
         limit,
@@ -138,7 +145,8 @@ export default class UserService {
       type: sequelize.QueryTypes.SELECT,
       nest: true,
     });
-    const totalItems = companyMembers.length;
+
+    const totalItems = allCompanyMembers.length;
     const totalPages = Math.ceil(totalItems / limit);
 
     return {
