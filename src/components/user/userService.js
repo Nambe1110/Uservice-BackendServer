@@ -218,7 +218,7 @@ export default class UserService {
 
     const currUser = await UserModel.findByPk(currentUser.id);
     if (!(await bcrypt.compare(password, currUser.password))) {
-      throw new AppError("Mật khẩu không đúng", 401);
+      throw new AppError("Mật khẩu không đúng", 400);
     }
 
     const user = await UserModel.findByPk(userID);
@@ -253,9 +253,14 @@ export default class UserService {
 
     currUser.role = UserRole.MANAGER;
     const updatedCurrentUser = await currUser.save();
-    delete updatedCurrentUser.dataValues.password;
 
-    return updatedCurrentUser;
+    const returnedUser = await UserModel.findOne({
+      where: { id: updatedCurrentUser.id },
+      include: { model: CompanyModel },
+      attributes: { exclude: ["password"] },
+    });
+
+    return returnedUser;
   }
 
   static async updateDisconnectTimestamp(userId) {
