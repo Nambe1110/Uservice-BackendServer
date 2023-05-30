@@ -38,8 +38,13 @@ export default class UserService {
       socketCount: 0,
     });
 
-    delete updatedUser.dataValues.password;
-    return updatedUser.dataValues;
+    const returnedUser = await UserModel.findOne({
+      where: { id: updatedUser.id },
+      include: { model: CompanyModel },
+      attributes: { exclude: ["password"] },
+    });
+
+    return returnedUser;
   }
 
   static async getUserById(id) {
