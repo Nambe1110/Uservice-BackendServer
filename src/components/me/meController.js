@@ -30,11 +30,22 @@ export const getProfile = async (req, res) => {
       user.chatbot_mode = company.chatbot_mode;
     }
 
-    const result = await UserModel.findOne({
+    // Join modal Company and owner of company to user's profile
+    const returnedUser = await UserModel.findAll({
       where: { id: user.id },
       include: { model: CompanyModel },
       attributes: { exclude: ["password"] },
     });
+    const addCompanyOwner = async (cUser) => {
+      const owner = await UserService.getOwnerOfCompany({
+        companyId: cUser.company_id,
+      });
+      const cCompany = cUser.Company;
+      cCompany.dataValues.owner = owner;
+      cUser.dataValues.Company = cCompany;
+    };
+    await Promise.all(returnedUser.map((e) => addCompanyOwner(e)));
+    const result = returnedUser[0];
 
     return res.status(200).json({
       status: StatusEnum.Success,
