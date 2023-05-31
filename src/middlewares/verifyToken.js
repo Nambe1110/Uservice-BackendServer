@@ -31,12 +31,12 @@ export const verifyToken =
         });
       }
 
-      if (user.company_id !== decoded.company_id) {
-        return res.status(403).json({
-          status: StatusType.ERROR,
-          message: "Thông tin công ty không đúng",
-        });
-      }
+      // if (user.company_id !== decoded.company_id) {
+      //   return res.status(403).json({
+      //     status: StatusType.ERROR,
+      //     message: "Thông tin công ty không đúng",
+      //   });
+      // }
 
       if (requiredCompany && !user.company_id)
         return res.status(403).json({
