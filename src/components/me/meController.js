@@ -6,30 +6,34 @@ import { StatusType } from "../../constants.js";
 import StatusEnum from "../../enums/Status.js";
 import CompanyService from "../company/companyService.js";
 import MeService from "./meService.js";
+import AppError from "../../utils/AppError.js";
 
-export const getProfile = async (req, res) => {
+const verifyToken = async (bearerHeader) => {
   try {
-    const bearerHeader = req.headers.authorization;
     if (bearerHeader == null) {
-      return res.status(401).json({
-        status: StatusType.ERROR,
-        message: "Access token không được cung cấp",
-      });
+      throw new AppError("Access token không được cung cấp", 401);
     }
     const token = bearerHeader.split(" ")[1];
     const decoded = jwt.verify(token, process.env.TOKEN_SECRET);
     const user = await UserService.getUserById(decoded.id);
     if (user.is_verified === false) {
-      return res.status(403).json({
-        status: StatusType.ERROR,
-        message: "Tài khoản chưa xác thực",
-      });
+      throw new AppError("Access token không được cung cấp", 403);
     }
     if (user.company_id) {
       const company = await CompanyService.getCompanyById(user.company_id);
       user.chatbot_mode = company.chatbot_mode;
     }
+    return user;
+  } catch (error) {
+    throw new AppError("Token không hợp lệ hoặc đã hết hạn", 403);
+  }
+};
 
+export const getProfile = async (req, res) => {
+  try {
+    const bearerHeader = req.headers.authorization;
+
+    const user = await verifyToken(bearerHeader);
     // Join modal Company and owner of company to user's profile
     const returnedUser = await UserModel.findAll({
       where: { id: user.id },
