@@ -37,7 +37,10 @@ const GptDataModel = sequelize.define(
   }
 );
 
-GptDataModel.hasMany(GptModel);
+GptDataModel.hasMany(GptModel, {
+  onDelete: "CASCADE",
+  hooks: true,
+});
 GptDataModel.hasMany(DataModel);
 
 GptModel.belongsTo(GptDataModel);
