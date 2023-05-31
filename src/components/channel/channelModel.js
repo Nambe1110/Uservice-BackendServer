@@ -4,6 +4,7 @@ import Company from "../company/companyModel.js";
 import TelegramBotChannelModel from "./telegram/bot/telegramBotChannelModel.js";
 import TelegramUserChannelModel from "./telegram/user/telegramUserChannelModel.js";
 import MessengerChannelModel from "./messenger/messengerChannelModel.js";
+import ViberChannelModel from "./viber/viberChannelModel.js";
 import { ChannelType } from "../../constants.js";
 
 const { DataTypes } = pkg;
@@ -86,6 +87,14 @@ ChannelModel.beforeDestroy(async (channel) => {
       break;
     case ChannelType.MESSENGER:
       await MessengerChannelModel.destroy({
+        where: {
+          id: channelDetailId,
+        },
+        individualHooks: true,
+      });
+      break;
+    case ChannelType.VIBER:
+      await ViberChannelModel.destroy({
         where: {
           id: channelDetailId,
         },
