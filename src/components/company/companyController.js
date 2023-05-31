@@ -62,7 +62,7 @@ export const getCompanyDetails = async (req, res) => {
 export const deleteCompany = async (req, res) => {
   try {
     const { user } = req;
-    await CompanyService.deleteCompany(user);
+    await CompanyService.deleteCompany(user, req.body.password);
     return res.status(200).json({
       status: StatusEnum.Success,
       data: { message: "Xóa công ty thành công" },
