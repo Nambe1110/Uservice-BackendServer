@@ -41,7 +41,10 @@ GptDataModel.hasMany(GptModel, {
   onDelete: "CASCADE",
   hooks: true,
 });
-GptDataModel.hasMany(DataModel);
+GptDataModel.hasMany(DataModel, {
+  onDelete: "CASCADE",
+  hooks: true,
+});
 
 GptModel.belongsTo(GptDataModel);
 DataModel.belongsTo(GptDataModel);
