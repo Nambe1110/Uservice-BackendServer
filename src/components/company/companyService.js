@@ -1,4 +1,5 @@
 import generator from "generate-password";
+import bcrypt from "bcrypt";
 import RoleEnum from "../../enums/Role.js";
 import AppError from "../../utils/AppError.js";
 import UserService from "../user/userService.js";
@@ -6,6 +7,7 @@ import CompanyModel from "./companyModel.js";
 import { listCompany } from "../../utils/singleton.js";
 import { ChatbotMode, UserRole } from "../../constants.js";
 import S3 from "../../modules/S3.js";
+import UserModel from "../user/userModel.js";
 
 export default class CompanyService {
   static async createCompany({ user, companyName, imageUrl = null }) {
@@ -62,7 +64,7 @@ export default class CompanyService {
     return CompanyModel.findByPk(companyId);
   }
 
-  static async deleteCompany(user) {
+  static async deleteCompany(user, password) {
     const company = await CompanyModel.findOne({
       where: { id: user.company_id },
     });
@@ -71,6 +73,11 @@ export default class CompanyService {
     }
     if (user.role !== RoleEnum.Owner) {
       throw new AppError("Chỉ chủ sở hữu mới có thể xóa công ty", 400);
+    }
+
+    const currUser = await UserModel.findByPk(user.id);
+    if (!password || !(await bcrypt.compare(password, currUser.password))) {
+      throw new AppError("Mật khẩu không đúng", 400);
     }
 
     await company.destroy();
