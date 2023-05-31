@@ -126,7 +126,17 @@ export default class UserService {
             email LIKE "%${searchKey}%" )
         `
       : ``;
-    const getAllQuery = selectQuery.concat(searchStr);
+    const getAllQuery = selectQuery.concat(
+      searchStr,
+      `
+      ORDER BY CASE role
+          WHEN 'Owner' THEN 1
+          WHEN 'Manager' THEN 2
+          WHEN 'Staff' THEN 3
+          ELSE 4
+        END
+      `
+    );
     const allCompanyMembers = await sequelize.query(getAllQuery, {
       replacements: {
         companyId: user.company_id,
