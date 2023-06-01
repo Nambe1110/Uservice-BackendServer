@@ -1,5 +1,6 @@
 import { listCompany } from "../../../../utils/singleton.js";
 import { ChannelType } from "../../../../constants.js";
+import AppError from "../../../../utils/AppError.js";
 import ChannelService from "../../channelService.js";
 import MessageService from "../../../message/messageService.js";
 import TelegramBotChannelModel from "./telegramBotChannelModel.js";
@@ -17,6 +18,13 @@ export default class TelegramUserService {
   }
 
   static async checkAuthenticationToken({ token, companyId }) {
+    if (
+      await TelegramBotChannelModel.findOne({
+        where: { token, company_id: companyId },
+      })
+    )
+      throw new AppError("Kênh đã được kết nối", 400);
+
     const { telegramBotChannel } = listCompany.get(companyId).listChannel;
     const connection = new TelegramBotConnection({
       token,
@@ -35,13 +43,14 @@ export default class TelegramUserService {
         token,
       },
     });
-    const { username } = await connection.getMe();
-    const channel = await ChannelService.createChannel({
+    const { username, imageUrl } = await connection.getMe();
+    const [channel] = await ChannelService.findOrCreate({
       companyId,
       type: ChannelType.TELEGRAM_BOT,
       channelDetailId: newTelegramBotChannel.id,
       name: username,
-      imageUrl: null,
+      imageUrl,
+      profile: `https://t.me/${username}`,
     });
 
     connection.setUpdateListener({

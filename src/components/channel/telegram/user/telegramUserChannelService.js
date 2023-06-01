@@ -18,6 +18,13 @@ export default class TelegramUserChannelService {
   }
 
   static async sendAuthenticationCode({ phoneNumber, companyId }) {
+    if (
+      await TelegramUserChannelModel.findOne({
+        where: { phone_number: phoneNumber, company_id: companyId },
+      })
+    )
+      throw new AppError("Kênh đã được kết nối", 400);
+
     const { telegramUserChannel } = listCompany.get(companyId).listChannel;
     let connection = null;
 
@@ -56,13 +63,14 @@ export default class TelegramUserChannelService {
           phone_number: phoneNumber,
         },
       });
-
-    const channel = await ChannelService.createChannel({
+    const { username, imageUrl } = await connection.getMe();
+    const [channel] = await ChannelService.findOrCreate({
       companyId,
       type: ChannelType.TELEGRAM_USER,
       channelDetailId: newTelegramUserChannel.id,
-      name: phoneNumber,
-      imageUrl: null,
+      name: username,
+      imageUrl,
+      profile: `https://t.me/${username}`,
     });
 
     connection.setUpdateListener({
@@ -88,19 +96,22 @@ export default class TelegramUserChannelService {
     const { connection } = telegramUserChannel.get(phoneNumber);
     await connection.checkAuthenticationPassword({ password });
 
-    const [newTelegramChannel] = await TelegramUserChannelModel.findOrCreate({
-      where: {
-        company_id: companyId,
-        phone_number: phoneNumber,
-      },
-    });
+    const [newTelegramUserChannel] =
+      await TelegramUserChannelModel.findOrCreate({
+        where: {
+          company_id: companyId,
+          phone_number: phoneNumber,
+        },
+      });
 
-    const channel = await ChannelService.createChannel({
+    const { username, imageUrl } = await connection.getMe();
+    const [channel] = await ChannelService.findOrCreate({
       companyId,
       type: ChannelType.TELEGRAM_USER,
-      channelDetailId: newTelegramChannel.dataValues.id,
-      name: phoneNumber,
-      imageUrl: null,
+      channelDetailId: newTelegramUserChannel.id,
+      name: username,
+      imageUrl,
+      profile: `https://t.me/${username}`,
     });
 
     connection.setUpdateListener({
@@ -109,7 +120,7 @@ export default class TelegramUserChannelService {
 
     return {
       channel,
-      detail: newTelegramChannel,
+      detail: newTelegramUserChannel,
     };
   }
 

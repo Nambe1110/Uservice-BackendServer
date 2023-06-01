@@ -12,9 +12,9 @@ const ThreadType = {
 const ChannelType = {
   TELEGRAM_BOT: "TelegramBot",
   TELEGRAM_USER: "TelegramUser",
-  EMAIL: "Email",
   MESSENGER: "Messenger",
   VIBER: "Viber",
+  INSTAGRAM: "Instagram",
 };
 
 const StatusType = {

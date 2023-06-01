@@ -358,23 +358,27 @@ export default class TelegramBotConnection {
             return;
 
           setTimeout(async () => {
-            const lastMessage = await MessageService.getLastMessage({
-              threadId: thread.id,
-            });
+            try {
+              const lastMessage = await MessageService.getLastMessage({
+                threadId: thread.id,
+              });
 
-            if (message.id !== lastMessage.id) return;
+              if (message.id !== lastMessage.id) return;
 
-            const suggestions = await SuggestionService.generateSuggestion({
-              numberOfResponse: 1,
-              companyId: this.companyId,
-              threadId: thread.id,
-            });
+              const suggestions = await SuggestionService.generateSuggestion({
+                numberOfResponse: 1,
+                companyId: this.companyId,
+                threadId: thread.id,
+              });
 
-            await this.sendMessage({
-              senderType: SenderType.BOT,
-              chatId,
-              content: suggestions[0],
-            });
+              await this.sendMessage({
+                senderType: SenderType.BOT,
+                chatId,
+                content: suggestions[0],
+              });
+            } catch (error) {
+              logger.error(error.message);
+            }
           }, 5000);
         }
       });
@@ -600,6 +604,17 @@ export default class TelegramBotConnection {
 
   async getMe() {
     const me = await this.connection.api.getMe();
-    return me.response;
+    const { username, profilePhoto } = me.response;
+    let imageUrl = null;
+
+    if (profilePhoto) {
+      const fileId = profilePhoto.big.id;
+      imageUrl = await this.#downloadFile(fileId);
+    }
+
+    return {
+      username,
+      imageUrl,
+    };
   }
 }

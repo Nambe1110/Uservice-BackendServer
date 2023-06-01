@@ -75,20 +75,20 @@ export default class ViberService {
         },
       });
 
-      const channel = await ChannelService.createChannel({
+      const [channel] = await ChannelService.findOrCreate({
         companyId,
         type: ChannelType.VIBER,
         channelDetailId: newViberChannel.id,
         name,
       });
 
-      if (!channel.imageUrl && icon) {
+      if (!channel.image_url && icon) {
         const iconUrl = await S3.uploadFromUrlToS3({
           url: icon,
           companyId,
         });
 
-        channel.imageUrl = iconUrl;
+        channel.image_url = iconUrl;
         await channel.save();
       }
 
@@ -268,26 +268,30 @@ export default class ViberService {
       return;
 
     setTimeout(async () => {
-      const lastMessage = await MessageService.getLastMessage({
-        threadId: thread.id,
-      });
+      try {
+        const lastMessage = await MessageService.getLastMessage({
+          threadId: thread.id,
+        });
 
-      if (newMessage.id !== lastMessage.id) return;
+        if (newMessage.id !== lastMessage.id) return;
 
-      const suggestions = await SuggestionService.generateSuggestion({
-        numberOfResponse: 1,
-        companyId: detailChannel.company_id,
-        threadId: thread.id,
-      });
+        const suggestions = await SuggestionService.generateSuggestion({
+          numberOfResponse: 1,
+          companyId: detailChannel.company_id,
+          threadId: thread.id,
+        });
 
-      await this.sendMessage({
-        companyId: detailChannel.company_id,
-        channelDetailId: detailChannel.id,
-        threadId: thread.id,
-        threadApiId: thread.thread_api_id,
-        senderType: SenderType.BOT,
-        content: suggestions[0],
-      });
+        await this.sendMessage({
+          companyId: detailChannel.company_id,
+          channelDetailId: detailChannel.id,
+          threadId: thread.id,
+          threadApiId: thread.thread_api_id,
+          senderType: SenderType.BOT,
+          content: suggestions[0],
+        });
+      } catch (error) {
+        logger.error(error.message);
+      }
     }, 5000);
   }
 

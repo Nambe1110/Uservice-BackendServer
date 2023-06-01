@@ -2,14 +2,15 @@ import { Op } from "sequelize";
 import ChannelModel from "./channelModel.js";
 
 export default class ChannelService {
-  static async createChannel({
+  static async findOrCreate({
     companyId,
     type,
     channelDetailId,
     name,
+    profile,
     imageUrl = null,
   }) {
-    const [newChannel] = await ChannelModel.findOrCreate({
+    const [newChannel, created] = await ChannelModel.findOrCreate({
       where: {
         company_id: companyId,
         type,
@@ -17,11 +18,12 @@ export default class ChannelService {
       },
       defaults: {
         name,
+        profile,
         image_url: imageUrl,
       },
     });
 
-    return newChannel;
+    return [newChannel, created];
   }
 
   static async getChannels({ companyId, page, limit, type }) {

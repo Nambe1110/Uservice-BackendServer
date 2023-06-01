@@ -6,8 +6,8 @@ import logger from "../../../config/logger/index.js";
 
 const { DataTypes } = pkg;
 
-const MessengerChannelModel = sequelize.define(
-  "MessengerChannel",
+const InstagramChannelModel = sequelize.define(
+  "InstagramChannel",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -21,6 +21,9 @@ const MessengerChannelModel = sequelize.define(
         key: "id",
       },
     },
+    user_id: {
+      type: DataTypes.STRING,
+    },
     page_id: {
       type: DataTypes.STRING,
     },
@@ -29,7 +32,7 @@ const MessengerChannelModel = sequelize.define(
     },
   },
   {
-    tableName: "messenger_channel",
+    tableName: "instagram_channel",
     charset: "utf8",
     collate: "utf8_unicode_ci",
     createdAt: "created_at",
@@ -37,21 +40,21 @@ const MessengerChannelModel = sequelize.define(
   }
 );
 
-CompanyModel.hasMany(MessengerChannelModel);
-MessengerChannelModel.belongsTo(CompanyModel);
+CompanyModel.hasMany(InstagramChannelModel);
+InstagramChannelModel.belongsTo(CompanyModel);
 
-MessengerChannelModel.sync({ logging: false });
+InstagramChannelModel.sync({ logging: false });
 
-MessengerChannelModel.beforeDestroy(async (channel) => {
+InstagramChannelModel.beforeDestroy(async (channel) => {
   const { page_id, company_id } = channel;
   try {
     const pages = await sequelize.query(
       `SELECT page_id 
-      FROM messenger_channel 
+      FROM instagram_channel 
       WHERE page_id = :page_id AND company_id != :company_id
       UNION
       SELECT page_id
-      FROM instagram_channel
+      FROM messenger_channel
       WHERE page_id = :page_id`,
       {
         replacements: { page_id, company_id },
@@ -73,4 +76,4 @@ MessengerChannelModel.beforeDestroy(async (channel) => {
   }
 });
 
-export default MessengerChannelModel;
+export default InstagramChannelModel;
