@@ -18,3 +18,5 @@ npm install pm2 -g
 #start our node app in the background
 pm2 start ecosystem.config.cjs
 
+#restart nginx service
+systemctl restart nginx
