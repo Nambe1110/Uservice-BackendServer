@@ -73,9 +73,8 @@ export default class CompanyService {
       throw new AppError("Chỉ chủ sở hữu mới có thể xóa công ty", 400);
     }
 
-    listCompany.delete(company.id);
-
     await company.destroy();
+    listCompany.delete(company.id);
   }
 
   static async setChatbotMode(user, newMode) {

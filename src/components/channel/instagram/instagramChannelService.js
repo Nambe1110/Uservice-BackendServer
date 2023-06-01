@@ -1,7 +1,7 @@
 import axios from "axios";
 import AppError from "../../../utils/AppError.js";
 import sequelize from "../../../config/database/index.js";
-import MessengerChannelModel from "./messengerChannelModel.js";
+import InstagramChannelModel from "./instagramChannelModel.js";
 import ChannelService from "../channelService.js";
 import {
   UserRole,
@@ -21,6 +21,7 @@ import AttachmentService from "../../attachment/attachmentService.js";
 import CompanyService from "../../company/companyService.js";
 import SuggestionService from "../../suggestion/suggestionService.js";
 import S3 from "../../../modules/S3.js";
+import { parseFullName } from "../../../utils/parser.js";
 
 const pendingMessages = new Map();
 const attachmentTypeMapping = {};
@@ -34,7 +35,7 @@ attachmentTypeMapping.video = AttachmentType.VIDEO;
 attachmentTypeMapping.audio = AttachmentType.AUDIO;
 attachmentTypeMapping.file = AttachmentType.FILE;
 
-export default class MessengerService {
+export default class InstagramService {
   static async #getPages({ userId, userAccessToken }) {
     try {
       const tokenResponse = await axios.get(
@@ -95,8 +96,37 @@ export default class MessengerService {
     }
   }
 
-  static async #connectPage({ pageId, pageAccessToken, pageName, companyId }) {
+  static async #connectPage({ pageId, pageAccessToken, companyId }) {
     try {
+      const instagramBusinessAccountResponse = await axios.get(
+        `${process.env.GRAPH_API_URL}/${pageId}`,
+        {
+          params: {
+            fields: "instagram_business_account",
+            access_token: pageAccessToken,
+          },
+        }
+      );
+
+      if (!instagramBusinessAccountResponse.data.instagram_business_account)
+        return;
+
+      const { id: instagramUserId } =
+        instagramBusinessAccountResponse.data.instagram_business_account;
+
+      const instagramUserResponse = await axios.get(
+        `${process.env.GRAPH_API_URL}/${instagramUserId}`,
+        {
+          params: {
+            fields: "name,profile_picture_url,username",
+            access_token: pageAccessToken,
+          },
+        }
+      );
+
+      const { name, profile_picture_url, username } =
+        instagramUserResponse.data;
+
       await axios.post(
         `${process.env.GRAPH_API_URL}/${pageId}/subscribed_apps`,
         {
@@ -105,36 +135,11 @@ export default class MessengerService {
         }
       );
 
-      const pictureResponse = await axios.get(
-        `${process.env.GRAPH_API_URL}/${pageId}/picture`,
-        {
-          params: {
-            access_token: pageAccessToken,
-            redirect: false,
-            height: 100,
-            width: 100,
-          },
-        }
-      );
-
-      const { url: pagePictureUrl } = pictureResponse.data.data;
-
-      const profileResponse = await axios.get(
-        `${process.env.GRAPH_API_URL}/${pageId}`,
-        {
-          params: {
-            fields: "link",
-            access_token: pageAccessToken,
-          },
-        }
-      );
-
-      const { link: profile } = profileResponse.data;
-
-      const [newMessengerChannel] = await MessengerChannelModel.findOrCreate({
+      const [newInstagramChannel] = await InstagramChannelModel.findOrCreate({
         where: {
           company_id: companyId,
           page_id: pageId,
+          user_id: instagramUserId,
         },
         defaults: {
           page_access_token: pageAccessToken,
@@ -143,15 +148,15 @@ export default class MessengerService {
 
       const [channel] = await ChannelService.findOrCreate({
         companyId,
-        type: ChannelType.MESSENGER,
-        channelDetailId: newMessengerChannel.id,
-        name: pageName,
-        profile,
+        type: ChannelType.INSTAGRAM,
+        channelDetailId: newInstagramChannel.id,
+        name,
+        profile: `https://www.instagram.com/${username}`,
       });
 
-      if (!channel.image_url && pagePictureUrl) {
+      if (!channel.image_url && profile_picture_url) {
         const pictureUrl = await S3.uploadFromUrlToS3({
-          url: pagePictureUrl,
+          url: profile_picture_url,
           companyId,
         });
 
@@ -161,7 +166,7 @@ export default class MessengerService {
 
       return {
         channel,
-        detail: newMessengerChannel,
+        detail: newInstagramChannel,
       };
     } catch (error) {
       if (error.response) {
@@ -194,7 +199,7 @@ export default class MessengerService {
     try {
       await Promise.all(
         body.entry.map(async (entry) => {
-          const { id: pageId } = entry;
+          const { id: instagramUserId } = entry;
 
           await Promise.all(
             entry.messaging.map(async (messaging) => {
@@ -208,7 +213,7 @@ export default class MessengerService {
                 attachments = [],
               } = message;
               const threadApiId =
-                pageId === recipientId ? senderId : recipientId;
+                instagramUserId === recipientId ? senderId : recipientId;
               const customerApiId = threadApiId;
 
               if (pendingMessages.has(messageApiId)) {
@@ -240,14 +245,14 @@ export default class MessengerService {
               }
 
               const channels = await sequelize.query(
-                `SELECT channel.id, channel.company_id, channel.channel_detail_id, messenger_channel.page_access_token
+                `SELECT channel.id, channel.company_id, channel.channel_detail_id, instagram_channel.page_access_token
                 FROM channel
-                JOIN messenger_channel ON channel.channel_detail_id = messenger_channel.id
-                WHERE channel.type = :channelType AND messenger_channel.page_id = :pageId`,
+                JOIN instagram_channel ON channel.channel_detail_id = instagram_channel.id
+                WHERE channel.type = :channelType AND instagram_channel.user_id = :instagramUserId`,
                 {
                   replacements: {
-                    channelType: ChannelType.MESSENGER,
-                    pageId,
+                    channelType: ChannelType.INSTAGRAM,
+                    instagramUserId,
                   },
                   type: sequelize.QueryTypes.SELECT,
                 }
@@ -274,20 +279,14 @@ export default class MessengerService {
                     `${process.env.GRAPH_API_URL}/${customerApiId}`,
                     {
                       params: {
-                        fields:
-                          "first_name,last_name,middle_name,name,profile_pic",
+                        fields: "name,username,profile_pic",
                         access_token: page_access_token,
                       },
                     }
                   );
 
-                  const {
-                    first_name,
-                    last_name,
-                    middle_name,
-                    name,
-                    profile_pic,
-                  } = customerInfo.data;
+                  const { name, username, profile_pic } = customerInfo.data;
+                  const { firstName, lastName } = parseFullName(name);
 
                   const [customer] = await CustomerService.getOrCreateCustomer(
                     {
@@ -296,10 +295,10 @@ export default class MessengerService {
                       customer_api_id: customerApiId,
                     },
                     {
-                      first_name: last_name,
-                      last_name: `${middle_name} ${first_name}`,
+                      first_name: lastName,
+                      last_name: firstName,
                       alias: name,
-                      profile: `m.me/${customerApiId}`,
+                      profile: `instagram.com/${username}`,
                     }
                   );
 
@@ -333,7 +332,7 @@ export default class MessengerService {
                   let repliedMessage = null;
                   const attachment = [];
 
-                  if (senderId === pageId) {
+                  if (senderId === instagramUserId) {
                     sender = await UserService.getUser({
                       companyId: this.companyId,
                       role: UserRole.OWNER,
@@ -405,7 +404,7 @@ export default class MessengerService {
 
                   await threadNotifier.onNewMessage({
                     created: true,
-                    channelType: ChannelType.MESSENGER,
+                    channelType: ChannelType.INSTAGRAM,
                     companyId: company_id,
                     thread,
                     customer,
@@ -508,7 +507,7 @@ export default class MessengerService {
       const sender = await UserService.getUserById(senderId);
       await threadNotifier.onMessageSendSucceeded({
         companyId,
-        channelType: ChannelType.MESSENGER,
+        channelType: ChannelType.INSTAGRAM,
         thread,
         customer,
         message,
@@ -520,7 +519,7 @@ export default class MessengerService {
     } else if (senderType === SenderType.BOT) {
       await threadNotifier.onNewMessage({
         created: true,
-        channelType: ChannelType.MESSENGER,
+        channelType: ChannelType.INSTAGRAM,
         companyId,
         thread,
         customer,
@@ -549,13 +548,13 @@ export default class MessengerService {
       if (!content && attachment.length === 0)
         throw new Error("Content or attachment must not be empty");
 
-      const messengerChannel = await MessengerChannelModel.findOne({
+      const instagramChannel = await InstagramChannelModel.findOne({
         where: {
           company_id: companyId,
           id: channelDetailId,
         },
       });
-      const { page_id, page_access_token } = messengerChannel;
+      const { page_id, page_access_token } = instagramChannel;
       let messageResponse;
 
       if (content) {

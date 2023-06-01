@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import MessengerService from "./messengerChannelService.js";
+import InstagramService from "./instagramChannelService.js";
 import { StatusType } from "../../../constants.js";
 import logger from "../../../config/logger/index.js";
 
@@ -21,7 +21,8 @@ export const receiveMessage = async (req, res) => {
   res.status(200).send("EVENT_RECEIVED");
 
   try {
-    await MessengerService.receiveMessage(body);
+    // logger.info(body);
+    await InstagramService.receiveMessage(body);
   } catch (error) {
     logger.error(error.message);
   }
@@ -48,7 +49,7 @@ export const connectPages = async (req, res) => {
   const { user } = req;
 
   try {
-    const page = await MessengerService.connectPages({
+    const page = await InstagramService.connectPages({
       userId,
       userAccessToken,
       companyId: user.company_id,

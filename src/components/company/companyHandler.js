@@ -40,17 +40,21 @@ export default async (io, socket) => {
       --employee.socketCount;
 
       setTimeout(async () => {
-        if (employee.socketCount === 0) {
-          const updatedUser = await UserService.updateDisconnectTimestamp(
-            user.id
-          );
-          employee.disconnectTimestamp = updatedUser.disconnect_timestamp;
+        try {
+          if (employee.socketCount === 0) {
+            const updatedUser = await UserService.updateDisconnectTimestamp(
+              user.id
+            );
+            employee.disconnectTimestamp = updatedUser.disconnect_timestamp;
 
-          io.to(user.company_id).emit("user-status", {
-            data: {
-              users: getUser(employees),
-            },
-          });
+            io.to(user.company_id).emit("user-status", {
+              data: {
+                users: getUser(employees),
+              },
+            });
+          }
+        } catch (error) {
+          logger.error(error.message);
         }
       }, 5000);
     });

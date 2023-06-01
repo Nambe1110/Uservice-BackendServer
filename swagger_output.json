@@ -1048,7 +1048,7 @@
         }
       }
     },
-    "/api/channel/messenger/pages": {
+    "/api/channel/messenger/connect": {
       "post": {
         "tags": [
           "Telegram Bot"
@@ -1081,7 +1081,45 @@
         }
       }
     },
-    "/api/channel/messenger/connect": {
+    "/api/channel/instagram/webhook": {
+      "get": {
+        "tags": [
+          "Telegram Bot"
+        ],
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Telegram Bot"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "x-hub-signature-256",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/channel/instagram/connect": {
       "post": {
         "tags": [
           "Telegram Bot"
@@ -1094,10 +1132,10 @@
             "schema": {
               "type": "object",
               "properties": {
-                "pageId": {
+                "userId": {
                   "example": "any"
                 },
-                "pageAccessToken": {
+                "userAccessToken": {
                   "example": "any"
                 }
               }

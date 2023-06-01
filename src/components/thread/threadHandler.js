@@ -4,6 +4,7 @@ import TelegramUserChannelService from "../channel/telegram/user/telegramUserCha
 import TelegramBotChannelService from "../channel/telegram/bot/telegramBotChannelService.js";
 import MessengerChannelService from "../channel/messenger/messengerChannelService.js";
 import ViberChannelService from "../channel/viber/viberChannelService.js";
+import InstagramChannelService from "../channel/instagram/instagramChannelService.js";
 import { StatusType, ChannelType } from "../../constants.js";
 
 export default async (io, socket) => {
@@ -20,62 +21,34 @@ export default async (io, socket) => {
       if (channel.company_id !== user.company_id)
         throw new Error("You don't have permission to send message");
 
+      const sendObject = {
+        companyId: user.company_id,
+        channelDetailId: channel.channel_detail_id,
+        threadId: thread.id,
+        threadApiId: thread.thread_api_id,
+        senderId: user.id,
+        content,
+        repliedMessageId,
+        attachment,
+        socket,
+        callback,
+      };
+
       switch (channel.type) {
         case ChannelType.TELEGRAM_USER:
-          await TelegramUserChannelService.sendMessage({
-            companyId: user.company_id,
-            channelDetailId: channel.channel_detail_id,
-            threadId: thread.id,
-            threadApiId: thread.thread_api_id,
-            senderId: user.id,
-            content,
-            repliedMessageId,
-            attachment,
-            socket,
-            callback,
-          });
+          await TelegramUserChannelService.sendMessage(sendObject);
           break;
         case ChannelType.TELEGRAM_BOT:
-          await TelegramBotChannelService.sendMessage({
-            companyId: user.company_id,
-            channelDetailId: channel.channel_detail_id,
-            threadId: thread.id,
-            threadApiId: thread.thread_api_id,
-            senderId: user.id,
-            content,
-            repliedMessageId,
-            attachment,
-            socket,
-            callback,
-          });
+          await TelegramBotChannelService.sendMessage(sendObject);
           break;
         case ChannelType.MESSENGER:
-          await MessengerChannelService.sendMessage({
-            companyId: user.company_id,
-            channelDetailId: channel.channel_detail_id,
-            threadId: thread.id,
-            threadApiId: thread.thread_api_id,
-            senderId: user.id,
-            content,
-            repliedMessageId,
-            attachment,
-            socket,
-            callback,
-          });
+          await MessengerChannelService.sendMessage(sendObject);
+          break;
+        case ChannelType.INSTAGRAM:
+          await InstagramChannelService.sendMessage(sendObject);
           break;
         case ChannelType.VIBER:
-          await ViberChannelService.sendMessage({
-            companyId: user.company_id,
-            channelDetailId: channel.channel_detail_id,
-            threadId: thread.id,
-            threadApiId: thread.thread_api_id,
-            senderId: user.id,
-            content,
-            repliedMessageId,
-            attachment,
-            socket,
-            callback,
-          });
+          await ViberChannelService.sendMessage(sendObject);
           break;
         default:
           throw new Error("Channel type not supported");

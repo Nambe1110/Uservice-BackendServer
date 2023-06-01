@@ -1,9 +1,8 @@
 import express from "express";
 import {
-  getPages,
   receiveMessage,
   registerWebhook,
-  connectPage,
+  connectPages,
 } from "./messengerChannelController.js";
 import { verifyToken } from "../../../middlewares/verifyToken.js";
 
@@ -17,7 +16,6 @@ messengerRouter.get("/webhook", registerWebhook);
 messengerRouter.post("/webhook", receiveMessage);
 
 messengerRouter.use("/", verifyToken(true));
-messengerRouter.post("/pages", getPages);
-messengerRouter.post("/connect", connectPage);
+messengerRouter.post("/connect", connectPages);
 
 export default messengerRouter;
