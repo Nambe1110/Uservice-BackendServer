@@ -66,7 +66,13 @@ export default class CustomerService {
       }
     }
 
-    const sqlQuery = selectQuery.concat(
+    const getAllQuery = selectQuery.concat(
+      nameQueryStr,
+      channelTypeQueryStr,
+      orderQueryStr,
+      `;`
+    );
+    const filteredQuery = selectQuery.concat(
       nameQueryStr,
       channelTypeQueryStr,
       orderQueryStr,
@@ -76,7 +82,17 @@ export default class CustomerService {
       `
     );
 
-    const customers = await sequelize.query(sqlQuery, {
+    const allCustomers = await sequelize.query(getAllQuery, {
+      replacements: {
+        companyId,
+        limit,
+        offset: (page - 1) * limit,
+      },
+      type: sequelize.QueryTypes.SELECT,
+      nest: true,
+    });
+
+    const customers = await sequelize.query(filteredQuery, {
       replacements: {
         companyId,
         limit,
@@ -95,7 +111,7 @@ export default class CustomerService {
     };
     await Promise.all(customers.map((customer) => addTagSubscrition(customer)));
 
-    const totalItems = customers.length;
+    const totalItems = allCustomers.length;
 
     return {
       total_items: totalItems,

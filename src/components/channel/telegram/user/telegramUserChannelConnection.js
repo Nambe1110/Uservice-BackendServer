@@ -53,6 +53,7 @@ export default class TelegramUserConnection {
         "connection",
         String(this.phoneNumber)
       ),
+      useFileDatabase: true,
       useChatInfoDatabase: true,
       enableStorageOptimizer: true,
       logVerbosityLevel: 2,

@@ -38,8 +38,13 @@ export default class UserService {
       socketCount: 0,
     });
 
-    delete updatedUser.dataValues.password;
-    return updatedUser.dataValues;
+    const returnedUser = await UserModel.findOne({
+      where: { id: updatedUser.id },
+      include: { model: CompanyModel },
+      attributes: { exclude: ["password"] },
+    });
+
+    return returnedUser;
   }
 
   static async getUserById(id) {
@@ -113,7 +118,6 @@ export default class UserService {
     }
 
     const selectQuery = `SELECT * FROM user WHERE company_id = :companyId `;
-
     const searchStr = searchKey
       ? ` AND ( 
             CONCAT(first_name, " ", last_name) LIKE "%${searchKey}%"
@@ -122,14 +126,28 @@ export default class UserService {
         `
       : ``;
 
-    const sqlQuery = selectQuery.concat(
+    const getAllQuery = selectQuery.concat(searchStr);
+    const allCompanyMembers = await sequelize.query(getAllQuery, {
+      replacements: {
+        companyId: user.company_id,
+      },
+      type: sequelize.QueryTypes.SELECT,
+      nest: true,
+    });
+    const filteredQuery = selectQuery.concat(
       searchStr,
       `
+      ORDER BY CASE role
+          WHEN 'Owner' THEN 1
+          WHEN 'Manager' THEN 2
+          WHEN 'Staff' THEN 3
+          ELSE 4
+        END
       LIMIT :limit
-      OFFSET :offset;`
+      OFFSET :offset
+      ;`
     );
-
-    const companyMembers = await sequelize.query(sqlQuery, {
+    const companyMembers = await sequelize.query(filteredQuery, {
       replacements: {
         companyId: user.company_id,
         limit,
@@ -138,7 +156,8 @@ export default class UserService {
       type: sequelize.QueryTypes.SELECT,
       nest: true,
     });
-    const totalItems = companyMembers.length;
+
+    const totalItems = allCompanyMembers.length;
     const totalPages = Math.ceil(totalItems / limit);
 
     return {
@@ -210,7 +229,7 @@ export default class UserService {
 
     const currUser = await UserModel.findByPk(currentUser.id);
     if (!(await bcrypt.compare(password, currUser.password))) {
-      throw new AppError("Mật khẩu không đúng", 401);
+      throw new AppError("Mật khẩu không đúng", 400);
     }
 
     const user = await UserModel.findByPk(userID);
@@ -245,9 +264,14 @@ export default class UserService {
 
     currUser.role = UserRole.MANAGER;
     const updatedCurrentUser = await currUser.save();
-    delete updatedCurrentUser.dataValues.password;
 
-    return updatedCurrentUser;
+    const returnedUser = await UserModel.findOne({
+      where: { id: updatedCurrentUser.id },
+      include: { model: CompanyModel },
+      attributes: { exclude: ["password"] },
+    });
+
+    return returnedUser;
   }
 
   static async updateDisconnectTimestamp(userId) {

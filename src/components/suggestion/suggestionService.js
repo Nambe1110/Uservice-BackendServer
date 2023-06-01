@@ -20,11 +20,11 @@ export default class SuggestionService {
       context: translatedContext.replace(/~/g, "\n"),
     });
     const newAnswer = await Translate.translate({
-      text: answers,
+      text: answers.join("~~~"),
       from: Lang.English,
       to: Lang.Vietnamese,
     });
-    return newAnswer;
+    return newAnswer?.split("~~~");
   }
 
   static async generateContext(threadId) {
@@ -34,15 +34,19 @@ export default class SuggestionService {
       where: { thread_id: threadId },
     });
     let context = "";
-    for (const message of messages) {
+    for (const [key, message] of Object.entries(messages)) {
+      let messageContent = message.dataValues.content;
+      if (key === messages.length - 1) {
+        messageContent = await GPT3.removeTeenCode(messageContent);
+      }
       if (
         message.sender_type === SenderType.STAFF ||
         message.sender_type === SenderType.BOT
       ) {
-        context += `Staff: ${message.dataValues.content}\n`;
+        context += `Staff: ${messageContent}\n`;
       }
       if (message.sender_type === SenderType.CUSTOMER) {
-        context += `Customer: ${message.dataValues.content}\n`;
+        context += `Customer: ${messageContent}\n`;
       }
     }
     return context;
