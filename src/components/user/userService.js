@@ -118,7 +118,6 @@ export default class UserService {
     }
 
     const selectQuery = `SELECT * FROM user WHERE company_id = :companyId `;
-
     const searchStr = searchKey
       ? ` AND ( 
             CONCAT(first_name, " ", last_name) LIKE "%${searchKey}%"
@@ -126,7 +125,16 @@ export default class UserService {
             email LIKE "%${searchKey}%" )
         `
       : ``;
-    const getAllQuery = selectQuery.concat(
+
+    const getAllQuery = selectQuery.concat(searchStr);
+    const allCompanyMembers = await sequelize.query(getAllQuery, {
+      replacements: {
+        companyId: user.company_id,
+      },
+      type: sequelize.QueryTypes.SELECT,
+      nest: true,
+    });
+    const filteredQuery = selectQuery.concat(
       searchStr,
       `
       ORDER BY CASE role
@@ -135,21 +143,9 @@ export default class UserService {
           WHEN 'Staff' THEN 3
           ELSE 4
         END
-      `
-    );
-    const allCompanyMembers = await sequelize.query(getAllQuery, {
-      replacements: {
-        companyId: user.company_id,
-      },
-      type: sequelize.QueryTypes.SELECT,
-      nest: true,
-    });
-
-    const filteredQuery = selectQuery.concat(
-      searchStr,
-      `
       LIMIT :limit
-      OFFSET :offset;`
+      OFFSET :offset
+      ;`
     );
     const companyMembers = await sequelize.query(filteredQuery, {
       replacements: {
