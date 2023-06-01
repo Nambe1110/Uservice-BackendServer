@@ -12,11 +12,11 @@ channelRouter.use("/", (req, res, next) => {
   // #swagger.tags = ['Channel']
   next();
 });
-channelRouter.use("/", verifyToken(true));
 channelRouter.use("/telegram", telegramRouter);
 channelRouter.use("/messenger", messengerRouter);
 channelRouter.use("/instagram", instagramRouter);
 channelRouter.use("/viber", viberRouter);
+channelRouter.use("/", verifyToken(true));
 
 channelRouter.get("/", getChannels);
 channelRouter.delete("/:channelId", deleteChannel);
