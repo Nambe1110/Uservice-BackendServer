@@ -46,6 +46,11 @@ const DefaultGptModel = {
   GPT_3_5: "text-davinci-003",
 };
 
+const ThreadLimit = {
+  INSTAGRAM_BOT: 200000,
+  INSTAGRAM_USER: 200000,
+};
+
 export {
   UserRole,
   ThreadType,
@@ -55,4 +60,5 @@ export {
   AttachmentType,
   ChatbotMode,
   DefaultGptModel,
+  ThreadLimit,
 };
