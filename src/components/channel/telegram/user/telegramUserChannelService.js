@@ -63,14 +63,14 @@ export default class TelegramUserChannelService {
           phone_number: phoneNumber,
         },
       });
-    const { username, imageUrl } = await connection.getMe();
+    const { name, username, imageUrl } = await connection.getMe();
     const [channel] = await ChannelService.findOrCreate({
       companyId,
       type: ChannelType.TELEGRAM_USER,
       channelDetailId: newTelegramUserChannel.id,
-      name: username,
+      name,
       imageUrl,
-      profile: `https://t.me/${username}`,
+      profile: `https://t.me/${username ?? phoneNumber}`,
     });
 
     connection.setUpdateListener({
@@ -104,14 +104,14 @@ export default class TelegramUserChannelService {
         },
       });
 
-    const { username, imageUrl } = await connection.getMe();
+    const { name, username, imageUrl } = await connection.getMe();
     const [channel] = await ChannelService.findOrCreate({
       companyId,
       type: ChannelType.TELEGRAM_USER,
       channelDetailId: newTelegramUserChannel.id,
-      name: username,
+      name,
       imageUrl,
-      profile: `https://t.me/${username}`,
+      profile: `https://t.me/${username ?? phoneNumber}`,
     });
 
     connection.setUpdateListener({

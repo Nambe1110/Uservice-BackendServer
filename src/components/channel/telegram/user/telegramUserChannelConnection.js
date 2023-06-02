@@ -666,7 +666,7 @@ export default class TelegramUserConnection {
 
   async getMe() {
     const me = await this.connection.api.getMe();
-    const { username, profilePhoto } = me.response;
+    const { username, firstName, lastName, profilePhoto } = me.response;
     let imageUrl = null;
 
     if (profilePhoto) {
@@ -676,6 +676,7 @@ export default class TelegramUserConnection {
 
     return {
       username,
+      name: `${firstName} ${lastName}`,
       imageUrl,
     };
   }
