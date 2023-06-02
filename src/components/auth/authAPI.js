@@ -6,6 +6,7 @@ import {
   forgetPassword,
   signup,
   resetPassword,
+  googleAuth,
 } from "./authController.js";
 
 const authRouter = express.Router({ mergeParams: true });
@@ -16,6 +17,7 @@ authRouter.use("/", (req, res, next) => {
 });
 
 authRouter.post("/login", validators.loginValidator, login);
+authRouter.get("/google", googleAuth);
 authRouter.post("/signup", validators.signupValidator, signup);
 authRouter.post("/refresh", refreshToken);
 authRouter.post("/forget-password", forgetPassword);
