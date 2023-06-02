@@ -9,6 +9,7 @@ import {
   ChannelType,
   AttachmentType,
   ChatbotMode,
+  ThreadLimit,
 } from "../../../../constants.js";
 import logger from "../../../../config/logger/index.js";
 import { threadNotifier } from "../../../thread/threadNotifier.js";
@@ -56,6 +57,7 @@ export default class TelegramBotConnection {
       ),
       useFileDatabase: true,
       useChatInfoDatabase: true,
+      useMessageDatabase: true,
       enableStorageOptimizer: true,
       logVerbosityLevel: 2,
     });
@@ -481,7 +483,9 @@ export default class TelegramBotConnection {
     callback,
     socket,
   }) {
-    await this.connection.api.getChat({ chatId });
+    await this.connection.api.getChats({
+      limit: ThreadLimit.TELEGRAM_BOT,
+    });
 
     let message;
 
