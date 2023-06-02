@@ -100,7 +100,7 @@ export default class MessengerService {
       await axios.post(
         `${process.env.GRAPH_API_URL}/${pageId}/subscribed_apps`,
         {
-          subscribed_fields: ["messages"],
+          subscribed_fields: ["messages", "message_echoes"],
           access_token: pageAccessToken,
         }
       );
@@ -335,7 +335,7 @@ export default class MessengerService {
 
                   if (senderId === pageId) {
                     sender = await UserService.getUser({
-                      companyId: this.companyId,
+                      companyId: company_id,
                       role: UserRole.OWNER,
                     });
                     senderType = SenderType.STAFF;
@@ -599,6 +599,8 @@ export default class MessengerService {
           }
         );
       }
+
+      logger.info("Message sent successfully");
 
       pendingMessages.set(messageResponse.data.message_id, {
         companyId,

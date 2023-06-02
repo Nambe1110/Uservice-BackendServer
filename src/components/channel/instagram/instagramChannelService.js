@@ -334,7 +334,7 @@ export default class InstagramService {
 
                   if (senderId === instagramUserId) {
                     sender = await UserService.getUser({
-                      companyId: this.companyId,
+                      companyId: company_id,
                       role: UserRole.OWNER,
                     });
                     senderType = SenderType.STAFF;
