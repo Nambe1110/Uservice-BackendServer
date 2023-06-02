@@ -1,4 +1,5 @@
 import StatusEnum from "../../enums/Status.js";
+import AppError from "../../utils/AppError.js";
 import EmailService from "../email/emailService.js";
 import UserService from "../user/userService.js";
 import AuthService from "./authService.js";
@@ -116,6 +117,26 @@ export const resetPassword = async (req, res) => {
     return res.status(200).json({
       status: StatusEnum.Success,
       data: updatedUser,
+    });
+  } catch (error) {
+    return res.status(error.code ?? 500).json({
+      status: StatusEnum.Error,
+      message: error.message,
+    });
+  }
+};
+
+export const googleAuth = async (req, res) => {
+  try {
+    const { token } = req.query;
+    if (!token) {
+      throw new AppError("Token không hợp lệ", 401);
+    }
+    const generatedToken = await AuthService.googleAuth(token);
+
+    return res.status(200).json({
+      status: StatusEnum.Success,
+      data: generatedToken,
     });
   } catch (error) {
     return res.status(error.code ?? 500).json({

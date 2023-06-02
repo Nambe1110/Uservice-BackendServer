@@ -1,7 +1,10 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import axios, { AxiosError } from "axios";
 import AppError from "../../utils/AppError.js";
 import UserModel from "../user/userModel.js";
+import Translate from "../../modules/Translate.js";
+import Lang from "../../enums/Lang.js";
 
 const generateTokens = ({ id, email, company_id: companyId }) => {
   const accessToken = jwt.sign(
@@ -73,5 +76,50 @@ export default class AuthService {
       access_token: generateTokens(user).access_token,
       refresh_token: token,
     };
+  }
+
+  static async googleAuth(token) {
+    try {
+      const { data: decoded } = await axios.get(
+        "https://www.googleapis.com/oauth2/v3/userinfo",
+        {
+          params: {
+            access_token: token,
+          },
+        }
+      );
+      const user = await UserModel.findOne({ where: { email: decoded.email } });
+
+      if (!user) {
+        const newUser = await UserModel.create({
+          email: decoded.email,
+          first_name: decoded.family_name,
+          last_name: decoded.given_name,
+          password: "",
+          is_verified: false,
+        });
+        await newUser.reload();
+        return generateTokens(newUser.dataValues);
+      }
+
+      if (!user.is_verified) {
+        user.is_verified = true;
+        await user.update();
+        await user.reload();
+      }
+
+      delete user.dataValues.password;
+      return generateTokens(user.dataValues);
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        const errorMessage = await Translate.translate({
+          text: error.response.data.error.message,
+          from: Lang.English,
+          to: Lang.Vietnamese,
+        });
+        throw new AppError(errorMessage, 400);
+      }
+      throw error;
+    }
   }
 }
