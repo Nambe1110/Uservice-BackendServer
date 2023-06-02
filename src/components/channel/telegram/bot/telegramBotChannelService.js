@@ -43,12 +43,12 @@ export default class TelegramUserService {
         token,
       },
     });
-    const { username, imageUrl } = await connection.getMe();
+    const { name, username, imageUrl } = await connection.getMe();
     const [channel] = await ChannelService.findOrCreate({
       companyId,
       type: ChannelType.TELEGRAM_BOT,
       channelDetailId: newTelegramBotChannel.id,
-      name: username,
+      name,
       imageUrl,
       profile: `https://t.me/${username}`,
     });

@@ -16,6 +16,12 @@ export default async (io) => {
     attachment,
   }) => {
     try {
+      logger.info("onNewMessage", {
+        data: {
+          message: message.dataValues,
+        },
+      });
+
       io.to(companyId).emit(created ? "new-message" : "update-message", {
         data: {
           thread: {
@@ -79,6 +85,12 @@ export default async (io) => {
     callback,
   }) => {
     try {
+      logger.info("onMessageSendSucceeded", {
+        data: {
+          message: message.dataValues,
+        },
+      });
+
       socket.broadcast.to(companyId).emit("new-message", {
         data: {
           thread: {
