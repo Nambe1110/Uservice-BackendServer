@@ -19,7 +19,13 @@ export default async (io) => {
       io.to(companyId).emit(created ? "new-message" : "update-message", {
         data: {
           thread: {
-            ...thread.dataValues,
+            id: thread.id,
+            channel_id: thread.channel_id,
+            type: thread.type,
+            title: thread.title,
+            image_url: thread.image_url,
+            is_resolved: thread.is_resolved,
+            is_autoreply_disabled: thread.is_autoreply_disabled,
             customer: {
               id: customer.id,
               image_url: customer.image_url,
@@ -82,7 +88,13 @@ export default async (io) => {
       socket.broadcast.to(companyId).emit("new-message", {
         data: {
           thread: {
-            ...thread.dataValues,
+            id: thread.id,
+            channel_id: thread.channel_id,
+            type: thread.type,
+            title: thread.title,
+            image_url: thread.image_url,
+            is_resolved: thread.is_resolved,
+            is_autoreply_disabled: thread.is_autoreply_disabled,
             customer: {
               id: customer.id,
               image_url: customer.image_url,

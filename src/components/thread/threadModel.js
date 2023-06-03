@@ -34,11 +34,7 @@ const ThreadModel = sequelize.define(
     image_url: {
       type: DataTypes.STRING,
     },
-    is_read: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    is_replied: {
+    is_resolved: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
