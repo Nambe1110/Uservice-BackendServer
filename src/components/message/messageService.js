@@ -99,8 +99,8 @@ export default class MessageService {
 
   static async getMessages({ companyId, threadId, lastMessageId, limit }) {
     const messages = await sequelize.query(
-      `SELECT message.*,
-        message.id AS 'sender.id',
+      `SELECT message.id, message.sender_id, message.sender_type, message.timestamp, message.content, message.message_api_id, message.replied_message_id, message.thread_id,
+        message.sender_id AS 'sender.id',
         IF (message.sender_type = 'customer', t3.first_name, t4.first_name) AS 'sender.first_name',
         IF (message.sender_type = 'customer', t3.last_name, t4.last_name) AS 'sender.last_name',
         IF (message.sender_type = 'customer', t3.image_url, t4.image_url) AS 'sender.image_url'
