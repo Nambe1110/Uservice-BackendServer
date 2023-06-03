@@ -41,6 +41,9 @@ export const getProfile = async (req, res) => {
       attributes: { exclude: ["password"] },
     });
     const addCompanyOwner = async (cUser) => {
+      if (!cUser.company_id) {
+        return;
+      }
       const owner = await UserService.getOwnerOfCompany({
         companyId: cUser.company_id,
       });
