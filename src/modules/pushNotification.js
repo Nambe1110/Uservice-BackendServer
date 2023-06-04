@@ -15,7 +15,6 @@ const sendPushNotificationToCompany = async ({ companyId, data }) => {
         type: sequelize.QueryTypes.SELECT,
       }
     );
-
     const to = deviceTokens.map((deviceToken) => deviceToken.token);
     await pushyAPI.sendPushNotification(data, to);
   } catch (error) {

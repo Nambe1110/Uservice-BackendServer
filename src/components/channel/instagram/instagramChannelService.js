@@ -434,10 +434,10 @@ export default class InstagramService {
                           if (message.id !== lastMessage.id) return;
 
                           await sendPushNotificationToCompany({
-                            companyId: this.companyId,
+                            companyId: company_id,
                             data: {
                               title: `Tin nhắn mới từ ${customer.alias}`,
-                              message: content,
+                              message: message.content,
                               code: NotificationCode.MESSAGE_FROM_CUSTOMER,
                               data: {
                                 thread_id: thread.id,

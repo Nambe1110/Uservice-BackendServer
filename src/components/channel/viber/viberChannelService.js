@@ -276,13 +276,13 @@ export default class ViberService {
             threadId: thread.id,
           });
 
-          if (message.id !== lastMessage.id) return;
+          if (newMessage.id !== lastMessage.id) return;
 
           await sendPushNotificationToCompany({
-            companyId: this.companyId,
+            companyId: detailChannel.company_id,
             data: {
               title: `Tin nhắn mới từ ${customer.alias}`,
-              message: message.content,
+              message: newMessage.content,
               code: NotificationCode.MESSAGE_FROM_CUSTOMER,
               data: {
                 thread_id: thread.id,
