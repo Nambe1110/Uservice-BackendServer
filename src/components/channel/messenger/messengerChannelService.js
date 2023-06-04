@@ -436,9 +436,9 @@ export default class MessengerService {
 
                           await sendPushNotificationToCompany({
                             companyId: this.companyId,
-                            title: `Tin nhắn mới từ ${customer.alias}`,
-                            message: content,
                             data: {
+                              title: `Tin nhắn mới từ ${customer.alias}`,
+                              message: content,
                               code: NotificationCode.MESSAGE_FROM_CUSTOMER,
                               data: {
                                 thread_id: thread.id,
@@ -632,8 +632,6 @@ export default class MessengerService {
           }
         );
       }
-
-      logger.info("Message sent successfully");
 
       pendingMessages.set(messageResponse.data.message_id, {
         companyId,

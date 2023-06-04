@@ -280,9 +280,9 @@ export default class ViberService {
 
           await sendPushNotificationToCompany({
             companyId: this.companyId,
-            title: `Tin nhắn mới từ ${customer.alias}`,
-            message: message.content,
             data: {
+              title: `Tin nhắn mới từ ${customer.alias}`,
+              message: message.content,
               code: NotificationCode.MESSAGE_FROM_CUSTOMER,
               data: {
                 thread_id: thread.id,

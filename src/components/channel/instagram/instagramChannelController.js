@@ -21,7 +21,6 @@ export const receiveMessage = async (req, res) => {
   res.status(200).send("EVENT_RECEIVED");
 
   try {
-    // logger.info(body);
     await InstagramService.receiveMessage(body);
   } catch (error) {
     logger.error(error.message);
