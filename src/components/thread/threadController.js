@@ -65,7 +65,10 @@ export const updateThread = async (req, res) => {
 
 export const markAsResolved = async (req, res) => {
   try {
-    await ThreadService.updateResolvedStatus(true);
+    await ThreadService.updateResolvedStatus({
+      threadId: req.params.threadId,
+      isResolved: true,
+    });
     return res.status(200).json({
       status: "success",
       data: null,
@@ -79,7 +82,10 @@ export const markAsResolved = async (req, res) => {
 
 export const markAsUnresolved = async (req, res) => {
   try {
-    await ThreadService.updateResolvedStatus(false);
+    await ThreadService.updateResolvedStatus({
+      threadId: req.params.threadId,
+      isResolved: false,
+    });
     return res.status(200).json({
       status: "success",
       data: null,
