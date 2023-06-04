@@ -1,4 +1,4 @@
-import logger from "../config/logger/index.js";
+import logger from "../config/logger.js";
 import httpServer from "../app.js";
 import io from "../socket.js";
 import sequelize from "../config/database/index.js";

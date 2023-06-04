@@ -1,6 +1,6 @@
 import { listCompany } from "../../utils/singleton.js";
 import UserService from "../user/userService.js";
-import logger from "../../config/logger/index.js";
+import logger from "../../config/logger.js";
 
 const getUser = (employees) =>
   Array.from(employees.values()).map((employee) => ({

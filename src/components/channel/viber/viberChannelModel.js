@@ -2,7 +2,7 @@ import pkg from "sequelize";
 import axios from "axios";
 import sequelize from "../../../config/database/index.js";
 import CompanyModel from "../../company/companyModel.js";
-import logger from "../../../config/logger/index.js";
+import logger from "../../../config/logger.js";
 
 const { DataTypes } = pkg;
 

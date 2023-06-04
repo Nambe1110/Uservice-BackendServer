@@ -8,7 +8,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import fs from "fs";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
-import logger from "../config/logger/index.js";
+import logger from "../config/logger.js";
 
 const s3BucketUrl = process.env.BUCKET_URL;
 

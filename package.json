@@ -44,6 +44,7 @@
     "nodemailer": "^6.9.1",
     "openai": "^3.2.1",
     "prebuilt-tdlib": "^0.1008005.0",
+    "pushy": "^3.0.2",
     "randombytes": "^2.1.0",
     "sequelize": "^6.28.0",
     "socket.io": "^4.6.0",

@@ -10,8 +10,9 @@ import {
   AttachmentType,
   ChatbotMode,
   ThreadLimit,
+  NotificationCode,
 } from "../../../../constants.js";
-import logger from "../../../../config/logger/index.js";
+import logger from "../../../../config/logger.js";
 import { threadNotifier } from "../../../thread/threadNotifier.js";
 import ThreadService from "../../../thread/threadService.js";
 import UserService from "../../../user/userService.js";
@@ -21,6 +22,7 @@ import AttachmentService from "../../../attachment/attachmentService.js";
 import CompanyService from "../../../company/companyService.js";
 import SuggestionService from "../../../suggestion/suggestionService.js";
 import S3 from "../../../../modules/S3.js";
+import { sendPushNotificationToCompany } from "../../../../modules/pushNotification.js";
 
 export default class TelegramBotConnection {
   constructor({ token, companyId }) {
@@ -356,8 +358,36 @@ export default class TelegramBotConnection {
           if (
             company.chatbot_mode !== ChatbotMode.AUTO_REPLY ||
             thread.is_autoreply_disabled
-          )
+          ) {
+            thread.is_resolved = false;
+            await thread.save();
+
+            setTimeout(async () => {
+              try {
+                const lastMessage = await MessageService.getLastMessage({
+                  threadId: thread.id,
+                });
+
+                if (message.id !== lastMessage.id) return;
+
+                await sendPushNotificationToCompany({
+                  companyId: this.companyId,
+                  title: `Tin nhắn mới từ ${customer.alias}`,
+                  message: content,
+                  data: {
+                    code: NotificationCode.MESSAGE_FROM_CUSTOMER,
+                    data: {
+                      thread_id: thread.id,
+                    },
+                  },
+                });
+              } catch (error) {
+                logger.error(error.message);
+              }
+            }, 1000);
+
             return;
+          }
 
           setTimeout(async () => {
             try {

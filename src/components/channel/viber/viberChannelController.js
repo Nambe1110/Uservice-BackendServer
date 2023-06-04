@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import ViberService from "./viberChannelService.js";
 import { StatusType } from "../../../constants.js";
-import logger from "../../../config/logger/index.js";
+import logger from "../../../config/logger.js";
 
 export const handleCallback = async (req, res) => {
   const { rawBody, body } = req;
