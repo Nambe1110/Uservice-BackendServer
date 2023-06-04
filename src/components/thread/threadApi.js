@@ -20,4 +20,7 @@ threadRouter.patch("/:threadId", updateThread);
 
 threadRouter.use("/:threadId/message", messageRouter);
 
+threadRouter.post("/:threadId/resolve");
+threadRouter.post("/:threadId/mark-unresolved");
+
 export default threadRouter;
