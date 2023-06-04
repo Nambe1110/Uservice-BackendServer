@@ -4,12 +4,7 @@ import logger from "../config/logger.js";
 
 const pushyAPI = new Pushy(process.env.PUSHY_API_KEY);
 
-const sendPushNotificationToCompany = async ({
-  companyId,
-  title,
-  message,
-  data,
-}) => {
+const sendPushNotificationToCompany = async ({ companyId, data }) => {
   try {
     const deviceTokens = await sequelize.query(
       `SELECT token
@@ -22,16 +17,7 @@ const sendPushNotificationToCompany = async ({
     );
 
     const to = deviceTokens.map((deviceToken) => deviceToken.token);
-    const options = {
-      notification: {
-        title,
-        body: message,
-        badge: 1,
-      },
-    };
-
-    const result = await pushyAPI.sendPushNotification(data, to, options);
-    logger.info(result);
+    await pushyAPI.sendPushNotification(data, to);
   } catch (error) {
     logger.error(error);
   }
