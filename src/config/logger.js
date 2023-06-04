@@ -20,7 +20,7 @@ const logger = createLogger({
   transports: [
     new Console(),
     new DailyRotateFile({
-      filename: path.join(__dirname, "..", "..", "..", "logs", `%DATE%.log`),
+      filename: path.join(__dirname, "..", "..", "logs", `%DATE%.log`),
       datePattern: "DD-MM-YYYY",
     }),
   ],

@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import InstagramService from "./instagramChannelService.js";
 import { StatusType } from "../../../constants.js";
-import logger from "../../../config/logger/index.js";
+import logger from "../../../config/logger.js";
 
 export const receiveMessage = async (req, res) => {
   const { rawBody, body } = req;

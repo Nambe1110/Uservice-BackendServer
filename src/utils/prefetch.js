@@ -3,7 +3,7 @@ import CompanyModel from "../components/company/companyModel.js";
 import UserModel from "../components/user/userModel.js";
 import TelegramUserChannelService from "../components/channel/telegram/user/telegramUserChannelService.js";
 import TelegramBotChannelService from "../components/channel/telegram/bot/telegramBotChannelService.js";
-import logger from "../config/logger/index.js";
+import logger from "../config/logger.js";
 
 export default async function prefetch() {
   try {

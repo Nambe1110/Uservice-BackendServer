@@ -51,6 +51,10 @@ const ThreadLimit = {
   INSTAGRAM_USER: 200000,
 };
 
+const NotificationCode = {
+  MESSAGE_FROM_CUSTOMER: 1,
+};
+
 export {
   UserRole,
   ThreadType,
@@ -61,4 +65,5 @@ export {
   ChatbotMode,
   DefaultGptModel,
   ThreadLimit,
+  NotificationCode,
 };

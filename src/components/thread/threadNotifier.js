@@ -1,5 +1,5 @@
 import { StatusType } from "../../constants.js";
-import logger from "../../config/logger/index.js";
+import logger from "../../config/logger.js";
 
 export const threadNotifier = {};
 
