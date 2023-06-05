@@ -32,10 +32,7 @@ const DeviceTokenModel = sequelize.define(
   }
 );
 
-User.hasMany(DeviceTokenModel, {
-  onDelete: "CASCADE",
-  hooks: true,
-});
+User.hasMany(DeviceTokenModel);
 DeviceTokenModel.belongsTo(User);
 
 DeviceTokenModel.sync({ logging: false });
