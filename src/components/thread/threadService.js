@@ -2,6 +2,9 @@ import ThreadModel from "./threadModel.js";
 import AttachmentModel from "../attachment/attachmentModel.js";
 import MessageService from "../message/messageService.js";
 import sequelize from "../../config/database/index.js";
+import CompanyService from "../company/companyService.js";
+import { NotificationCode } from "../../constants.js";
+import { sendPushNotificationToUser } from "../../modules/pushNotification.js";
 
 export default class ThreadService {
   static async getOrCreateThread(where, defaults) {
@@ -180,5 +183,22 @@ export default class ThreadService {
         },
       }
     );
+  }
+
+  static async tagUserToThread({ threadId, requester, userId }) {
+    const company = await CompanyService.getCompanyById(requester.company_id);
+    const thread = await this.getThreadById(threadId);
+
+    await sendPushNotificationToUser({
+      userId,
+      data: {
+        title: `${requester.first_name} ${requester.last_name} từ ${company.name}`,
+        message: `${requester.first_name} vừa tag bạn vào cuộc hội thoại với ${thread.customer.alias}`,
+        code: NotificationCode.TAG_USER_TO_THREAD,
+        data: {
+          thread_id: thread.id,
+        },
+      },
+    });
   }
 }

@@ -1,7 +1,12 @@
 import express from "express";
-import { getThreads, getThread, updateThread } from "./threadController.js";
+import {
+  getThreads,
+  getThread,
+  updateThread,
+  tagUserToThread,
+} from "./threadController.js";
 import { verifyToken } from "../../middlewares/verifyToken.js";
-import { verifyThreadId } from "./threadMiddleware.js";
+import { verifyThreadId, handleTagUserToThread } from "./threadMiddleware.js";
 import messageRouter from "../message/messageApi.js";
 
 const threadRouter = express.Router({ mergeParams: true });
@@ -17,6 +22,7 @@ threadRouter.get("/", getThreads);
 threadRouter.use("/:threadId", verifyThreadId);
 threadRouter.get("/:threadId", getThread);
 threadRouter.patch("/:threadId", updateThread);
+threadRouter.post("/:threadId/tag", handleTagUserToThread, tagUserToThread);
 
 threadRouter.use("/:threadId/message", messageRouter);
 

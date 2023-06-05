@@ -53,6 +53,7 @@ const ThreadLimit = {
 
 const NotificationCode = {
   MESSAGE_FROM_CUSTOMER: 1,
+  TAG_USER_TO_THREAD: 2,
 };
 
 export {

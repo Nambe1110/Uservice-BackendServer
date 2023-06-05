@@ -22,6 +22,24 @@ const sendPushNotificationToCompany = async ({ companyId, data }) => {
   }
 };
 
+const sendPushNotificationToUser = async ({ userId, data }) => {
+  try {
+    const deviceTokens = await sequelize.query(
+      `SELECT token
+      FROM device_token
+      WHERE user_id = :userId`,
+      {
+        replacements: { userId },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+    const to = deviceTokens.map((deviceToken) => deviceToken.token);
+    await pushyAPI.sendPushNotification(data, to);
+  } catch (error) {
+    logger.error(error);
+  }
+};
+
 const deviceTokenValid = async (deviceToken) => {
   try {
     await pushyAPI.getDeviceInfo(deviceToken);
@@ -32,4 +50,8 @@ const deviceTokenValid = async (deviceToken) => {
   }
 };
 
-export { sendPushNotificationToCompany, deviceTokenValid };
+export {
+  sendPushNotificationToCompany,
+  sendPushNotificationToUser,
+  deviceTokenValid,
+};
