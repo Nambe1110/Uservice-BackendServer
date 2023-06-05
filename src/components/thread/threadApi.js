@@ -4,6 +4,8 @@ import {
   getThread,
   updateThread,
   tagUserToThread,
+  markAsResolved,
+  markAsUnresolved,
 } from "./threadController.js";
 import { verifyToken } from "../../middlewares/verifyToken.js";
 import { verifyThreadId, handleTagUserToThread } from "./threadMiddleware.js";
@@ -23,6 +25,8 @@ threadRouter.use("/:threadId", verifyThreadId);
 threadRouter.get("/:threadId", getThread);
 threadRouter.patch("/:threadId", updateThread);
 threadRouter.post("/:threadId/tag", handleTagUserToThread, tagUserToThread);
+threadRouter.post("/:threadId/resolve", markAsResolved);
+threadRouter.post("/:threadId/mark-unresolved", markAsUnresolved);
 
 threadRouter.use("/:threadId/message", messageRouter);
 

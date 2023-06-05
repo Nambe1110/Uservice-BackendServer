@@ -201,4 +201,17 @@ export default class ThreadService {
       },
     });
   }
+
+  static async updateResolvedStatus({ threadId, isResolved }) {
+    await ThreadModel.update(
+      {
+        is_resolved: isResolved,
+      },
+      {
+        where: {
+          id: threadId,
+        },
+      }
+    );
+  }
 }
