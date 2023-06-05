@@ -373,7 +373,7 @@ export default class TelegramBotConnection {
                 await sendPushNotificationToCompany({
                   companyId: this.companyId,
                   data: {
-                    title: `Tin nhắn mới từ ${customer.alias}`,
+                    title: `Tin nhắn chưa xử lý từ ${customer.alias}`,
                     message: content,
                     code: NotificationCode.MESSAGE_FROM_CUSTOMER,
                     data: {
@@ -384,7 +384,7 @@ export default class TelegramBotConnection {
               } catch (error) {
                 logger.error(error.message);
               }
-            }, 1000);
+            }, 120000);
 
             return;
           }

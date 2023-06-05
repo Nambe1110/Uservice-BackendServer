@@ -437,7 +437,7 @@ export default class MessengerService {
                           await sendPushNotificationToCompany({
                             companyId: company_id,
                             data: {
-                              title: `Tin nhắn mới từ ${customer.alias}`,
+                              title: `Tin nhắn chưa xử lý từ ${customer.alias}`,
                               message: newMessage.content,
                               code: NotificationCode.MESSAGE_FROM_CUSTOMER,
                               data: {
@@ -448,7 +448,7 @@ export default class MessengerService {
                         } catch (error) {
                           logger.error(error.message);
                         }
-                      }, 1000);
+                      }, 120000);
 
                       return;
                     }
