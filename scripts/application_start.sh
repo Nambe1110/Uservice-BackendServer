@@ -15,5 +15,8 @@ export NVM_DIR="$HOME/.nvm"
 npm install
 npm install pm2 -g
 
+# Sleep
+sleep 120 &
+
 #start our node app in the background
 pm2 start ecosystem.config.cjs
