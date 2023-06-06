@@ -52,10 +52,7 @@ export default class CampaignService {
     let sendDateValue = null;
     // Throw error when sendNow: true and sendDate string is not null
     if (sendDate && sendNow) {
-      throw new AppError(
-        "Không thể tùy chỉnh thời gian gửi(send_date) trong chế độ gửi ngay lập tức(sendNow: true)",
-        400
-      );
+      sendDate = null;
     }
     if (!sendDate && !sendNow) {
       throw new AppError(
