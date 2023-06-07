@@ -47,12 +47,12 @@ export default class CampaignService {
     }
 
     // Convert sendNow, orFilter from string to boolean
-    sendNow = sendNow === "true";
-    andFilter = andFilter === "true";
+    sendNow = sendNow.toLowerCase() === "true";
+    andFilter = andFilter.toLowerCase() === "true";
     let sendDateValue = null;
-    // Throw error when sendNow: true and sendDate string is not null
-    if (sendDate && sendNow) {
-      sendDate = null;
+
+    if (sendNow) {
+      sendDate = new Date();
     }
     if (!sendDate && !sendNow) {
       throw new AppError(
@@ -171,18 +171,52 @@ export default class CampaignService {
     return campaign;
   }
 
-  static async getAllCampaignsOfCompany({ user, limit, page, name }) {
-    const whereObject = name
-      ? {
-          company_id: user.company_id,
-          name: {
-            [Op.like]: `%${name}%`,
-          },
-        }
-      : {
-          company_id: user.company_id,
-        };
+  static async getAllCampaignsOfCompany({
+    user,
+    limit,
+    page,
+    name,
+    sortBy,
+    sortOrder,
+    isSent,
+  }) {
+    const whereObject = {
+      company_id: user.company_id,
+    };
 
+    if (name) {
+      whereObject.name = {
+        [Op.like]: `%${name}%`,
+      };
+    }
+
+    // if isSent (type: string) not null
+    if (isSent) {
+      // convert to bool
+      isSent = isSent.toLowerCase() === "true";
+      if (isSent) {
+        whereObject.send_date = {
+          [Op.gte]: BigInt(new Date()),
+        };
+      } else {
+        whereObject.send_date = {
+          [Op.lt]: BigInt(new Date()),
+        };
+      }
+    }
+
+    const order = [];
+    if (sortOrder && sortOrder.toUpperCase() !== "ASC") {
+      sortOrder = "DESC";
+    }
+    if (sortBy) {
+      if (
+        sortBy.toLowerCase() === "name" ||
+        sortBy.toLowerCase() === "send_date"
+      ) {
+        order.push([`${sortBy.toLowerCase()}`, `${sortOrder.toUpperCase()}`]);
+      }
+    }
     const totalItems = await CampaignModel.count({
       where: whereObject,
     });
@@ -210,6 +244,7 @@ export default class CampaignService {
       attributes: {
         exclude: ["password"],
       },
+      order,
       limit,
       offset: limit * (page - 1),
     });
