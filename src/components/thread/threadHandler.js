@@ -51,7 +51,7 @@ export default async (io, socket) => {
           await ViberChannelService.sendMessage(sendObject);
           break;
         default:
-          throw new Error("Channel type not supported");
+          throw new Error("Loại kênh không được hỗ trợ");
       }
     } catch (error) {
       if (callback)
