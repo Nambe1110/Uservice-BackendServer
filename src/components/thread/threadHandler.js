@@ -19,7 +19,7 @@ export default async (io, socket) => {
       const channel = await ChannelService.getChannelById(thread.channel_id);
 
       if (channel.company_id !== user.company_id)
-        throw new Error("You don't have permission to send message");
+        throw new Error("Bạn không có quyền gửi tin nhắn.");
 
       const sendObject = {
         companyId: user.company_id,
