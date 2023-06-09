@@ -16,10 +16,6 @@ export default async (io, socket) => {
 
     try {
       const thread = await ThreadService.getThreadById(threadId);
-      await ThreadService.updateResolvedStatus({
-        threadId,
-        isResolved: true,
-      });
       const channel = await ChannelService.getChannelById(thread.channel_id);
 
       if (channel.company_id !== user.company_id)
