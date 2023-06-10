@@ -68,12 +68,12 @@ const CustomerModel = sequelize.define(
     },
     gender: {
       type: DataTypes.ENUM({
-        values: ["Nam", "Nữ"],
+        values: ["Nam", "Nữ", "Khác"],
       }),
     },
     vocative: {
       type: DataTypes.STRING,
-      defaultValue: "",
+      defaultValue: "Bạn",
     },
   },
   {

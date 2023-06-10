@@ -41,7 +41,6 @@ export default class CompanyService {
       listChannel: {
         telegramUserChannel: new Map(),
         telegramBotChannel: new Map(),
-        EmailChannel: new Map(),
       },
       employees: new Map(),
     });
