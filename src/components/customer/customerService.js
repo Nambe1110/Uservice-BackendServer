@@ -1,9 +1,5 @@
 import CustomerModel from "./customerModel.js";
 import sequelize from "../../config/database/index.js";
-import AppError from "../../utils/AppError.js";
-import ThreadModel from "../thread/threadModel.js";
-import ChannelModel from "../channel/channelModel.js";
-import { ChannelType } from "../../constants.js";
 import TagSubscriptionService from "./tagSubscription/tagSubscriptionService.js";
 
 export default class CustomerService {
@@ -48,8 +44,7 @@ export default class CustomerService {
       ) AS t2 ON t2.sender_id = customer.id
       LEFT JOIN thread AS t3 ON t3.id = customer.thread_id
       LEFT JOIN channel AS t4 ON t4.id = t3.channel_id
-      WHERE customer.company_id = :companyId
-      `;
+      WHERE customer.company_id = :companyId`;
 
     const nameQueryStr = name
       ? ` AND CONCAT(customer.first_name, " ", customer.last_name) LIKE "%${name}%"`
@@ -85,8 +80,6 @@ export default class CustomerService {
     const allCustomers = await sequelize.query(getAllQuery, {
       replacements: {
         companyId,
-        limit,
-        offset: (page - 1) * limit,
       },
       type: sequelize.QueryTypes.SELECT,
       nest: true,
@@ -121,17 +114,10 @@ export default class CustomerService {
     };
   }
 
-  static async getCustomerById({ currentUser, customerId }) {
-    const c = await CustomerModel.findByPk(customerId);
-    if (!c) {
-      throw new AppError("Khách hàng không tồn tại", 403);
-    }
-    if (currentUser.company_id !== c.company_id) {
-      throw new AppError("Khách hàng thuộc công ty khác", 403);
-    }
-
+  static async getCustomerById({ customerId }) {
     const customers = await sequelize.query(
       `SELECT DISTINCT customer.*,
+        t4.company_id as 'company_id',
         t2.id AS 'last_message.id',
         t2.content AS 'last_message.content',
         t2.timestamp AS 'last_message.timestamp',
@@ -152,8 +138,7 @@ export default class CustomerService {
       ) AS t2 ON t2.sender_id = customer.id
       LEFT JOIN thread AS t3 ON t3.id = customer.thread_id
       LEFT JOIN channel AS t4 ON t4.id = t3.channel_id
-      WHERE customer.id = :customerId
-      `,
+      WHERE customer.id = :customerId`,
       {
         replacements: {
           customerId,
@@ -175,29 +160,62 @@ export default class CustomerService {
     return customers;
   }
 
-  static async updateCustomer({ customerId, user, updatedField }) {
+  static async updateCustomer({
+    customerId,
+    image_url,
+    alias,
+    first_name,
+    last_name,
+    phone_number,
+    email,
+    birthday,
+    address,
+    note,
+    profile,
+    gender,
+    vocative,
+  }) {
+    await CustomerModel.update(
+      {
+        customerId,
+        image_url,
+        alias,
+        first_name,
+        last_name,
+        phone_number,
+        email,
+        birthday,
+        address,
+        note,
+        profile,
+        gender,
+        vocative,
+      },
+      {
+        where: {
+          id: customerId,
+        },
+      }
+    );
+  }
+
+  static async replaceParams({ text, customerId }) {
     const customer = await CustomerModel.findByPk(customerId);
-    if (user.company_id !== customer.company_id) {
-      throw new AppError("Khách hàng thuộc công ty khác", 403);
-    }
-    if (!customer) {
-      throw new AppError("Khách hàng không tồn tại", 403);
-    }
-    const thread = await ThreadModel.findOne({
-      where: { id: customer.dataValues.thread_id },
-    });
-    const channel = await ChannelModel.findOne({
-      where: { id: thread.channel_id },
-    });
-    customer.alias = updatedField.alias;
-    customer.birthday = updatedField.birthday;
-    customer.address = updatedField.address;
-    customer.note = updatedField.note;
-    customer.email = updatedField.email;
-    if (channel.type !== ChannelType.TELEGRAM_USER) {
-      customer.phone_number = updatedField.phone_number;
-    }
-    const updatedCustomer = await customer.save();
-    return updatedCustomer.dataValues;
+    const pattern =
+      /(?:{full_name}|{last_name}|{alias}|{phone_number}|{birthday}|{address}|{email}|{profile}|{gender}|{vocative})/gi;
+    const mapObject = {
+      "{full_name}": `${customer.last_name} ${customer.first_name}`,
+      "{last_name}": customer.first_name,
+      "{alias}": customer.alias,
+      "{phone_number}": customer.phone_number ?? "",
+      "{birthday}": customer.birthday ?? "",
+      "{address}": customer.address ?? "",
+      "{email}": customer.email ?? "",
+      "{profile}": customer.profile ?? "",
+      "{gender}": customer.gender ?? "",
+      "{vocative}": customer.vocative ?? "",
+    };
+    const replacedText = text.replace(pattern, (matched) => mapObject[matched]);
+    return replacedText;
   }
 }

@@ -99,7 +99,6 @@ export default class ThreadService {
     limit,
     isResolved,
     channel,
-    tag,
     customer,
   }) {
     if (isResolved) {
@@ -266,5 +265,52 @@ export default class ThreadService {
         },
       }
     );
+  }
+
+  static async getThreadsForCampaign({ channelId, dayDiff }) {
+    const threads = await sequelize.query(
+      `SELECT thread.id, thread.thread_api_id, 
+      t1.id AS 'customer.id'
+      FROM thread 
+      JOIN customer AS t1 ON thread.id = t1.thread_id 
+      JOIN 
+      (
+        SELECT * FROM message
+        WHERE id IN (
+          SELECT MAX(id) FROM message
+          WHERE sender_type = 'Customer'
+          GROUP BY thread_id
+        )
+      ) AS t2 ON t2.thread_id = thread.id
+      WHERE thread.channel_id = :channelId 
+      ${dayDiff ? `AND DATEDIFF(CURDATE(), t2.created_at) < :dayDiff` : ""}`,
+      {
+        replacements: {
+          channelId,
+          dayDiff,
+        },
+        type: sequelize.QueryTypes.SELECT,
+        nest: true,
+      }
+    );
+
+    await Promise.all(
+      threads.map(async (thread, index) => {
+        threads[index].customer.tags = await sequelize.query(
+          `SELECT tag_id AS id
+          FROM tag_subscription
+          WHERE customer_id = :customerId`,
+          {
+            replacements: {
+              customerId: thread.customer.id,
+            },
+            type: sequelize.QueryTypes.SELECT,
+            nest: true,
+          }
+        );
+      })
+    );
+
+    return threads;
   }
 }
