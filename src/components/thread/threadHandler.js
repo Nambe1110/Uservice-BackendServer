@@ -18,6 +18,7 @@ const getJoiners = (joiners) =>
 
 export const registerThreadHandler = async (io, socket) => {
   const { user } = socket;
+  let joinedThreadId = null;
   socket.join(user.company_id);
 
   socket.on("send-message", async (data, callback) => {
@@ -74,12 +75,6 @@ export const registerThreadHandler = async (io, socket) => {
         });
     }
   });
-};
-
-export const registerThreadJoinerHandler = async (io, socket) => {
-  const { user } = socket;
-  let joinedThreadId = null;
-  socket.join(user.company_id);
 
   socket.on("join-thread", async (data, callback) => {
     const { threadId } = data;
@@ -162,6 +157,35 @@ export const registerThreadJoinerHandler = async (io, socket) => {
         thread_id: threadId,
         joiners: getJoiners(joiners),
       },
+    });
+  });
+
+  socket.on("leave-thread", (data, callback) => {
+    if (!joinedThreadId)
+      return callback({
+        status: StatusType.ERROR,
+        message: "You haven't joined any thread",
+      });
+
+    const joiners = listThread.get(joinedThreadId);
+    const joiner = joiners.get(user.id);
+    --joiner.socketCount;
+
+    if (joiner.socketCount === 0) {
+      joiners.delete(user.id);
+      io.to(user.company_id).emit("update-joiner", {
+        data: {
+          thread_id: joinedThreadId,
+          joiners: getJoiners(joiners),
+        },
+      });
+    }
+
+    joinedThreadId = null;
+
+    callback({
+      status: StatusType.SUCCESS,
+      message: "Leave thread successfully",
     });
   });
 
