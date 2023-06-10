@@ -99,7 +99,6 @@ export default class ThreadService {
     limit,
     isResolved,
     channel,
-    tag,
     customer,
   }) {
     if (isResolved) {
