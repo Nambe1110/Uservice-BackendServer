@@ -1,6 +1,5 @@
 import { StatusType } from "../../constants.js";
 import logger from "../../config/logger.js";
-import ThreadService from "./threadService.js";
 
 export const threadNotifier = {};
 
@@ -86,10 +85,6 @@ export default async (io) => {
     callback,
   }) => {
     try {
-      ThreadService.updateResolvedStatus({
-        threadId: thread.id,
-        isResolved: false,
-      });
       socket.broadcast.to(companyId).emit("new-message", {
         data: {
           thread: {

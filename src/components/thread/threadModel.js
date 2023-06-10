@@ -2,6 +2,7 @@ import pkg from "sequelize";
 import sequelize from "../../config/database/index.js";
 import Channel from "../channel/channelModel.js";
 import { ThreadType } from "../../constants.js";
+import { listThread } from "../../utils/singleton.js";
 
 const { DataTypes } = pkg;
 
@@ -59,5 +60,9 @@ Channel.hasMany(ThreadModel, {
 ThreadModel.belongsTo(Channel);
 
 ThreadModel.sync({ logging: false });
+
+ThreadModel.beforeDestroy(async (thread) => {
+  listThread.delete(thread.id);
+});
 
 export default ThreadModel;
