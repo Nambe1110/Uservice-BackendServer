@@ -27,6 +27,7 @@ const SenderType = {
   CUSTOMER: "Customer",
   STAFF: "Staff",
   BOT: "Bot",
+  CAMPAIGN: "Campaign",
 };
 
 const AttachmentType = {

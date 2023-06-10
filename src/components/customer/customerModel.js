@@ -50,15 +50,30 @@ const CustomerModel = sequelize.define(
     },
     birthday: {
       type: DataTypes.DATEONLY,
+      get() {
+        return this.getDataValue("birthday")?.toLocaleString("it-IT") ?? null;
+      },
     },
     address: {
       type: DataTypes.STRING,
+      defaultValue: "",
     },
     note: {
       type: DataTypes.STRING,
+      defaultValue: "",
     },
     profile: {
       type: DataTypes.STRING,
+      defaultValue: "",
+    },
+    gender: {
+      type: DataTypes.ENUM({
+        values: ["Nam", "Nữ"],
+      }),
+    },
+    vocative: {
+      type: DataTypes.STRING,
+      defaultValue: "",
     },
   },
   {

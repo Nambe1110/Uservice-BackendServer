@@ -5,6 +5,7 @@ import ThreadModel from "../thread/threadModel.js";
 import ChannelModel from "../channel/channelModel.js";
 import { ChannelType } from "../../constants.js";
 import TagSubscriptionService from "./tagSubscription/tagSubscriptionService.js";
+import logger from "../../config/logger.js";
 
 export default class CustomerService {
   static async getOrCreateCustomer(where, defaults) {
@@ -199,5 +200,25 @@ export default class CustomerService {
     }
     const updatedCustomer = await customer.save();
     return updatedCustomer.dataValues;
+  }
+
+  static async replaceParams({ text, customerId }) {
+    const customer = await CustomerModel.findByPk(customerId);
+    const pattern =
+      /(?:{full_name}|{last_name}|{alias}|{phone_number}|{birthday}|{address}|{email}|{profile}|{gender}|{vocative})/gi;
+    const mapObject = {
+      "{full_name}": `${customer.last_name} ${customer.first_name}`,
+      "{last_name}": customer.first_name,
+      "{alias}": customer.alias,
+      "{phone_number}": customer.phone_number ?? "",
+      "{birthday}": customer.birthday ?? "",
+      "{address}": customer.address ?? "",
+      "{email}": customer.email ?? "",
+      "{profile}": customer.profile ?? "",
+      "{gender}": customer.gender ?? "",
+      "{vocative}": customer.vocative ?? "",
+    };
+    const replacedText = text.replace(pattern, (matched) => mapObject[matched]);
+    return replacedText;
   }
 }

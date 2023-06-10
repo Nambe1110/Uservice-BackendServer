@@ -1708,6 +1708,9 @@
                 },
                 "and_filter": {
                   "example": "any"
+                },
+                "day_diff": {
+                  "example": "any"
                 }
               }
             }
