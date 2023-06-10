@@ -8,6 +8,15 @@ import CampaignChannelModel from "./campaign_channel/campaignChannelModel.js";
 import CampaignTagService from "./campaign_tag/campaignTagService.js";
 import CampaignTagModel from "./campaign_tag/campaignTagModel.js";
 import TagModel from "../company/tag/tagModel.js";
+import { addJobToCompaignQueue } from "../../modules/queue.js";
+import logger from "../../config/logger.js";
+import { ChannelType } from "../../constants.js";
+import TelegramUserChannelService from "../channel/telegram/user/telegramUserChannelService.js";
+import TelegramBotChannelService from "../channel/telegram/bot/telegramBotChannelService.js";
+import MessengerChannelService from "../channel/messenger/messengerChannelService.js";
+import ViberChannelService from "../channel/viber/viberChannelService.js";
+import InstagramChannelService from "../channel/instagram/instagramChannelService.js";
+import { parseFileUrl } from "../../utils/parser.js";
 
 const { Op } = Sequelize;
 
@@ -22,6 +31,7 @@ export default class CampaignService {
     attachments,
     tags,
     andFilter,
+    dayDiff,
   }) {
     if (!name || !content) {
       throw new AppError("Tên chiến dịch và nội dung không thể null", 400);
@@ -30,51 +40,44 @@ export default class CampaignService {
       throw new AppError("Kênh không thể null", 400);
     }
 
-    for (const channelId of channels) {
-      const existedChannel = await ChannelModel.findByPk(channelId);
-      if (!existedChannel) {
-        throw new AppError(`Id kênh: ${channelId} không tồn tại`, 400);
-      }
-    }
-
-    if (tags) {
-      for (const tagId of tags) {
-        const existedTag = await TagModel.findByPk(tagId);
-        if (!existedTag) {
-          throw new AppError(`Id tag: ${tagId} không tồn tại`, 400);
+    await Promise.all(
+      channels?.map(async (channelId) => {
+        const existedChannel = await ChannelModel.findByPk(channelId);
+        if (!existedChannel) {
+          throw new AppError(`Id kênh: ${channelId} không tồn tại`, 400);
         }
-      }
-    }
+      })
+    );
+
+    if (tags)
+      await Promise.all(
+        tags?.map(async (tagId) => {
+          const existedTag = await TagModel.findByPk(tagId);
+          if (!existedTag) {
+            throw new AppError(`Id tag: ${tagId} không tồn tại`, 400);
+          }
+        })
+      );
 
     // Convert sendNow, orFilter from string to boolean
     sendNow = sendNow.toLowerCase() === "true";
     andFilter = andFilter.toLowerCase() === "true";
-    let sendDateValue = null;
 
-    if (sendNow) {
-      sendDate = new Date();
-    }
     if (!sendDate && !sendNow) {
       throw new AppError(
         "Send_date không thể null khi send_now null hoặc false",
         400
       );
     }
-    if (sendDate) {
-      sendDateValue = BigInt(sendDate);
-    }
+
+    const sendDateValue = sendNow ? Math.floor(Date.now() / 1000) : sendDate;
 
     // Regex to validate whether link is from S3
     const s3UrlRegex =
       /(https?:\/\/)(uservice-internal-s3-bucket\.)(s3\.)(ap-southeast-1)\.amazonaws\.com*/g;
     if (attachments) {
-      for (const element of attachments) {
-        if (!element.match(s3UrlRegex)) {
-          throw new AppError(
-            "URL không xuất phát từ Uservice S3 bucket. ",
-            400
-          );
-        }
+      if (!attachments.match(s3UrlRegex)) {
+        throw new AppError("URL không xuất phát từ Uservice S3 bucket. ", 400);
       }
     }
 
@@ -87,24 +90,28 @@ export default class CampaignService {
       company_id: user.company_id,
       created_by: user.id,
       tags,
-      andFilter,
+      and_filter: andFilter,
+      day_diff: dayDiff,
     });
 
-    for (const channelId of channels) {
-      await CampaignChannelService.createCampaignChannelItem({
-        campaignId: newCampaign.id,
-        channelId,
-      });
-    }
-
-    if (tags) {
-      for (const tagId of tags) {
-        await CampaignTagService.createCampaignTagItem({
+    await Promise.all(
+      channels?.map(async (channelId) => {
+        await CampaignChannelService.createCampaignChannelItem({
           campaignId: newCampaign.id,
-          tagId,
+          channelId,
         });
-      }
-    }
+      })
+    );
+
+    if (tags)
+      await Promise.all(
+        tags?.map(async (tagId) => {
+          await CampaignTagService.createCampaignTagItem({
+            campaignId: newCampaign.id,
+            tagId,
+          });
+        })
+      );
 
     const campaign = await CampaignModel.findOne({
       where: { id: newCampaign.id },
@@ -128,6 +135,11 @@ export default class CampaignService {
       attributes: {
         exclude: ["password"],
       },
+    });
+
+    addJobToCompaignQueue({
+      campaignId: campaign.id,
+      delay: sendDateValue - Math.floor(Date.now() / 1000),
     });
 
     return campaign;
@@ -193,16 +205,7 @@ export default class CampaignService {
     // if isSent (type: string) not null
     if (isSent) {
       // convert to bool
-      isSent = isSent.toLowerCase() === "true";
-      if (isSent) {
-        whereObject.send_date = {
-          [Op.gte]: BigInt(new Date()),
-        };
-      } else {
-        whereObject.send_date = {
-          [Op.lt]: BigInt(new Date()),
-        };
-      }
+      whereObject.is_sent = isSent.toLowerCase() === "true";
     }
 
     const order = [];
@@ -293,13 +296,8 @@ export default class CampaignService {
     const s3UrlRegex =
       /(https?:\/\/)(uservice-internal-s3-bucket\.)(s3\.)(ap-southeast-1)\.amazonaws\.com*/g;
     if (attachments) {
-      for (const element of attachments) {
-        if (!element.match(s3UrlRegex)) {
-          throw new AppError(
-            "URL không xuất phát từ Uservice S3 bucket. ",
-            400
-          );
-        }
+      if (!attachments.match(s3UrlRegex)) {
+        throw new AppError("URL không xuất phát từ Uservice S3 bucket. ", 400);
       }
     }
 
@@ -319,5 +317,59 @@ export default class CampaignService {
 
     delete campaign.dataValues.User.password;
     return { campaign: campaign.dataValues, channels: selectedChannels };
+  }
+
+  static async sendCampaign(campaignId) {
+    const campaign = await CampaignModel.findByPk(campaignId);
+    if (!campaign) return;
+    const attachment = campaign.attachments
+      ? [await parseFileUrl(campaign.attachments)]
+      : [];
+
+    const selectedChannels = await CampaignChannelService.getSelectedChannels({
+      campaignId: campaign.id,
+    });
+
+    const tags = await CampaignTagService.getSelectedTags({
+      campaignId: campaign.id,
+    });
+
+    await Promise.all(
+      selectedChannels.map(async (channel) => {
+        const sendObject = {
+          companyId: campaign.company_id,
+          channelId: channel.id,
+          channelDetailId: channel.channel_detail_id,
+          content: campaign.content,
+          attachment,
+          dayDiff: campaign.day_diff,
+          tags,
+          andFilter: campaign.and_filter,
+        };
+
+        switch (channel.type) {
+          case ChannelType.TELEGRAM_USER:
+            await TelegramUserChannelService.sendCampaign(sendObject);
+            break;
+          case ChannelType.TELEGRAM_BOT:
+            await TelegramBotChannelService.sendCampaign(sendObject);
+            break;
+          case ChannelType.MESSENGER:
+            await MessengerChannelService.sendCampaign(sendObject);
+            break;
+          case ChannelType.INSTAGRAM:
+            await InstagramChannelService.sendCampaign(sendObject);
+            break;
+          case ChannelType.VIBER:
+            await ViberChannelService.sendCampaign(sendObject);
+            break;
+          default:
+            break;
+        }
+      })
+    );
+
+    campaign.is_sent = true;
+    await campaign.save();
   }
 }
