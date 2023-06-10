@@ -60,11 +60,18 @@ export const getAllCampaignsOfCompany = async (req, res) => {
     const name = req.query.name ?? null;
     const limit = parseInt(req.query.limit ?? 20, 10);
     const page = parseInt(req.query.page ?? 1, 10);
+    const sortBy = req.query.sortBy ?? null;
+    const sortOrder = req.query.sortOrder ?? null;
+    const isSent = req.query.isSent ?? null;
+
     const campaigns = await CampaignService.getAllCampaignsOfCompany({
       user,
       limit,
       page,
       name,
+      sortBy,
+      sortOrder,
+      isSent,
     });
 
     return res.status(200).json({

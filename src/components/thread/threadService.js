@@ -93,53 +93,106 @@ export default class ThreadService {
     return threads.length > 0 ? threads[0] : null;
   }
 
-  static async getThreads({ companyId, lastThreadId, limit }) {
-    const threads = await sequelize.query(
-      `SELECT thread.*, 
-        t3.id AS 'customer.id',
-        t3.image_url AS 'customer.image_url',
-        t3.alias AS 'customer.alias',
-        t3.first_name AS 'customer.first_name',
-        t3.last_name AS 'customer.last_name',
-        t3.profile AS 'customer.profile',
-        t1.type AS 'channel_type',
-        t1.company_id AS 'company_id',
-        t2.id AS 'last_message.id',
-        t2.sender_type AS 'last_message.sender_type', 
-        t2.timestamp AS 'last_message.timestamp', 
-        t2.content AS 'last_message.content',
-        t2.sender_id AS 'last_message.sender.id',
-        t2.replied_message_id AS 'last_message.replied_message_id',
-        IF (t2.sender_type = 'customer', t3.first_name, t4.first_name) AS 'last_message.sender.first_name',
-        IF (t2.sender_type = 'customer', t3.last_name, t4.last_name) AS 'last_message.sender.last_name',
-        IF (t2.sender_type = 'customer', t3.image_url, t4.image_url) AS 'last_message.sender.image_url'
-      FROM thread
-      JOIN channel AS t1 ON t1.id = thread.channel_id 
-      JOIN 
+  static async getThreads({
+    companyId,
+    lastThreadId,
+    limit,
+    isResolved,
+    channel,
+    tag,
+    customer,
+  }) {
+    if (isResolved) {
+      isResolved = isResolved.toLowerCase() === "true";
+    }
+    if (channel && Number.isInteger(parseInt(channel))) {
+      channel = parseInt(channel);
+    }
+    // let tagStr;
+    // if (tag) {
+    //   tagStr = tag.map((t) => `tag_subscription.tag_id = ${t}`).join(" AND ");
+    // }
+
+    const queryStr = `SELECT thread.*, 
+          t3.id AS 'customer.id',
+          t3.image_url AS 'customer.image_url',
+          t3.alias AS 'customer.alias',
+          t3.first_name AS 'customer.first_name',
+          t3.last_name AS 'customer.last_name',
+          t3.profile AS 'customer.profile',
+          t1.type AS 'channel_type',
+          t1.company_id AS 'company_id',
+          t2.id AS 'last_message.id',
+          t2.sender_type AS 'last_message.sender_type', 
+          t2.timestamp AS 'last_message.timestamp', 
+          t2.content AS 'last_message.content',
+          t2.sender_id AS 'last_message.sender.id',
+          t2.replied_message_id AS 'last_message.replied_message_id',
+          IF (t2.sender_type = 'customer', t3.first_name, t4.first_name) AS 'last_message.sender.first_name',
+          IF (t2.sender_type = 'customer', t3.last_name, t4.last_name) AS 'last_message.sender.last_name',
+          IF (t2.sender_type = 'customer', t3.image_url, t4.image_url) AS 'last_message.sender.image_url'
+        FROM thread
+        JOIN 
+        (
+          SELECT * FROM message
+          WHERE id IN (
+            SELECT MAX(id) FROM message
+            GROUP BY thread_id
+          )
+        ) AS t2 ON t2.thread_id = thread.id
+        LEFT JOIN customer AS t3 ON t3.thread_id = thread.id
+        LEFT JOIN user AS t4 ON t4.id = t2.sender_id
+      `;
+
+    const channelStr = channel
+      ? `
+      JOIN  
       (
-        SELECT * FROM message
-        WHERE id IN (
-          SELECT MAX(id) FROM message
-          GROUP BY thread_id
-        )
-      ) AS t2 ON t2.thread_id = thread.id
-      LEFT JOIN customer AS t3 ON t3.thread_id = thread.id
-      LEFT JOIN user AS t4 ON t4.id = t2.sender_id
+		    SELECT * FROM channel where channel.id = ${channel}
+      )
+      AS t1 ON t1.id = thread.channel_id
+      `
+      : `JOIN channel AS t1 ON t1.id = thread.channel_id 
+      `;
+    const customerStr = customer
+      ? `AND t3.alias LIKE "%${customer}%"
+      `
+      : "";
+    const isResolvedStr =
+      isResolved != null
+        ? ` AND thread.is_resolved = ${isResolved}
+        `
+        : "";
+    // const tagQuerryStr = tag
+    //   ? `JOIN (
+    //     SELECT * FROM tag_subscription where `.concat(
+    //       tagStr,
+    //       `) AS t5 ON t5.customer_id = t3.id
+    //       `
+    //     )
+    //   : "";
+
+    const filteredQuery = queryStr.concat(
+      channelStr,
+      // tagQuerryStr,
+      `
       WHERE t1.company_id = :companyId ${
         lastThreadId ? `AND t2.id < :lastThreadId` : ""
-      }
-      ORDER BY t2.id DESC
-      LIMIT :limit`,
-      {
-        replacements: {
-          companyId,
-          lastThreadId,
-          limit,
-        },
-        type: sequelize.QueryTypes.SELECT,
-        nest: true,
-      }
+      } `,
+      isResolvedStr,
+      customerStr,
+      `ORDER BY t2.id DESC
+      LIMIT :limit;`
     );
+    const threads = await sequelize.query(filteredQuery, {
+      replacements: {
+        companyId,
+        lastThreadId,
+        limit,
+      },
+      type: sequelize.QueryTypes.SELECT,
+      nest: true,
+    });
 
     const getAttachments = async (thread) => {
       thread.last_message.attachment = await AttachmentModel.findAll({

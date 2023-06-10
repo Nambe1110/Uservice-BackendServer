@@ -1228,6 +1228,26 @@
             "name": "limit",
             "in": "query",
             "type": "string"
+          },
+          {
+            "name": "isResolved",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "channel",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "customer",
+            "in": "query",
+            "type": "string"
           }
         ],
         "responses": {
@@ -1745,6 +1765,21 @@
           },
           {
             "name": "page",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "isSent",
             "in": "query",
             "type": "string"
           }
