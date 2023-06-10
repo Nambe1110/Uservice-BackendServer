@@ -16,9 +16,8 @@ const getJoiners = (joiners) =>
     image_url: joiner.imageUrl,
   }));
 
-export default async (io, socket) => {
+export const registerThreadHandler = async (io, socket) => {
   const { user } = socket;
-  let joinedThreadId = null;
   socket.join(user.company_id);
 
   socket.on("send-message", async (data, callback) => {
@@ -75,6 +74,12 @@ export default async (io, socket) => {
         });
     }
   });
+};
+
+export const registerThreadJoinerHandler = async (io, socket) => {
+  const { user } = socket;
+  let joinedThreadId = null;
+  socket.join(user.company_id);
 
   socket.on("join-thread", async (data, callback) => {
     const { threadId } = data;

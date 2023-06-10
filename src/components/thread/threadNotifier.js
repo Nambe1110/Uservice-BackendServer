@@ -3,7 +3,7 @@ import logger from "../../config/logger.js";
 
 export const threadNotifier = {};
 
-export default async (io) => {
+export const registerThreadNotifier = async (io) => {
   threadNotifier.onNewMessage = async ({
     created,
     companyId,
