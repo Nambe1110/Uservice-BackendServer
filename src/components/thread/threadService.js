@@ -101,9 +101,6 @@ export default class ThreadService {
     channel,
     customer,
   }) {
-    if (isResolved) {
-      isResolved = isResolved.toLowerCase() === "true";
-    }
     if (channel && Number.isInteger(parseInt(channel))) {
       channel = parseInt(channel);
     }

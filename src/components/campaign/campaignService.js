@@ -9,7 +9,6 @@ import CampaignTagService from "./campaign_tag/campaignTagService.js";
 import CampaignTagModel from "./campaign_tag/campaignTagModel.js";
 import TagModel from "../company/tag/tagModel.js";
 import { addJobToCompaignQueue } from "../../modules/queue.js";
-import logger from "../../config/logger.js";
 import { ChannelType } from "../../constants.js";
 import TelegramUserChannelService from "../channel/telegram/user/telegramUserChannelService.js";
 import TelegramBotChannelService from "../channel/telegram/bot/telegramBotChannelService.js";
@@ -33,6 +32,13 @@ export default class CampaignService {
     andFilter,
     dayDiff,
   }) {
+    if (!sendDate && !sendNow) {
+      throw new AppError(
+        "Send_date không thể null khi send_now null hoặc false",
+        400
+      );
+    }
+
     if (!name || !content) {
       throw new AppError("Tên chiến dịch và nội dung không thể null", 400);
     }
@@ -58,17 +64,6 @@ export default class CampaignService {
           }
         })
       );
-
-    // Convert sendNow, orFilter from string to boolean
-    sendNow = sendNow.toLowerCase() === "true";
-    andFilter = andFilter.toLowerCase() === "true";
-
-    if (!sendDate && !sendNow) {
-      throw new AppError(
-        "Send_date không thể null khi send_now null hoặc false",
-        400
-      );
-    }
 
     const sendDateValue = sendNow ? Math.floor(Date.now() / 1000) : sendDate;
 
@@ -203,10 +198,7 @@ export default class CampaignService {
     }
 
     // if isSent (type: string) not null
-    if (isSent) {
-      // convert to bool
-      whereObject.is_sent = isSent.toLowerCase() === "true";
-    }
+    whereObject.is_sent = isSent ?? null;
 
     const order = [];
     if (sortOrder && sortOrder.toUpperCase() !== "ASC") {
