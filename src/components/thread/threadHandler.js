@@ -12,7 +12,7 @@ const getJoiners = (joiners) =>
   Array.from(joiners.values()).map((joiner) => ({
     id: joiner.id,
     first_name: joiner.firstName,
-    last_name: joiner.firstName,
+    last_name: joiner.lastName,
     image_url: joiner.imageUrl,
   }));
 
