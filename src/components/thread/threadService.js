@@ -99,15 +99,20 @@ export default class ThreadService {
     limit,
     isResolved,
     channel,
+    tag,
     customer,
   }) {
+    // Convert string to boolean if isResolved is not null
+    if (isResolved) {
+      isResolved = isResolved.toLowerCase() === "true";
+    }
     if (channel && Number.isInteger(parseInt(channel))) {
       channel = parseInt(channel);
     }
-    // let tagStr;
-    // if (tag) {
-    //   tagStr = tag.map((t) => `tag_subscription.tag_id = ${t}`).join(" AND ");
-    // }
+    let tagStr;
+    if (tag) {
+      tagStr = tag.map((t) => `tag_subscription.tag_id = ${t}`).join(" OR ");
+    }
 
     const queryStr = `SELECT thread.*, 
           t3.id AS 'customer.id',
@@ -159,18 +164,17 @@ export default class ThreadService {
         ? ` AND thread.is_resolved = ${isResolved}
         `
         : "";
-    // const tagQuerryStr = tag
-    //   ? `JOIN (
-    //     SELECT * FROM tag_subscription where `.concat(
-    //       tagStr,
-    //       `) AS t5 ON t5.customer_id = t3.id
-    //       `
-    //     )
-    //   : "";
+    const tagQuerryStr = tag
+      ? `JOIN ( SELECT DISTINCT customer_id FROM tag_subscription where `.concat(
+          tagStr,
+          `) AS t5 ON t5.customer_id = t3.id
+          `
+        )
+      : "";
 
     const filteredQuery = queryStr.concat(
       channelStr,
-      // tagQuerryStr,
+      tagQuerryStr,
       `
       WHERE t1.company_id = :companyId ${
         lastThreadId ? `AND t2.id < :lastThreadId` : ""
