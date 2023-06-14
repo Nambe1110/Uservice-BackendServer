@@ -475,7 +475,7 @@ export default class InstagramService {
                           threadId: thread.id,
                           threadApiId,
                           senderType: SenderType.BOT,
-                          content: suggestions[0],
+                          content: `[BOT] ${suggestions[0]}`,
                         });
                       } catch (error) {
                         logger.error(error.message);

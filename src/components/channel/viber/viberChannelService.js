@@ -317,7 +317,7 @@ export default class ViberService {
           threadId: thread.id,
           threadApiId: thread.thread_api_id,
           senderType: SenderType.BOT,
-          content: suggestions[0],
+          content: `[BOT] ${suggestions[0]}`,
         });
       } catch (error) {
         logger.error(error.message);

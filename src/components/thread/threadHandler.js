@@ -26,14 +26,10 @@ export const registerThreadHandler = async (io, socket) => {
 
     try {
       const thread = await ThreadService.getThreadById(threadId);
-      await ThreadService.updateResolvedStatus({
-        threadId,
-        isResolved: true,
-      });
       const channel = await ChannelService.getChannelById(thread.channel_id);
 
       if (channel.company_id !== user.company_id)
-        throw new Error("You don't have permission to send message");
+        throw new Error("Bạn không có quyền gửi tin nhắn.");
 
       const sendObject = {
         companyId: user.company_id,
@@ -65,7 +61,7 @@ export const registerThreadHandler = async (io, socket) => {
           await ViberChannelService.sendMessage(sendObject);
           break;
         default:
-          throw new Error("Channel type not supported");
+          throw new Error("Loại kênh không được hỗ trợ");
       }
     } catch (error) {
       if (callback)
