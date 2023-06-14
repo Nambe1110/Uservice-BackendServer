@@ -48,19 +48,6 @@ const CampaignModel = sequelize.define(
     },
     attachments: {
       type: DataTypes.TEXT,
-      get() {
-        if (this.getDataValue("attachments")) {
-          return this.getDataValue("attachments").split(";");
-        }
-        return this.getDataValue("attachments");
-      },
-      set(val) {
-        if (val) {
-          this.setDataValue("attachments", val.join(";"));
-        } else {
-          this.setDataValue("attachments", val);
-        }
-      },
     },
     company_id: {
       type: DataTypes.INTEGER,
@@ -82,6 +69,10 @@ const CampaignModel = sequelize.define(
         key: "id",
       },
     },
+    is_sent: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
   },
   {
     tableName: "campaign",
@@ -92,28 +83,18 @@ const CampaignModel = sequelize.define(
   }
 );
 
-User.hasMany(CampaignModel, { foreignKey: "created_by" });
-CampaignModel.belongsTo(User, { foreignKey: "created_by" });
-User.beforeDestroy(async (user) => {
-  await CampaignModel.update(
-    { created_by: null },
-    { where: { created_by: user.id } }
-  );
+User.hasMany(CampaignModel, {
+  foreignKey: "created_by",
+});
+CampaignModel.belongsTo(User, {
+  foreignKey: "created_by",
 });
 
-Company.hasMany(CampaignModel, { foreignKey: "company_id" });
-CampaignModel.belongsTo(Company, { foreignKey: "company_id" });
-Company.beforeDestroy(async (company) => {
-  await CampaignModel.destroy({
-    where: {
-      company_id: company.id,
-    },
-    individualHooks: true,
-  });
+Company.hasMany(CampaignModel, {
+  onDelete: "CASCADE",
+  hooks: true,
 });
-Company.beforeDestroy(async (company) => {
-  await CampaignModel.destroy({ where: { company_id: company.id } });
-});
+CampaignModel.belongsTo(Company);
 
 CampaignModel.sync({ logging: false });
 

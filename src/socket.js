@@ -1,7 +1,7 @@
 import { Server } from "socket.io";
-import registerThreadHandler from "./components/thread/threadHandler.js";
-import registerThreadNotifier from "./components/thread/threadNotifier.js";
-import registerCompanyHandler from "./components/company/companyHandler.js";
+import { registerThreadHandler } from "./components/thread/threadHandler.js";
+import { registerThreadNotifier } from "./components/thread/threadNotifier.js";
+import { registerCompanyHandler } from "./components/company/companyHandler.js";
 import { verifyTokenSocket } from "./middlewares/verifyToken.js";
 
 const io = new Server({

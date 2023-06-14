@@ -5,6 +5,7 @@ import {
   updateCustomer,
 } from "./customerController.js";
 import { verifyToken } from "../../middlewares/verifyToken.js";
+import { verifyCustomerId } from "./customerMiddleware.js";
 
 const customerRouter = express.Router({ mergeParams: true });
 
@@ -14,9 +15,10 @@ customerRouter.use("/", (req, res, next) => {
 });
 
 customerRouter.use("/", verifyToken(true));
-
 customerRouter.get("/", getCustomers);
-customerRouter.get("/:customerId", verifyToken(true), getCustomerById);
-customerRouter.post("/:customerId", verifyToken(true), updateCustomer);
+
+customerRouter.use("/:customerId", verifyCustomerId);
+customerRouter.get("/:customerId", getCustomerById);
+customerRouter.patch("/:customerId", updateCustomer);
 
 export default customerRouter;

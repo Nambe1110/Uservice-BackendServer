@@ -14,7 +14,7 @@ const getUser = (employees) =>
     disconnect_timestamp: employee.disconnectTimestamp,
   }));
 
-export default async (io, socket) => {
+export const registerCompanyHandler = async (io, socket) => {
   try {
     const { user } = socket;
     socket.join(user.company_id);

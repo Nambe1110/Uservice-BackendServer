@@ -646,4 +646,65 @@ export default class InstagramService {
       else throw new Error(error.message);
     }
   }
+
+  static async sendCampaign({
+    companyId,
+    channelId,
+    channelDetailId,
+    content,
+    attachment,
+    dayDiff,
+    tags,
+    andFilter,
+  }) {
+    const threads = await ThreadService.getThreadsForCampaign({
+      channelId,
+      dayDiff,
+    });
+
+    await Promise.all(
+      threads.map(async (thread) => {
+        const arrayTags = tags?.map((tag) => tag.id) ?? [];
+        const arrayCustomerTags = thread.customer.tags.map((tag) => tag.id);
+
+        if (andFilter) {
+          for (const id of arrayTags)
+            if (!arrayCustomerTags.includes(id)) return;
+        } else {
+          let hasTag = false;
+          for (const id of arrayTags)
+            if (arrayCustomerTags.includes(id)) {
+              hasTag = true;
+              break;
+            }
+          if (!hasTag) return;
+        }
+
+        const replacedContent = await CustomerService.replaceParams({
+          text: content,
+          customerId: thread.customer.id,
+        });
+
+        if (attachment.length > 0)
+          await this.sendMessage({
+            companyId,
+            channelDetailId,
+            threadId: thread.id,
+            threadApiId: thread.thread_api_id,
+            senderType: SenderType.CAMPAIGN,
+            attachment,
+          });
+
+        if (content)
+          await this.sendMessage({
+            companyId,
+            channelDetailId,
+            threadId: thread.id,
+            threadApiId: thread.thread_api_id,
+            senderType: SenderType.CAMPAIGN,
+            content: replacedContent,
+          });
+      })
+    );
+  }
 }

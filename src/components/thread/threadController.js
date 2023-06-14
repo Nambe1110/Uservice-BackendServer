@@ -2,7 +2,14 @@ import ThreadService from "./threadService.js";
 import { StatusType } from "../../constants.js";
 
 export const getThreads = async (req, res) => {
-  const { lastThreadId, limit = 20 } = req.query;
+  const {
+    lastThreadId,
+    limit = 20,
+    isResolved = null,
+    channel = null,
+    tag = null,
+    customer = null,
+  } = req.query;
   const { user } = req;
 
   try {
@@ -10,6 +17,10 @@ export const getThreads = async (req, res) => {
       companyId: user.company_id,
       lastThreadId: parseInt(lastThreadId),
       limit: parseInt(limit),
+      isResolved,
+      channel,
+      tag,
+      customer,
     });
 
     return res.status(200).json({

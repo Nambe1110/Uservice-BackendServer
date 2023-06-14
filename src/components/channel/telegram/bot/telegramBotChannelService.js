@@ -1,10 +1,12 @@
 import { listCompany } from "../../../../utils/singleton.js";
-import { ChannelType } from "../../../../constants.js";
+import { ChannelType, SenderType } from "../../../../constants.js";
 import AppError from "../../../../utils/AppError.js";
 import ChannelService from "../../channelService.js";
 import MessageService from "../../../message/messageService.js";
 import TelegramBotChannelModel from "./telegramBotChannelModel.js";
 import TelegramBotConnection from "./telegramBotChannelConnection.js";
+import ThreadService from "../../../thread/threadService.js";
+import CustomerService from "../../../customer/customerService.js";
 
 export default class TelegramUserService {
   static async getChannels({ companyId }) {
@@ -95,6 +97,7 @@ export default class TelegramUserService {
     channelDetailId,
     threadId,
     threadApiId,
+    senderType = SenderType.STAFF,
     senderId,
     content,
     repliedMessageId,
@@ -129,6 +132,7 @@ export default class TelegramUserService {
 
     await connection.sendMessage({
       senderId,
+      senderType,
       chatId: threadApiId,
       repliedMessage,
       content,
@@ -136,5 +140,56 @@ export default class TelegramUserService {
       callback,
       socket,
     });
+  }
+
+  static async sendCampaign({
+    companyId,
+    channelId,
+    channelDetailId,
+    content,
+    attachment,
+    dayDiff,
+    tags,
+    andFilter,
+  }) {
+    const threads = await ThreadService.getThreadsForCampaign({
+      channelId,
+      dayDiff,
+    });
+
+    await Promise.all(
+      threads.map(async (thread) => {
+        const arrayTags = tags?.map((tag) => tag.id) ?? [];
+        const arrayCustomerTags = thread.customer.tags.map((tag) => tag.id);
+
+        if (andFilter) {
+          for (const id of arrayTags)
+            if (!arrayCustomerTags.includes(id)) return;
+        } else {
+          let hasTag = false;
+          for (const id of arrayTags)
+            if (arrayCustomerTags.includes(id)) {
+              hasTag = true;
+              break;
+            }
+          if (!hasTag) return;
+        }
+
+        const replacedContent = await CustomerService.replaceParams({
+          text: content,
+          customerId: thread.customer.id,
+        });
+
+        await this.sendMessage({
+          companyId,
+          channelDetailId,
+          threadId: thread.id,
+          threadApiId: thread.thread_api_id,
+          senderType: SenderType.CAMPAIGN,
+          content: replacedContent,
+          attachment,
+        });
+      })
+    );
   }
 }

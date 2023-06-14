@@ -49,15 +49,17 @@ export const getCustomerById = async (req, res) => {
 };
 
 export const updateCustomer = async (req, res) => {
+  const { customerId } = req.params;
+
   try {
-    const customer = await CustomerService.updateCustomer({
-      customerId: req.params.customerId,
-      user: req.user,
-      updatedField: req.body,
+    await CustomerService.updateCustomer({
+      customerId,
+      ...req.body,
     });
+
     return res.status(200).json({
       status: StatusType.SUCCESS,
-      data: customer,
+      data: null,
     });
   } catch (error) {
     return res
