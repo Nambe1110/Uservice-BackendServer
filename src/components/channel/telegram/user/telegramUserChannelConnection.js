@@ -468,7 +468,7 @@ export default class TelegramUserConnection {
               await this.sendMessage({
                 senderType: SenderType.BOT,
                 chatId,
-                content: suggestions[0],
+                content: `[BOT] ${suggestions[0]}`,
               });
             } catch (error) {
               logger.error(error.message);

@@ -39,11 +39,11 @@ export default class SuggestionService {
       if (key === messages.length - 1) {
         messageContent = await GPT3.removeTeenCode(messageContent);
       }
-      if (
-        message.sender_type === SenderType.STAFF ||
-        message.sender_type === SenderType.BOT
-      ) {
+      if (message.sender_type === SenderType.STAFF) {
         context += `Staff: ${messageContent}\n`;
+      }
+      if (message.sender_type === SenderType.BOT) {
+        context += `Staff: ${messageContent.slice(4)}\n`;
       }
       if (message.sender_type === SenderType.CUSTOMER) {
         context += `Customer: ${messageContent}\n`;
