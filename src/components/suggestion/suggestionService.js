@@ -43,7 +43,7 @@ export default class SuggestionService {
         context += `Staff: ${messageContent}\n`;
       }
       if (message.sender_type === SenderType.BOT) {
-        context += `Staff: ${messageContent.slice(4)}\n`;
+        context += `Staff: ${messageContent.slice(6)}\n`;
       }
       if (message.sender_type === SenderType.CUSTOMER) {
         context += `Customer: ${messageContent}\n`;
