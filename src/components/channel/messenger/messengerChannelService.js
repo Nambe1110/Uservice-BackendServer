@@ -464,7 +464,7 @@ export default class MessengerService {
                         if (newMessage.id !== lastMessage.id) return;
 
                         const suggestions =
-                          await SuggestionService.generateSuggestion({
+                          await SuggestionService.generateChatbotAnswer({
                             numberOfResponse: 1,
                             companyId: company_id,
                             threadId: thread.id,

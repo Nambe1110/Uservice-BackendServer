@@ -1,6 +1,6 @@
 import { Configuration, OpenAIApi } from "openai";
 import axios, { AxiosError } from "axios";
-import { DefaultGptModel } from "../constants.js";
+import { DefaultGptModel, SenderType } from "../constants.js";
 import Translate from "./Translate.js";
 import Lang from "../enums/Lang.js";
 import AppError from "../utils/AppError.js";
@@ -16,10 +16,12 @@ export default class GPT3 {
     context,
     numberOfResponse = 3,
     model = DefaultGptModel.GPT_3_5,
+    type = SenderType.STAFF,
   }) {
+    console.log(context)
     const generatedResponse = await openai.createCompletion({
       model,
-      prompt: `${context}Staff:`,
+      prompt: `${context}${type}:`,
       temperature: 0.5,
       max_tokens: 70,
       top_p: 1,
