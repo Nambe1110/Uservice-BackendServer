@@ -106,37 +106,14 @@ export default class UserService {
     }
   }
 
-  static async getCompanyMembers({ user, limit, page, searchKey }) {
-    if (!user.company_id) {
-      throw new AppError("Người dùng không thuộc một công ty nào.", 400);
-    }
-    const company = await CompanyModel.findOne({
-      where: { id: user.company_id },
-    });
-    if (!company) {
-      throw new AppError("Công ty không tồn tại", 400);
-    }
+  static async getCompanyMembers({ companyId, limit, page, searchKey }) {
+    let query = `FROM user WHERE company_id = :companyId`;
+    if (searchKey)
+      query += ` AND (CONCAT(first_name, " ", last_name) LIKE :searchKey OR email LIKE :searchKey)`;
 
-    const selectQuery = `SELECT * FROM user WHERE company_id = :companyId `;
-    const searchStr = searchKey
-      ? ` AND ( 
-            CONCAT(first_name, " ", last_name) LIKE "%${searchKey}%"
-            OR
-            email LIKE "%${searchKey}%" )
-        `
-      : ``;
-
-    const getAllQuery = selectQuery.concat(searchStr);
-    const allCompanyMembers = await sequelize.query(getAllQuery, {
-      replacements: {
-        companyId: user.company_id,
-      },
-      type: sequelize.QueryTypes.SELECT,
-      nest: true,
-    });
-    const filteredQuery = selectQuery.concat(
-      searchStr,
-      `
+    const users = await sequelize.query(
+      `SELECT id, first_name, last_name, email, is_verified, is_locked, phone_number, role, image_url, created_at, disconnect_timestamp
+      ${query}
       ORDER BY CASE role
           WHEN 'Owner' THEN 1
           WHEN 'Manager' THEN 2
@@ -144,27 +121,36 @@ export default class UserService {
           ELSE 4
         END
       LIMIT :limit
-      OFFSET :offset
-      ;`
+      OFFSET :offset`,
+      {
+        replacements: {
+          companyId,
+          limit,
+          offset: (page - 1) * limit,
+          searchKey: `%${searchKey}%`,
+        },
+        type: sequelize.QueryTypes.SELECT,
+        nest: true,
+      }
     );
-    const companyMembers = await sequelize.query(filteredQuery, {
-      replacements: {
-        companyId: user.company_id,
-        limit,
-        offset: (page - 1) * limit,
-      },
-      type: sequelize.QueryTypes.SELECT,
-      nest: true,
-    });
 
-    const totalItems = allCompanyMembers.length;
-    const totalPages = Math.ceil(totalItems / limit);
+    const totalItems = await sequelize.query(
+      `SELECT COUNT(DISTINCT user.id) AS 'total'
+      ${query}`,
+      {
+        replacements: {
+          companyId,
+          searchKey: `%${searchKey}%`,
+        },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
 
     return {
-      total_items: totalItems,
-      total_pages: totalPages,
+      total_items: totalItems[0].total,
+      total_pages: Math.ceil(totalItems[0].total / limit),
       current_page: page,
-      items: companyMembers,
+      items: users,
     };
   }
 

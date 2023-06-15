@@ -2,13 +2,15 @@ import StatusEnum from "../../enums/Status.js";
 import UserService from "./userService.js";
 
 export const getCompanyMembers = async (req, res) => {
+  const { user } = req;
+
   try {
     const limit = parseInt(req.query.limit ?? 20, 10);
     const page = parseInt(req.query.page ?? 1, 10);
     const searchKey = req.query.searchKey ?? null;
 
     const members = await UserService.getCompanyMembers({
-      user: req.user,
+      companyId: user.company_id,
       limit,
       page,
       searchKey,
