@@ -459,7 +459,7 @@ export default class TelegramUserConnection {
 
               if (message.id !== lastMessage.id) return;
 
-              const suggestions = await SuggestionService.generateSuggestion({
+              const suggestions = await SuggestionService.generateChatbotAnswer({
                 numberOfResponse: 1,
                 companyId: this.companyId,
                 threadId: thread.id,

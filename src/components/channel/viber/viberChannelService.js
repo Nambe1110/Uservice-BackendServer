@@ -305,7 +305,7 @@ export default class ViberService {
 
         if (newMessage.id !== lastMessage.id) return;
 
-        const suggestions = await SuggestionService.generateSuggestion({
+        const suggestions = await SuggestionService.generateChatbotAnswer({
           numberOfResponse: 1,
           companyId: detailChannel.company_id,
           threadId: thread.id,
