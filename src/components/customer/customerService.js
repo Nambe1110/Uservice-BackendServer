@@ -23,16 +23,7 @@ export default class CustomerService {
   }
 
   static async getCustomers({ companyId, page, limit, name, channel, order }) {
-    const selectQuery = `SELECT DISTINCT customer.*,
-        t2.id AS 'last_message.id',
-        t2.content AS 'last_message.content',
-        t2.timestamp AS 'last_message.timestamp',
-        t4.type AS 'channel.type',
-        t4.name AS 'channel.name',
-        t4.image_url AS 'channel.image_url',
-        t4.id AS 'channel.id',
-        t4.is_connected AS 'channel.is_connected'
-      FROM customer
+    let query = `FROM customer
       LEFT JOIN 
       (
         SELECT * FROM message
@@ -46,54 +37,54 @@ export default class CustomerService {
       LEFT JOIN channel AS t4 ON t4.id = t3.channel_id
       WHERE customer.company_id = :companyId`;
 
-    const nameQueryStr = name
-      ? ` AND CONCAT(customer.first_name, " ", customer.last_name) LIKE "%${name}%"`
-      : ``;
-    const channelTypeQueryStr = channel ? ` AND t4.type = "${channel}"` : ``;
-    let orderQueryStr = ``;
+    if (channel) query += ` AND t4.type = :channel`;
+    if (name)
+      query += ` AND CONCAT(customer.first_name, " ", customer.last_name) LIKE :name`;
     if (order) {
-      if (order.toUpperCase() === "DESC") {
-        orderQueryStr = `
-        ORDER BY CONCAT(customer.first_name, " ", customer.last_name) DESC`;
-      } else if (order.toUpperCase() === "ASC") {
-        orderQueryStr = `
-        ORDER BY CONCAT(customer.first_name, " ", customer.last_name) ASC`;
-      }
+      if (order.toUpperCase() === "DESC")
+        query += ` ORDER BY CONCAT(customer.first_name, " ", customer.last_name) DESC`;
+      else if (order.toUpperCase() === "ASC")
+        query += ` ORDER BY CONCAT(customer.first_name, " ", customer.last_name) ASC`;
     }
 
-    const getAllQuery = selectQuery.concat(
-      nameQueryStr,
-      channelTypeQueryStr,
-      orderQueryStr,
-      `;`
-    );
-    const filteredQuery = selectQuery.concat(
-      nameQueryStr,
-      channelTypeQueryStr,
-      orderQueryStr,
-      `
+    const customers = await sequelize.query(
+      `SELECT DISTINCT customer.*,
+      t2.id AS 'last_message.id',
+      t2.content AS 'last_message.content',
+      t2.timestamp AS 'last_message.timestamp',
+      t4.type AS 'channel.type',
+      t4.name AS 'channel.name',
+      t4.image_url AS 'channel.image_url',
+      t4.id AS 'channel.id',
+      t4.is_connected AS 'channel.is_connected'
+      ${query}
       LIMIT :limit
-      OFFSET :offset;
-      `
+      OFFSET :offset`,
+      {
+        replacements: {
+          companyId,
+          name: `%${name}%`,
+          channel,
+          limit,
+          offset: (page - 1) * limit,
+        },
+        type: sequelize.QueryTypes.SELECT,
+        nest: true,
+      }
     );
 
-    const allCustomers = await sequelize.query(getAllQuery, {
-      replacements: {
-        companyId,
-      },
-      type: sequelize.QueryTypes.SELECT,
-      nest: true,
-    });
-
-    const customers = await sequelize.query(filteredQuery, {
-      replacements: {
-        companyId,
-        limit,
-        offset: (page - 1) * limit,
-      },
-      type: sequelize.QueryTypes.SELECT,
-      nest: true,
-    });
+    const totalItems = await sequelize.query(
+      `SELECT COUNT(DISTINCT customer.id) AS 'total'
+      ${query}`,
+      {
+        replacements: {
+          companyId,
+          name: `%${name}%`,
+          channel,
+        },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
 
     const addTagSubscrition = async (customer) => {
       const tag_subscriptions =
@@ -104,11 +95,9 @@ export default class CustomerService {
     };
     await Promise.all(customers.map((customer) => addTagSubscrition(customer)));
 
-    const totalItems = allCustomers.length;
-
     return {
-      total_items: totalItems,
-      total_pages: Math.ceil(totalItems / limit),
+      total_items: totalItems[0].total,
+      total_pages: Math.ceil(totalItems[0].total / limit),
       current_page: page,
       items: customers,
     };

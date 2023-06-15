@@ -8,7 +8,7 @@ export const getThreads = async (req, res) => {
     isResolved = null,
     channel = null,
     tag = null,
-    customer = null,
+    search = null,
   } = req.query;
   const { user } = req;
 
@@ -19,8 +19,8 @@ export const getThreads = async (req, res) => {
       limit: parseInt(limit),
       isResolved,
       channel,
-      tag,
-      customer,
+      tag: JSON.parse(tag),
+      search,
     });
 
     return res.status(200).json({
