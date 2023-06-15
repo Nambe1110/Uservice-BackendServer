@@ -18,7 +18,6 @@ export default class GPT3 {
     model = DefaultGptModel.GPT_3_5,
     type = SenderType.STAFF,
   }) {
-    console.log(context)
     const generatedResponse = await openai.createCompletion({
       model,
       prompt: `${context}${type}:`,
