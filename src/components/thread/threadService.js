@@ -138,13 +138,15 @@ export default class ThreadService {
     if (isResolved) query += ` AND thread.is_resolved = :isResolved`;
     if (channel) query += ` AND t1.id = :channel`;
     if (search) {
-      query += ` AND (t3.alias LIKE :search OR CONCAT(customer.t3, " ", t3.last_name) LIKE :search`;
-      query += ` OR thread.id in (SELECT thread_id FROM message WHERE content LIKE :search))`;
+      query += ` AND (t3.alias LIKE :search OR CONCAT(t3.first_name, " ", t3.last_name) LIKE :search`;
+      query += ` OR thread.id IN (SELECT thread_id FROM message WHERE content LIKE :search))`;
     }
     if (tag)
-      query += ` AND t3.id IN (SELECT customer_id FROM tag_subscription WHERE tag_id = :tag)`;
+      query += ` AND t3.id IN (SELECT customer_id FROM tag_subscription WHERE tag_id IN (:tag))`;
 
     query += ` ORDER BY t2.id DESC LIMIT :limit`;
+
+    console.log(typeof tag);
 
     const threads = await sequelize.query(query, {
       replacements: {
