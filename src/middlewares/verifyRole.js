@@ -1,6 +1,19 @@
 import StatusEnum from "../enums/Status.js";
 import RoleEnum from "../enums/Role.js";
 
+export const verifyRole =
+  (roles = []) =>
+  async (req, res, next) => {
+    if (roles && roles.length && !roles.includes(req.user.role)) {
+      return res.status(403).json({
+        status: StatusEnum.Error,
+        message: `Yêu cầu quyền '${roles.join(", ")}'`,
+      });
+    }
+
+    return next();
+  };
+
 export const isOwner = async (req, res, next) => {
   if (!req.user) {
     return res.status(401).json({

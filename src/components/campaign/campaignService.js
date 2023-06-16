@@ -31,6 +31,7 @@ export default class CampaignService {
     tags,
     andFilter,
     dayDiff,
+    skipUnresolvedThread,
   }) {
     if (!sendDate && !sendNow) {
       throw new AppError(
@@ -78,7 +79,6 @@ export default class CampaignService {
 
     const newCampaign = await CampaignModel.create({
       name,
-      send_now: sendNow,
       send_date: sendDateValue,
       content,
       attachments,
@@ -87,6 +87,7 @@ export default class CampaignService {
       tags,
       and_filter: andFilter,
       day_diff: dayDiff,
+      skip_unresolved_thread: skipUnresolvedThread,
     });
 
     await Promise.all(
@@ -273,7 +274,7 @@ export default class CampaignService {
     if (!oldCampaign) {
       throw new AppError("Chiến dịch không tồn tại", 400);
     }
-    if (Number.parseInt(oldCampaign.company_id, 10) !== user.company_id) {
+    if (oldCampaign.company_id !== user.company_id) {
       throw new AppError(
         "Bạn phải có quyền 'Manager' hoặc 'Owner' của công ty sở hữu chiến dịch để cập nhật thông tin chiến dịch",
         400
@@ -337,6 +338,7 @@ export default class CampaignService {
           dayDiff: campaign.day_diff,
           tags,
           andFilter: campaign.and_filter,
+          skipUnresolvedThread: campaign.skip_unresolved_thread,
         };
 
         switch (channel.type) {

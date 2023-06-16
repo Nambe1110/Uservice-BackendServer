@@ -146,8 +146,6 @@ export default class ThreadService {
 
     query += ` ORDER BY t2.id DESC LIMIT :limit`;
 
-    console.log(typeof tag);
-
     const threads = await sequelize.query(query, {
       replacements: {
         companyId,
@@ -238,7 +236,7 @@ export default class ThreadService {
 
   static async getThreadsForCampaign({ channelId, dayDiff }) {
     const threads = await sequelize.query(
-      `SELECT thread.id, thread.thread_api_id, 
+      `SELECT thread.id, thread.thread_api_id, thread.is_resolved,
       t1.id AS 'customer.id'
       FROM thread 
       JOIN customer AS t1 ON thread.id = t1.thread_id 
