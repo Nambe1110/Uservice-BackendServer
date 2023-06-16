@@ -26,10 +26,6 @@ const CampaignModel = sequelize.define(
       type: DataTypes.INTEGER.UNSIGNED,
       defaultValue: 0,
     },
-    send_now: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
     send_date: {
       type: DataTypes.BIGINT,
     },
@@ -70,6 +66,10 @@ const CampaignModel = sequelize.define(
       },
     },
     is_sent: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    skip_unresolved_thread: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },

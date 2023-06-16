@@ -7,7 +7,7 @@ import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 
 import exampleRouter from "./components/example/exampleAPI.js";
-import authRouter from "./components/auth/authAPI.js";
+import authRouter from "./components/auth/authApi.js";
 import companyRouter from "./components/company/companyApi.js";
 import meRouter from "./components/me/meApi.js";
 import verifyRouter from "./components/verify/verifyApi.js";

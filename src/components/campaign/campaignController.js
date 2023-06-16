@@ -13,6 +13,7 @@ export const createCampaign = async (req, res) => {
       tags,
       and_filter: andFilter,
       day_diff: dayDiff,
+      skip_unresolved_thread: skipUnresolvedThread,
     } = req.body;
 
     const createdCampaign = await CampaignService.createCampaign({
@@ -25,7 +26,8 @@ export const createCampaign = async (req, res) => {
       attachments,
       tags,
       andFilter,
-      dayDiff
+      dayDiff,
+      skipUnresolvedThread,
     });
     return res
       .status(200)

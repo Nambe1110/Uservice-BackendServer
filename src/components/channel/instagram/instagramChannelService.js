@@ -656,6 +656,7 @@ export default class InstagramService {
     dayDiff,
     tags,
     andFilter,
+    skipUnresolvedThread,
   }) {
     const threads = await ThreadService.getThreadsForCampaign({
       channelId,
@@ -664,6 +665,8 @@ export default class InstagramService {
 
     await Promise.all(
       threads.map(async (thread) => {
+        if (skipUnresolvedThread && !thread.is_resolved) return;
+
         const arrayTags = tags?.map((tag) => tag.id) ?? [];
         const arrayCustomerTags = thread.customer.tags.map((tag) => tag.id);
 

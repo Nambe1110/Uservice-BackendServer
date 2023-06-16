@@ -1772,6 +1772,9 @@
                 },
                 "day_diff": {
                   "example": "any"
+                },
+                "skip_unresolved_thread": {
+                  "example": "any"
                 }
               }
             }
