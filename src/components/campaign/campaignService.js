@@ -198,8 +198,8 @@ export default class CampaignService {
       };
     }
 
-    // if isSent (type: string) not null
-    whereObject.is_sent = isSent ?? null;
+    if (isSent !== null && isSent !== undefined)
+      whereObject.is_sent = isSent.toLowerCase() === "true";
 
     const order = [];
     if (sortOrder && sortOrder.toUpperCase() !== "ASC") {
