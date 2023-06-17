@@ -19,7 +19,7 @@ export const getThreads = async (req, res) => {
       limit: parseInt(limit),
       isResolved,
       channel,
-      tag: JSON.parse(tag),
+      tag,
       search,
     });
 
