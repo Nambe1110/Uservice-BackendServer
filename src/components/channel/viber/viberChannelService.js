@@ -600,15 +600,37 @@ export default class ViberService {
           customerId: thread.customer.id,
         });
 
-        await this.sendMessage({
-          companyId,
-          channelDetailId,
-          threadId: thread.id,
-          threadApiId: thread.thread_api_id,
-          senderType: SenderType.CAMPAIGN,
-          content: replacedContent,
-          attachment,
-        });
+        if (
+          attachment.length > 0 &&
+          attachment[0].type !== AttachmentType.IMAGE
+        ) {
+          await this.sendMessage({
+            companyId,
+            channelDetailId,
+            threadId: thread.id,
+            threadApiId: thread.thread_api_id,
+            senderType: SenderType.CAMPAIGN,
+            attachment,
+          });
+
+          await this.sendMessage({
+            companyId,
+            channelDetailId,
+            threadId: thread.id,
+            threadApiId: thread.thread_api_id,
+            senderType: SenderType.CAMPAIGN,
+            content: replacedContent,
+          });
+        } else
+          await this.sendMessage({
+            companyId,
+            channelDetailId,
+            threadId: thread.id,
+            threadApiId: thread.thread_api_id,
+            senderType: SenderType.CAMPAIGN,
+            content: replacedContent,
+            attachment,
+          });
       })
     );
   }
