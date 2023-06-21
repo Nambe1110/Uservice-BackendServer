@@ -135,7 +135,10 @@ export default class ThreadService {
       WHERE t1.company_id = :companyId`;
 
     if (lastThreadId) query += ` AND t2.id < :lastThreadId`;
-    if (isResolved) query += ` AND thread.is_resolved = :isResolved`;
+    if (isResolved) {
+      isResolved = isResolved.toLowerCase() === "true";
+      query += ` AND thread.is_resolved = :isResolved`;
+    }
     if (channel) query += ` AND t1.id = :channel`;
     if (search) {
       query += ` AND (t3.alias LIKE :search OR CONCAT(t3.first_name, " ", t3.last_name) LIKE :search`;
