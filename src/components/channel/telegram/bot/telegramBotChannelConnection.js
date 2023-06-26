@@ -340,18 +340,6 @@ export default class TelegramBotConnection {
 
         await message.save();
 
-        await threadNotifier.onNewMessage({
-          created: true,
-          channelType: ChannelType.TELEGRAM_BOT,
-          companyId: this.companyId,
-          thread,
-          customer,
-          message,
-          repliedMessage,
-          sender,
-          attachment: attachment ? [attachment] : [],
-        });
-
         if (!isOutgoing) {
           const company = await CompanyService.getCompanyById(this.companyId);
 
@@ -385,34 +373,45 @@ export default class TelegramBotConnection {
                 logger.error(error.message);
               }
             }, 120000);
+          } else {
+            setTimeout(async () => {
+              try {
+                const lastMessage = await MessageService.getLastMessage({
+                  threadId: thread.id,
+                });
 
-            return;
+                if (message.id !== lastMessage.id) return;
+
+                const suggestions =
+                  await SuggestionService.generateChatbotAnswer({
+                    numberOfResponse: 1,
+                    companyId: this.companyId,
+                    threadId: thread.id,
+                  });
+
+                await this.sendMessage({
+                  senderType: SenderType.BOT,
+                  chatId,
+                  content: `[BOT] ${suggestions[0]}`,
+                });
+              } catch (error) {
+                logger.error(error.message);
+              }
+            }, 5000);
           }
-
-          setTimeout(async () => {
-            try {
-              const lastMessage = await MessageService.getLastMessage({
-                threadId: thread.id,
-              });
-
-              if (message.id !== lastMessage.id) return;
-
-              const suggestions = await SuggestionService.generateChatbotAnswer({
-                numberOfResponse: 1,
-                companyId: this.companyId,
-                threadId: thread.id,
-              });
-
-              await this.sendMessage({
-                senderType: SenderType.BOT,
-                chatId,
-                content: `[BOT] ${suggestions[0]}`,
-              });
-            } catch (error) {
-              logger.error(error.message);
-            }
-          }, 5000);
         }
+
+        await threadNotifier.onNewMessage({
+          created: true,
+          channelType: ChannelType.TELEGRAM_BOT,
+          companyId: this.companyId,
+          thread,
+          customer,
+          message,
+          repliedMessage,
+          sender,
+          attachment: attachment ? [attachment] : [],
+        });
       });
 
       this.connection.on("updateMessageSendSucceeded", async ({ update }) => {

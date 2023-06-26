@@ -1,5 +1,4 @@
 import { Queue } from "bullmq";
-import logger from "../config/logger.js";
 
 const campaignQueue = new Queue("campaign", {
   connection: {

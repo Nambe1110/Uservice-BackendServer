@@ -248,17 +248,6 @@ export default class ViberService {
         break;
     }
 
-    await threadNotifier.onNewMessage({
-      created: true,
-      channelType: ChannelType.VIBER,
-      companyId: detailChannel.company_id,
-      thread,
-      customer,
-      message: newMessage,
-      sender: customer,
-      attachment,
-    });
-
     const company = await CompanyService.getCompanyById(
       detailChannel.company_id
     );
@@ -293,36 +282,45 @@ export default class ViberService {
           logger.error(error.message);
         }
       }, 120000);
+    } else {
+      setTimeout(async () => {
+        try {
+          const lastMessage = await MessageService.getLastMessage({
+            threadId: thread.id,
+          });
 
-      return;
+          if (newMessage.id !== lastMessage.id) return;
+
+          const suggestions = await SuggestionService.generateChatbotAnswer({
+            numberOfResponse: 1,
+            companyId: detailChannel.company_id,
+            threadId: thread.id,
+          });
+
+          await this.sendMessage({
+            companyId: detailChannel.company_id,
+            channelDetailId: detailChannel.id,
+            threadId: thread.id,
+            threadApiId: thread.thread_api_id,
+            senderType: SenderType.BOT,
+            content: `[BOT] ${suggestions[0]}`,
+          });
+        } catch (error) {
+          logger.error(error.message);
+        }
+      }, 5000);
     }
 
-    setTimeout(async () => {
-      try {
-        const lastMessage = await MessageService.getLastMessage({
-          threadId: thread.id,
-        });
-
-        if (newMessage.id !== lastMessage.id) return;
-
-        const suggestions = await SuggestionService.generateChatbotAnswer({
-          numberOfResponse: 1,
-          companyId: detailChannel.company_id,
-          threadId: thread.id,
-        });
-
-        await this.sendMessage({
-          companyId: detailChannel.company_id,
-          channelDetailId: detailChannel.id,
-          threadId: thread.id,
-          threadApiId: thread.thread_api_id,
-          senderType: SenderType.BOT,
-          content: `[BOT] ${suggestions[0]}`,
-        });
-      } catch (error) {
-        logger.error(error.message);
-      }
-    }, 5000);
+    await threadNotifier.onNewMessage({
+      created: true,
+      channelType: ChannelType.VIBER,
+      companyId: detailChannel.company_id,
+      thread,
+      customer,
+      message: newMessage,
+      sender: customer,
+      attachment,
+    });
   }
 
   static async messageSendSucceeded({ body }) {

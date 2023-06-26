@@ -404,18 +404,6 @@ export default class InstagramService {
                     );
                   }
 
-                  await threadNotifier.onNewMessage({
-                    created: true,
-                    channelType: ChannelType.INSTAGRAM,
-                    companyId: company_id,
-                    thread,
-                    customer,
-                    message: newMessage,
-                    repliedMessage,
-                    sender,
-                    attachment,
-                  });
-
                   if (senderType === SenderType.CUSTOMER) {
                     if (
                       company.chatbot_mode !== ChatbotMode.AUTO_REPLY ||
@@ -448,40 +436,49 @@ export default class InstagramService {
                           logger.error(error.message);
                         }
                       }, 120000);
+                    } else {
+                      setTimeout(async () => {
+                        try {
+                          const lastMessage =
+                            await MessageService.getLastMessage({
+                              threadId: thread.id,
+                            });
 
-                      return;
-                    }
+                          if (newMessage.id !== lastMessage.id) return;
 
-                    setTimeout(async () => {
-                      try {
-                        const lastMessage = await MessageService.getLastMessage(
-                          {
-                            threadId: thread.id,
-                          }
-                        );
+                          const suggestions =
+                            await SuggestionService.generateChatbotAnswer({
+                              numberOfResponse: 1,
+                              companyId: company_id,
+                              threadId: thread.id,
+                            });
 
-                        if (newMessage.id !== lastMessage.id) return;
-
-                        const suggestions =
-                          await SuggestionService.generateChatbotAnswer({
-                            numberOfResponse: 1,
+                          await this.sendMessage({
                             companyId: company_id,
+                            channelDetailId: channel_detail_id,
                             threadId: thread.id,
+                            threadApiId,
+                            senderType: SenderType.BOT,
+                            content: `[BOT] ${suggestions[0]}`,
                           });
-
-                        await this.sendMessage({
-                          companyId: company_id,
-                          channelDetailId: channel_detail_id,
-                          threadId: thread.id,
-                          threadApiId,
-                          senderType: SenderType.BOT,
-                          content: `[BOT] ${suggestions[0]}`,
-                        });
-                      } catch (error) {
-                        logger.error(error.message);
-                      }
-                    }, 5000);
+                        } catch (error) {
+                          logger.error(error.message);
+                        }
+                      }, 5000);
+                    }
                   }
+
+                  await threadNotifier.onNewMessage({
+                    created: true,
+                    channelType: ChannelType.INSTAGRAM,
+                    companyId: company_id,
+                    thread,
+                    customer,
+                    message: newMessage,
+                    repliedMessage,
+                    sender,
+                    attachment,
+                  });
                 })
               );
             })
