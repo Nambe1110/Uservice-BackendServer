@@ -68,14 +68,4 @@ app.get("/", (req, res) => {
   });
 });
 
-app.use((error, req, res) => {
-  logger.error(error);
-  res.status(500).send({
-    status: "error",
-    data: {
-      message: error.message,
-    },
-  });
-});
-
 export default httpServer;

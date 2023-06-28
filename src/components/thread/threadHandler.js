@@ -7,6 +7,7 @@ import ViberChannelService from "../channel/viber/viberChannelService.js";
 import InstagramChannelService from "../channel/instagram/instagramChannelService.js";
 import { StatusType, ChannelType } from "../../constants.js";
 import { listThread } from "../../utils/singleton.js";
+import logger from "../../config/logger.js";
 
 const getJoiners = (joiners) =>
   Array.from(joiners.values()).map((joiner) => ({
@@ -73,120 +74,106 @@ export const registerThreadHandler = async (io, socket) => {
   });
 
   socket.on("join-thread", async (data, callback) => {
-    const { threadId } = data;
-    const thread = await ThreadService.getThreadById(threadId);
+    try {
+      const { threadId } = data;
+      const thread = await ThreadService.getThreadById(threadId);
 
-    if (!thread)
-      return callback({
-        status: StatusType.ERROR,
-        message: "Thread not found",
-      });
+      if (!thread)
+        return callback({
+          status: StatusType.ERROR,
+          message: "Thread not found",
+        });
 
-    if (threadId === joinedThreadId)
-      return callback({
-        status: StatusType.SUCCESS,
-        message: "Join thread successfully",
-      });
+      if (threadId === joinedThreadId)
+        return callback({
+          status: StatusType.SUCCESS,
+          message: "Join thread successfully",
+        });
 
-    if (joinedThreadId) {
-      const joiners = listThread.get(joinedThreadId);
+      if (joinedThreadId) {
+        const joiners = listThread.get(joinedThreadId);
+
+        const joiner = joiners.get(user.id);
+        --joiner.socketCount;
+
+        if (joiner.socketCount === 0) {
+          joiners.delete(user.id);
+          io.to(user.company_id).emit("update-joiner", {
+            data: {
+              thread_id: joinedThreadId,
+              joiners: getJoiners(joiners),
+            },
+          });
+        }
+      }
+
+      joinedThreadId = threadId;
+      if (!listThread.has(threadId)) listThread.set(threadId, new Map());
+      const joiners = listThread.get(threadId);
+
+      if (!joiners.has(user.id))
+        joiners.set(user.id, {
+          id: user.id,
+          firstName: user.first_name,
+          lastName: user.last_name,
+          imageUrl: user.image_url,
+          socketCount: 0,
+        });
       const joiner = joiners.get(user.id);
-      --joiner.socketCount;
+      ++joiner.socketCount;
 
-      if (joiner.socketCount === 0) {
-        joiners.delete(user.id);
+      if (joiner.socketCount === 1) {
         io.to(user.company_id).emit("update-joiner", {
           data: {
-            thread_id: joinedThreadId,
+            thread_id: threadId,
             joiners: getJoiners(joiners),
           },
         });
       }
-    }
 
-    joinedThreadId = threadId;
-    if (!listThread.has(threadId)) listThread.set(threadId, new Map());
-    const joiners = listThread.get(threadId);
-
-    if (!joiners.has(user.id))
-      joiners.set(user.id, {
-        id: user.id,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        imageUrl: user.image_url,
-        socketCount: 0,
+      callback({
+        status: StatusType.SUCCESS,
+        message: "Join thread successfully",
       });
-    const joiner = joiners.get(user.id);
-    ++joiner.socketCount;
+    } catch (error) {
+      logger.error(error.message);
+    }
+  });
 
-    if (joiner.socketCount === 1) {
-      io.to(user.company_id).emit("update-joiner", {
+  socket.on("get-joiner", async (data, callback) => {
+    try {
+      const { threadId } = data;
+      const thread = await ThreadService.getThreadById(threadId);
+
+      if (!thread)
+        return callback({
+          status: StatusType.ERROR,
+          message: "Thread not found",
+        });
+
+      if (!listThread.has(threadId)) listThread.set(threadId, new Map());
+      const joiners = listThread.get(threadId);
+
+      callback({
+        status: StatusType.SUCCESS,
         data: {
           thread_id: threadId,
           joiners: getJoiners(joiners),
         },
       });
+    } catch (error) {
+      logger.error(error.message);
     }
-
-    callback({
-      status: StatusType.SUCCESS,
-      message: "Join thread successfully",
-    });
-  });
-
-  socket.on("get-joiner", async (data, callback) => {
-    const { threadId } = data;
-    const thread = await ThreadService.getThreadById(threadId);
-
-    if (!thread)
-      return callback({
-        status: StatusType.ERROR,
-        message: "Thread not found",
-      });
-
-    if (!listThread.has(threadId)) listThread.set(threadId, new Map());
-    const joiners = listThread.get(threadId);
-
-    callback({
-      status: StatusType.SUCCESS,
-      data: {
-        thread_id: threadId,
-        joiners: getJoiners(joiners),
-      },
-    });
   });
 
   socket.on("leave-thread", (data, callback) => {
-    if (!joinedThreadId)
-      return callback({
-        status: StatusType.ERROR,
-        message: "You haven't joined any thread",
-      });
+    try {
+      if (!joinedThreadId)
+        return callback({
+          status: StatusType.ERROR,
+          message: "You haven't joined any thread",
+        });
 
-    const joiners = listThread.get(joinedThreadId);
-    const joiner = joiners.get(user.id);
-    --joiner.socketCount;
-
-    if (joiner.socketCount === 0) {
-      joiners.delete(user.id);
-      io.to(user.company_id).emit("update-joiner", {
-        data: {
-          thread_id: joinedThreadId,
-          joiners: getJoiners(joiners),
-        },
-      });
-    }
-
-    joinedThreadId = null;
-
-    callback({
-      status: StatusType.SUCCESS,
-      message: "Leave thread successfully",
-    });
-  });
-
-  socket.on("disconnect", () => {
-    if (joinedThreadId) {
       const joiners = listThread.get(joinedThreadId);
       const joiner = joiners.get(user.id);
       --joiner.socketCount;
@@ -200,6 +187,37 @@ export const registerThreadHandler = async (io, socket) => {
           },
         });
       }
+
+      joinedThreadId = null;
+
+      callback({
+        status: StatusType.SUCCESS,
+        message: "Leave thread successfully",
+      });
+    } catch (error) {
+      logger.error(error.message);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    try {
+      if (joinedThreadId) {
+        const joiners = listThread.get(joinedThreadId);
+        const joiner = joiners.get(user.id);
+        --joiner.socketCount;
+
+        if (joiner.socketCount === 0) {
+          joiners.delete(user.id);
+          io.to(user.company_id).emit("update-joiner", {
+            data: {
+              thread_id: joinedThreadId,
+              joiners: getJoiners(joiners),
+            },
+          });
+        }
+      }
+    } catch (error) {
+      logger.error(error.message);
     }
   });
 };
