@@ -6,7 +6,7 @@ const getUser = (employees) =>
   Array.from(employees.values()).map((employee) => ({
     id: employee.id,
     first_name: employee.firstName,
-    last_name: employee.firstName,
+    last_name: employee.lastName,
     email: employee.email,
     phone_number: employee.phoneNumber,
     image_url: employee.imageUrl,
