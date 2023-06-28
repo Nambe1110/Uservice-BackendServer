@@ -37,6 +37,10 @@ export default class CompanyService {
       role: RoleEnum.Owner,
     });
 
+    const currentUser = await UserModel.findByPk(user.id);
+    currentUser.is_locked = false;
+    await currentUser.save();
+
     listCompany.set(newCompany.id, {
       listChannel: {
         telegramUserChannel: new Map(),
