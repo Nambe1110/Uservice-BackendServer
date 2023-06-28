@@ -8,7 +8,6 @@ export const initilizeWorker = () => {
     "campaign",
     async (job) => {
       try {
-        logger.info("Campaign worker is running");
         const { campaignId } = job.data;
         await CampaignService.sendCampaign(campaignId);
       } catch (error) {

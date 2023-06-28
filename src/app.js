@@ -1,10 +1,10 @@
 import * as dotenv from "dotenv"; // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
 import { readFileSync } from "fs";
-
 import express from "express";
 import { createServer } from "http";
 import cors from "cors";
 import swaggerUi from "swagger-ui-express";
+import logger from "./config/logger.js";
 
 import exampleRouter from "./components/example/exampleAPI.js";
 import authRouter from "./components/auth/authApi.js";
@@ -64,6 +64,16 @@ app.get("/", (req, res) => {
     status: "success",
     data: {
       message: "API is working. Server is running perfectly",
+    },
+  });
+});
+
+app.use((error, req, res) => {
+  logger.error(error);
+  res.status(500).send({
+    status: "error",
+    data: {
+      message: error.message,
     },
   });
 });
