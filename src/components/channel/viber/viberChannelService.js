@@ -573,7 +573,7 @@ export default class ViberService {
       dayDiff,
     });
 
-    await Promise.all(
+    await Promise.allSettled(
       threads.map(async (thread) => {
         if (skipUnresolvedThread && !thread.is_resolved) return;
 

@@ -327,7 +327,7 @@ export default class CampaignService {
       campaignId: campaign.id,
     });
 
-    await Promise.all(
+    await Promise.allSettled(
       selectedChannels.map(async (channel) => {
         const sendObject = {
           companyId: campaign.company_id,
