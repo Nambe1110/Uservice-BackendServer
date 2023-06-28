@@ -44,7 +44,7 @@ const UserModel = sequelize.define(
     },
     is_locked: {
       type: DataTypes.BOOLEAN,
-      defaultValue: false,
+      defaultValue: true,
     },
     google_token: {
       type: DataTypes.STRING,

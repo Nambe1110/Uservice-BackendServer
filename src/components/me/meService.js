@@ -64,6 +64,7 @@ export default class MeService {
     }
     currentUser.company_id = null;
     currentUser.role = null;
+    currentUser.is_locked = true;
     const updatedUser = await currentUser.save();
     delete updatedUser.dataValues.password;
     delete updatedUser.dataValues.google_token;
