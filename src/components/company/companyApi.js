@@ -19,11 +19,11 @@ companyRouter.use("/", (req, res, next) => {
   next();
 });
 
-companyRouter.use("/", verifyToken.verifyToken());
+companyRouter.use("/", verifyToken.verifyToken(false, true));
 
 companyRouter.post("/create", createCompany);
 companyRouter.post("/join", joinCompany);
-companyRouter.get("/model", getModels);
+companyRouter.get("/model", verifyToken.verifyToken(), getModels);
 companyRouter.get(
   "/:companyId",
   verifyToken.verifyToken(true),

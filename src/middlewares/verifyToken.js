@@ -3,7 +3,7 @@ import UserService from "../components/user/userService.js";
 import { StatusType } from "../constants.js";
 
 export const verifyToken =
-  (requiredCompany = false) =>
+  (requiredCompany = false, requiredUnlocked = true) =>
   async (req, res, next) => {
     const bearerHeader = req.headers.authorization;
     if (bearerHeader == null) {
@@ -24,7 +24,7 @@ export const verifyToken =
         });
       }
 
-      if (user.is_locked) {
+      if (requiredUnlocked) {
         return res.status(403).json({
           status: StatusType.ERROR,
           message: "Tài khoản bị khóa",
