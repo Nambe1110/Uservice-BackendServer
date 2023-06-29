@@ -84,6 +84,12 @@ const UserModel = sequelize.define(
 
 Company.hasMany(UserModel);
 UserModel.belongsTo(Company);
+Company.beforeDestroy(async (instance) => {
+  await UserModel.update(
+    { is_locked: true },
+    { where: { company_id: instance.dataValues.id } }
+  );
+});
 
 UserModel.sync({ logging: false });
 

@@ -2,10 +2,20 @@ import validator from "validator";
 import StatusEnum from "../enums/Status.js";
 
 export const signupValidator = (req, res, next) => {
-  const { email, password } = req.body;
+  const { email, password, first_name, last_name } = req.body;
   const emailErrors = [];
   const passwordErrors = [];
   try {
+    // Validate first name.
+    if (validator.isEmpty(first_name)) {
+      emailErrors.push("Họ tên không thể để trống");
+    }
+
+    // Validate last name.
+    if (validator.isEmpty(last_name)) {
+      emailErrors.push("Tên không thể để trống");
+    }
+
     // Validate email.
     if (validator.isEmpty(email)) {
       emailErrors.push("Email không thể để trống");
