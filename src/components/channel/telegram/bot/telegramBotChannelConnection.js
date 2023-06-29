@@ -11,6 +11,7 @@ import {
   ChatbotMode,
   ThreadLimit,
   NotificationCode,
+  StatusType,
 } from "../../../../constants.js";
 import logger from "../../../../config/logger.js";
 import { threadNotifier } from "../../../thread/threadNotifier.js";
@@ -471,7 +472,6 @@ export default class TelegramBotConnection {
 
         if (senderType === SenderType.STAFF) {
           const sender = await UserService.getUserById(senderId);
-          logger.info(sender);
 
           await threadNotifier.onMessageSendSucceeded({
             companyId: this.companyId,
@@ -495,6 +495,20 @@ export default class TelegramBotConnection {
             attachment,
           });
         }
+
+        this.pendingMessages.delete(oldMessageId);
+      });
+
+      this.connection.on("updateMessageSendFailed", async ({ update }) => {
+        const { oldMessageId, errorMessage } = update;
+        if (!this.pendingMessages.has(oldMessageId)) return;
+
+        const { callback } = this.pendingMessages.get(oldMessageId);
+
+        callback({
+          status: StatusType.ERROR,
+          message: errorMessage,
+        });
 
         this.pendingMessages.delete(oldMessageId);
       });
