@@ -154,7 +154,6 @@ export default class MessengerService {
       if (!channel.image_url && pagePictureUrl) {
         const pictureUrl = await S3.uploadFromUrlToS3({
           url: pagePictureUrl,
-          companyId,
         });
 
         channel.image_url = pictureUrl;
@@ -311,7 +310,6 @@ export default class MessengerService {
                   ) {
                     const pictureUrl = await S3.uploadFromUrlToS3({
                       url: profile_pic,
-                      companyId: company_id,
                     });
 
                     if (!thread.image_url) {
@@ -388,7 +386,6 @@ export default class MessengerService {
 
                           const attachmentUrl = await S3.uploadFromUrlToS3({
                             url,
-                            companyId: company_id,
                           });
 
                           const newAttchment =

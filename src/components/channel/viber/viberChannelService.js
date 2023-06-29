@@ -87,7 +87,6 @@ export default class ViberService {
       if (!channel.image_url && icon) {
         const iconUrl = await S3.uploadFromUrlToS3({
           url: icon,
-          companyId,
         });
 
         channel.image_url = iconUrl;
@@ -151,7 +150,6 @@ export default class ViberService {
     if ((!thread.image_url || !customer.image_url) && senderAvatar) {
       const pictureUrl = await S3.uploadFromUrlToS3({
         url: senderAvatar,
-        companyId: detailChannel.company_id,
       });
 
       if (!thread.image_url) {
@@ -188,7 +186,6 @@ export default class ViberService {
         const { media, text } = message;
         const url = await S3.uploadFromUrlToS3({
           url: media,
-          companyId: detailChannel.company_id,
         });
         const newAttachment = await AttachmentService.createAttachment({
           messageId: newMessage.id,
@@ -204,7 +201,6 @@ export default class ViberService {
         const { media } = message;
         const url = await S3.uploadFromUrlToS3({
           url: media,
-          companyId: detailChannel.company_id,
         });
         const newAttachment = await AttachmentService.createAttachment({
           messageId: newMessage.id,
@@ -218,7 +214,6 @@ export default class ViberService {
         const { media, file_name } = message;
         const url = await S3.uploadFromUrlToS3({
           url: media,
-          companyId: detailChannel.company_id,
         });
         const newAttachment = await AttachmentService.createAttachment({
           messageId: newMessage.id,

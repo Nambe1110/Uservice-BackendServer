@@ -8,6 +8,8 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import fs from "fs";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
+import path from "path";
+import mime from "mime-types";
 import logger from "../config/logger.js";
 
 const s3BucketUrl = process.env.BUCKET_URL;
@@ -23,17 +25,18 @@ const s3 = new S3Client({
 });
 
 export default class S3 {
-  static async pushDiskStorageFileToS3({ filePath, companyId }) {
+  static async pushDiskStorageFileToS3({ filePath }) {
     // Disk storage file path on server BE
     const file = await fs.promises.readFile(filePath);
-    const randomName = randomUniqueFileName();
-    const key = `company/${companyId}/${randomName}`;
+    const key = `company/${uuidv4()}/${path.basename(filePath)}`;
 
     try {
       const command = new PutObjectCommand({
         Bucket: process.env.BUCKET_NAME,
         Key: key,
         Body: file.buffer,
+        ContentType:
+          mime.lookup(file.originalname) || "application/octet-stream",
       });
       await s3.send(command);
       fs.unlinkSync(filePath);
@@ -68,7 +71,7 @@ export default class S3 {
     return url;
   }
 
-  static async uploadFromUrlToS3({ url, companyId }) {
+  static async uploadFromUrlToS3({ url }) {
     if (!url) return null;
 
     try {
@@ -77,8 +80,7 @@ export default class S3 {
         responseEncoding: "binary",
       });
 
-      const randomName = randomUniqueFileName();
-      const key = `company/${companyId}/${randomName}`;
+      const key = `company/${uuidv4()}/${path.basename(url)}`;
 
       const command = new PutObjectCommand({
         ContentType: response.headers["content-type"],
