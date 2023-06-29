@@ -25,10 +25,12 @@ export const verifyToken =
       }
 
       if (requiredUnlocked) {
-        return res.status(403).json({
-          status: StatusType.ERROR,
-          message: "Tài khoản bị khóa",
-        });
+        if (user.is_locked) {
+          return res.status(403).json({
+            status: StatusType.ERROR,
+            message: "Tài khoản bị khóa",
+          });
+        }
       }
 
       // if (user.company_id !== decoded.company_id) {
