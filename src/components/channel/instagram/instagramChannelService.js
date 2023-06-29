@@ -159,7 +159,6 @@ export default class InstagramService {
       if (!channel.image_url && profile_picture_url) {
         const pictureUrl = await S3.uploadFromUrlToS3({
           url: profile_picture_url,
-          companyId,
         });
 
         channel.image_url = pictureUrl;
@@ -310,7 +309,6 @@ export default class InstagramService {
                   ) {
                     const pictureUrl = await S3.uploadFromUrlToS3({
                       url: profile_pic,
-                      companyId: company_id,
                     });
 
                     if (!thread.image_url) {
@@ -387,7 +385,6 @@ export default class InstagramService {
 
                           const attachmentUrl = await S3.uploadFromUrlToS3({
                             url,
-                            companyId: company_id,
                           });
 
                           const newAttchment =

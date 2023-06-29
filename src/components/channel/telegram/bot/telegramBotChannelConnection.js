@@ -86,6 +86,11 @@ export default class TelegramBotConnection {
 
   async setUpdateListener({ channelId }) {
     try {
+      // this.connection.use((update, next) => {
+      //   logger.info(update);
+      //   next();
+      // });
+
       this.connection.on("updateMessageContent", async ({ update }) => {
         const { chatId, messageId, newContent: messageContent } = update;
 
@@ -537,6 +542,15 @@ export default class TelegramBotConnection {
       const { type, url } = attachment[0];
       let inputMessageContent = {};
 
+      logger.info(
+        await this.connection.api.uploadFile({
+          file: {
+            _: "inputFileRemote",
+            id: url,
+          },
+        })
+      );
+
       switch (type) {
         case AttachmentType.IMAGE:
           inputMessageContent = {
@@ -644,7 +658,6 @@ export default class TelegramBotConnection {
     const { path: filePath } = fileResponse.response.local;
     const url = await S3.pushDiskStorageFileToS3({
       filePath,
-      companyId: this.companyId,
     });
 
     return url;

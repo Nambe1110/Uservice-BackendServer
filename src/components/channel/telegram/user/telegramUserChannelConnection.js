@@ -705,7 +705,6 @@ export default class TelegramUserConnection {
     const { path: filePath } = fileResponse.response.local;
     const url = await S3.pushDiskStorageFileToS3({
       filePath,
-      companyId: this.companyId,
     });
 
     return url;
