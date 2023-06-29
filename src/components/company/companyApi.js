@@ -19,7 +19,7 @@ companyRouter.use("/", (req, res, next) => {
   next();
 });
 
-companyRouter.use("/", verifyToken.verifyToken(false, true));
+companyRouter.use("/", verifyToken.verifyToken(false, false));
 
 companyRouter.post("/create", createCompany);
 companyRouter.post("/join", joinCompany);
