@@ -532,7 +532,7 @@ export default class TelegramUserConnection {
         }
 
         if (senderType === SenderType.STAFF) {
-          const sender = UserService.getUserById(senderId);
+          const sender = await UserService.getUserById(senderId);
 
           await threadNotifier.onMessageSendSucceeded({
             companyId: this.companyId,
