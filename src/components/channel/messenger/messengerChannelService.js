@@ -23,6 +23,7 @@ import CompanyService from "../../company/companyService.js";
 import SuggestionService from "../../suggestion/suggestionService.js";
 import S3 from "../../../modules/S3.js";
 import { sendPushNotificationToCompany } from "../../../modules/pushNotification.js";
+import { addJobsToMessageQueue } from "../../../modules/queue.js";
 
 const pendingMessages = new Map();
 const attachmentTypeMapping = {};
@@ -640,6 +641,42 @@ export default class MessengerService {
     }
   }
 
+  static async sendMessageInQueue({
+    companyId,
+    channelDetailId,
+    threadId,
+    threadApiId,
+    senderType,
+    content,
+    attachment,
+    customerId,
+  }) {
+    const replacedContent = await CustomerService.replaceParams({
+      text: content,
+      customerId,
+    });
+
+    if (attachment.length > 0)
+      await this.sendMessage({
+        companyId,
+        channelDetailId,
+        threadId,
+        threadApiId,
+        senderType,
+        attachment,
+      });
+
+    if (content)
+      await this.sendMessage({
+        companyId,
+        channelDetailId,
+        threadId,
+        threadApiId,
+        senderType: SenderType.CAMPAIGN,
+        content: replacedContent,
+      });
+  }
+
   static async sendCampaign({
     companyId,
     channelId,
@@ -653,54 +690,26 @@ export default class MessengerService {
   }) {
     const threads = await ThreadService.getThreadsForCampaign({
       channelId,
+      skipUnresolvedThread,
       dayDiff,
+      tags,
+      andFilter,
     });
 
-    await Promise.allSettled(
-      threads.map(async (thread) => {
-        if (skipUnresolvedThread && !thread.is_resolved) return;
-
-        const arrayTags = tags?.map((tag) => tag.id) ?? [];
-        const arrayCustomerTags = thread.customer.tags.map((tag) => tag.id);
-
-        if (andFilter) {
-          for (const id of arrayTags)
-            if (!arrayCustomerTags.includes(id)) return;
-        } else {
-          let hasTag = false;
-          for (const id of arrayTags)
-            if (arrayCustomerTags.includes(id)) {
-              hasTag = true;
-              break;
-            }
-          if (!hasTag) return;
-        }
-
-        const replacedContent = await CustomerService.replaceParams({
-          text: content,
+    await addJobsToMessageQueue(
+      threads.map((thread) => ({
+        type: ChannelType.MESSENGER,
+        data: {
+          companyId,
+          channelDetailId,
+          threadId: thread.id,
+          threadApiId: thread.thread_api_id,
+          senderType: SenderType.CAMPAIGN,
+          content,
+          attachment,
           customerId: thread.customer.id,
-        });
-
-        if (attachment.length > 0)
-          await this.sendMessage({
-            companyId,
-            channelDetailId,
-            threadId: thread.id,
-            threadApiId: thread.thread_api_id,
-            senderType: SenderType.CAMPAIGN,
-            attachment,
-          });
-
-        if (content)
-          await this.sendMessage({
-            companyId,
-            channelDetailId,
-            threadId: thread.id,
-            threadApiId: thread.thread_api_id,
-            senderType: SenderType.CAMPAIGN,
-            content: replacedContent,
-          });
-      })
+        },
+      }))
     );
   }
 }

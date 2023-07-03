@@ -326,6 +326,7 @@ export default class CampaignService {
     const tags = await CampaignTagService.getSelectedTags({
       campaignId: campaign.id,
     });
+    const tagsList = tags.map((tag) => tag.id);
 
     await Promise.allSettled(
       selectedChannels.map(async (channel) => {
@@ -336,7 +337,7 @@ export default class CampaignService {
           content: campaign.content,
           attachment,
           dayDiff: campaign.day_diff,
-          tags,
+          tags: tagsList,
           andFilter: campaign.and_filter,
           skipUnresolvedThread: campaign.skip_unresolved_thread,
         };

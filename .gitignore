@@ -5,6 +5,7 @@
 /build
 /logs
 /db
+/test
 
 # misc
 .idea
