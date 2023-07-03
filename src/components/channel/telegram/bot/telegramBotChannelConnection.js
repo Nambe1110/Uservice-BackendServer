@@ -542,15 +542,6 @@ export default class TelegramBotConnection {
       const { type, url } = attachment[0];
       let inputMessageContent = {};
 
-      logger.info(
-        await this.connection.api.uploadFile({
-          file: {
-            _: "inputFileRemote",
-            id: url,
-          },
-        })
-      );
-
       switch (type) {
         case AttachmentType.IMAGE:
           inputMessageContent = {

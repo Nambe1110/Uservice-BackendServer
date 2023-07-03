@@ -237,9 +237,14 @@ export default class ThreadService {
     );
   }
 
-  static async getThreadsForCampaign({ channelId, dayDiff }) {
-    const threads = await sequelize.query(
-      `SELECT thread.id, thread.thread_api_id, thread.is_resolved,
+  static async getThreadsForCampaign({
+    channelId,
+    dayDiff,
+    skipUnresolvedThread,
+    tags,
+    andFilter,
+  }) {
+    let query = `SELECT thread.id, thread.thread_api_id, thread.is_resolved,
       t1.id AS 'customer.id'
       FROM thread 
       JOIN customer AS t1 ON thread.id = t1.thread_id 
@@ -252,34 +257,32 @@ export default class ThreadService {
           GROUP BY thread_id
         )
       ) AS t2 ON t2.thread_id = thread.id
-      WHERE thread.channel_id = :channelId 
-      ${dayDiff ? `AND DATEDIFF(CURDATE(), t2.created_at) < :dayDiff` : ""}`,
-      {
-        replacements: {
-          channelId,
-          dayDiff,
-        },
-        type: sequelize.QueryTypes.SELECT,
-        nest: true,
-      }
-    );
+      WHERE thread.channel_id = :channelId`;
 
-    await Promise.all(
-      threads.map(async (thread, index) => {
-        threads[index].customer.tags = await sequelize.query(
-          `SELECT tag_id AS id
-          FROM tag_subscription
-          WHERE customer_id = :customerId`,
-          {
-            replacements: {
-              customerId: thread.customer.id,
-            },
-            type: sequelize.QueryTypes.SELECT,
-            nest: true,
-          }
-        );
-      })
-    );
+    if (skipUnresolvedThread) query += ` AND thread.is_resolved = 1`;
+    if (dayDiff) query += ` AND DATEDIFF(CURDATE(), t2.created_at) < :dayDiff`;
+    if (tags.length > 0) {
+      if (andFilter)
+        query += ` AND NOT EXISTS (
+          SELECT * FROM tag
+          WHERE tag.id IN (1, 2) AND NOT EXISTS
+            (SELECT * FROM tag_subscription
+            WHERE customer_id = t1.id AND tag.id = tag_subscription.tag_id))`;
+      else
+        query += ` AND EXISTS (
+          SELECT tag_id FROM tag_subscription 
+          WHERE customer_id = t1.id AND tag_id IN (:tags))`;
+    }
+
+    const threads = await sequelize.query(query, {
+      replacements: {
+        channelId,
+        dayDiff,
+        tags,
+      },
+      type: sequelize.QueryTypes.SELECT,
+      nest: true,
+    });
 
     return threads;
   }
